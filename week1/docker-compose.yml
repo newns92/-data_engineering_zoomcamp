@@ -1,0 +1,32 @@
+services:
+  pgdatabase:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=ny_taxi
+    volumes:
+      - "./ny_taxi_postgres_data:/var/lib/postgresql/data:rw"
+    ports:
+      - "5432:5432"
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - "8080:80"
+
+# run with `winpty docker run -it [imagename]` => `winpty docker run -it postgres:13`
+
+# set environment variables with `-e` flag
+# `winpty docker run -it \
+#  -e POSTGRES_USER="root" \
+#  -e POSTGRES_PASSWORD="root" \
+#  -e POSTGRES_DB="ny_taxi" \
+#  postgres:13`
+
+# Volumes = way of mapping a folder from our file system on the host machine 
+#   to a folder in the container (mounting)
+# - This is making sure our data is still there if we stop running Docker
+# - Because Docker does NOT keep the state
