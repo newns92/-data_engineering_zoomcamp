@@ -15,3 +15,12 @@
 - Exit with CTRL+D
 - See `load_data.py` to load in data
 - Test with `SELECT COUNT(*) FROM yellow_taxi_data` (1369765) and `SELECT COUNT(*) FROM zones` (265)
+- Test again with `SELECT MAX(tpep_pickup_datetime), MIN(tpep_pickup_datetime), max(total_amount) FROM yellow_taxi_data`
+# pgAdmin
+- It’s not convenient to use `pgcli` for data exploration and querying
+- `pgAdmin` - the standard graphical tool for postgres for data exploration and querying
+# Terraform
+- Install chocolatey
+    - Run `Get-ExecutionPolicy` in Windows Powershell. If it returns `Restricted`, then run `Set-ExecutionPolicy AllSigned` or `Set-ExecutionPolicy Bypass -Scope Process`
+    - Run `Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))`
+- Install with `choco install terraform`
