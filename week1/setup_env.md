@@ -36,9 +36,18 @@
 - Shut down both containers
 - Create a network with:
     - 1) Create the network itself with `docker network create pg-network`
-    - 2) Run Postgres, specifying it should be run in the network, with `docker run -it -e POSTGRES_USER="root" -e POSTGRES_PASSWORD="root" -e POSTGRES_DB="ny_taxi" -v C://Users//[rest of path]//ny_taxi_postgres_data:/var/lib/postgresql/data:rw -p 5432:5432 --name pgdatabase --network=pg-network postgres:13`
-    - 3) Run pgAdmin, specifying it should be run in the network, with `docker run -it -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" -e PGADMIN_DEFAULT_PASSWORD="root" -p 8080:80 --name pgadmin --network=pg-network dpage/pgadmin4`
+    - 2) Run Postgres, specifying it should be run in the network, with `winpty docker run -it -e POSTGRES_USER="root" -e POSTGRES_PASSWORD="root" -e POSTGRES_DB="ny_taxi" -v C://Users//nimz//Dropbox//de_zoomcamp//week1//ny_taxi_postgres_data:/var/lib/postgresql/data:rw -p 5432:5432 --name pgdatabase --network=pg-network postgres:13`
+        - a) Check that the data has persisted with `SELECT COUNT(*) FROM yellow_taxi_data` (1369765)
+    - 3) In a separate command window, run pgAdmin, specifying it should be run in the network, with `docker run -it -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" -e PGADMIN_DEFAULT_PASSWORD="root" -p 8080:80 --name pgadmin --network=pg-network dpage/pgadmin4`
     - *Notice the commands are similar but we added `--name` and `--net` arguments*
+- Create the server again in same manner as above, BUT host name/address should be `pgdatabase`, port is `5432`, username and password is `root`
+- Should have been able to connect and see "Local Docker" under "Servers" on the left of pgAdmin
+- Can see our tables under "Local Docker" --> "Databases (2)" --> "ny_taxi" --> "Schemas (1)" --> "Tables (2)"
+- Can view data with `SELECT * FROM public.yellow_taxi_data LIMIT 100`
+- Can write the same query by going to "Tools" --> "Query Tool"
+- Next, we will put those two `docker run -it` commands into a single YAML file to run both containters with one terminal via `docker compose`
+# Docker Compose
+- 
 # Terraform
 - Install chocolatey
     - Run `Get-ExecutionPolicy` in Windows Powershell. If it returns `Restricted`, then run `Set-ExecutionPolicy AllSigned` or `Set-ExecutionPolicy Bypass -Scope Process`
