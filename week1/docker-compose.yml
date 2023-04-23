@@ -15,7 +15,7 @@ services:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
       - PGADMIN_DEFAULT_PASSWORD=root
     ports:
-      - "8080:80"
+      - "8080:80" 
 
 # check for running containers with `docker ps`
 
@@ -30,6 +30,7 @@ services:
 
 # Need to specify the port we are mapping from the host machine to one on the container
 
+# -it instructs Docker to allocate a pseudo-TTY connected to the container’s stdin; creating an interactive bash shell in the container
 # set environment variables with `-e` flag
 # set volumes with `-v` flag
 # set port with `-p` flag
