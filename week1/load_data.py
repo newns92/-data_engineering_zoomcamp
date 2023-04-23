@@ -52,20 +52,33 @@ df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
 end = time.time()
 print('Time to insert first chunk: in %.3f seconds.' % (end - start))
 
+def load_chunks(df):
+    try:
+        print("Loading next chunk...")
+        start = time.time()
+
+        # get next chunk
+        df = next(df_iter)
+
+        # fix datetimes
+        df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+        df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+        
+        # add chunk
+        df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
+
+        end = time.time()
+
+        print('Inserted another chunk in %.3f seconds.' % (end - start))
+
+    except:
+        # will come to this clause when we throw an error after running out of data chunks
+        print('All data chunks loaded.')
+        quit()
+
 # insert the rest of the chunks until loop breaks when all data is added
-while True: 
-    start = time.time()
-
-    # get next chunk
-    df = next(df_iter)
-
-    # fix datetimes
-    df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-    df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
-    
-    # add chunk
-    df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
-
-    end = time.time()
-
-    print('Inserted another chunk in %.3f seconds.' % (end - start))
+while True:
+    if load_chunks(df):
+        break
+    else:        
+        continue
