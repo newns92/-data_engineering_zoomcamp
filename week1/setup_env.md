@@ -13,3 +13,5 @@
 - Connect to Postgres IN A SEPARATE COMMAND WINDOW with `pgcli -h localhost -p 5432 -u root -d ny_taxi` where -d = database, -u = user, -p = port, -h = host
 - Test by checking for tables with `\dt` and also doing `SELECT 1`
 - Exit with CTRL+D
+- See `load_data.py` to load in data
+- Test with `SELECT COUNT(*) FROM yellow_taxi_data` (1369765) and `SELECT COUNT(*) FROM zones` (265)
