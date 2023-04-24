@@ -2,7 +2,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 import time
 import argparse # for named arguments like user, password, host, port, database, table, file locations, etc.
-
+import os
 
 def main(params):
     # Gather the passed in params
@@ -30,6 +30,7 @@ def main(params):
     # # ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data')
     # # print(ddl)
 
+    print("Creating the engine...")
     # need to convert this DDL statement into something Postgres will understand
     #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
     engine = create_engine('postgresql://{user}:{password}@{host}:{port}/{database}')
@@ -38,7 +39,14 @@ def main(params):
     # ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data', con=engine)
     # print(ddl)
 
-    # add in the timezones first before the infinite loop
+    print("Downloading the taxi data...")
+    taxi_csv_name = 'yt_data.csv'
+    os.system(f'wget {yellow_taxi_url} -O {taxi_csv_name}')
+    print("Downloading the taxi zone data...")
+    zones_csv_name = 'zones.csv'
+    os.system(f'wget {zones_url} -O {zones_csv_name}')
+
+    # Add in the timezones first before the long loop
     df_zones = pd.read_csv('taxi+_zone_lookup.csv')
     df_zones.to_sql(name='zones', con=engine, if_exists='replace')
     print('Loaded in time zone data')
