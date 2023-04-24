@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine
 import time
-import argparse # for named arguments like user, password, host, port, database, table, file locations, etc.
+import argparse  # for named arguments like user, password, host, port, database, table, file locations, etc.
 import os
 
 def main(params):
@@ -10,7 +10,7 @@ def main(params):
     password = params.password
     host = params.host
     port = params.port
-    databasedb = params.database
+    database = params.database
     yellow_taxi_table_name = params.yellow_taxi_table_name
     yellow_taxi_url = params.yellow_taxi_url
     zones_table_name = params.zones_table_name
@@ -33,18 +33,18 @@ def main(params):
     print("Creating the engine...")
     # need to convert this DDL statement into something Postgres will understand
     #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
-    engine = create_engine('postgresql://{user}:{password}@{host}:{port}/{database}')
+    engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')
 
     # # add in the connection to the DDL statement
     # ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data', con=engine)
     # print(ddl)
 
     print("Downloading the taxi data...")
-    taxi_csv_name = 'yt_data.csv'
-    os.system(f'wget {yellow_taxi_url} -O {taxi_csv_name}')
+    taxi_csv_name = 'yellow_tripdata_2021-01.csv'
+    os.system(f'wget {yellow_taxi_url} -O {taxi_csv_name}')  # -O = output to the given file name
     print("Downloading the taxi zone data...")
-    zones_csv_name = 'zones.csv'
-    os.system(f'wget {zones_url} -O {zones_csv_name}')
+    zones_csv_name = 'taxi+_zone_lookup.csv'
+    os.system(f'wget {zones_url} -O {zones_csv_name}')  # -O = output to the given file name
 
     # Add in the timezones first before the long loop
     df_zones = pd.read_csv('taxi+_zone_lookup.csv')
@@ -125,3 +125,21 @@ if __name__ == '__main__':
 
     # Pass them into main
     main(args)
+
+    '''
+    Run in Git Bash with 
+    
+    URL1="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+    URL2="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
+
+    python load_data.py \
+    --user=root \
+    --password=root \
+    --host=localhost \
+    --port=5432 \
+    --database=ny_taxi \
+    --yellow_taxi_table_name=yellow_taxi_data \
+    --yellow_taxi_url=${URL1} \
+    --zones_table_name=zones \
+    --zones_url=${URL2}
+    '''
