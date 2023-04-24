@@ -52,7 +52,9 @@
 - Drop the 2 tables in pgAdmin
 - Run `load_data.py` with all args to recreate them
 - Create a `.bash_profile` file in `C:\Users\[Username]` and add the line `alias python='winpty /c/ProgramData/Miniconda3/python.exe'` to use the right python version in Git Bash
+- Make sure the Docker container for Postgres is running (via `docker run -it` or `docker-compose up`)
 - Run the command
+- Double-check that the tables were remade
 # Docker Compose
 - Docker Compose lets us run multiple containers and link them in a network
 - Docker compose lets us codify the Docker shell commands into a YAML file so that we don't have to remember the correct sequence to run network commands, + all of the flags and environment variables

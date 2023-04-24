@@ -39,21 +39,23 @@ def main(params):
     # ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data', con=engine)
     # print(ddl)
 
+    # Download the data
     print("Downloading the taxi data...")
     taxi_csv_name = 'yellow_tripdata_2021-01.csv'
     os.system(f'wget {yellow_taxi_url} -O {taxi_csv_name}')  # -O = output to the given file name
+
     print("Downloading the taxi zone data...")
     zones_csv_name = 'taxi+_zone_lookup.csv'
     os.system(f'wget {zones_url} -O {zones_csv_name}')  # -O = output to the given file name
 
     # Add in the timezones first before the long loop
-    df_zones = pd.read_csv('taxi+_zone_lookup.csv')
+    df_zones = pd.read_csv(zones_csv_name)
     df_zones.to_sql(name='zones', con=engine, if_exists='replace')
     print('Loaded in time zone data')
 
     print('Loading in taxi data...')
     # chunk dataset into smaller sizes to load into the database
-    df_iter = pd.read_csv('yellow_tripdata_2021-01.csv', iterator=True, chunksize=100000)
+    df_iter = pd.read_csv(taxi_csv_name, compression='gzip', iterator=True, chunksize=100000)
     # return the next item in an iterator with next()
     df = next(df_iter) 
     # print(len(df))
