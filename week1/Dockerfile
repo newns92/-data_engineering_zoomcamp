@@ -1,23 +1,25 @@
 # base image to run from/use -- base it on Python 3.9
 FROM python:3.9 
 
-# command to run
-RUN pip install pandas
+# command to run (Install wget and Python packages)
+RUN apt-get install wget
+RUN pip install pandas sqlalchemy psycopg2
 
 # specify the working directory of where in the image we work with the file below
 WORKDIR /app
 
 # copy pipeline file from current working directory to docker image
-COPY pipeline.py pipeline.py
+COPY load_data.py load_data.py
 
 # override the entry point
 # ENTRYPOINT [ "bash" ]
-ENTRYPOINT [ "python", "pipeline.py" ]
+ENTRYPOINT [ "python", "load_data.py" ]
 
-# build the image with `docker build -t test:pandas .` --> test = img name, pandas = tag
-# run the image with `winpty docker run -it test:pandas`
-# run the python image with `winpty docker run -it test:pandas 2021-01-15`
-# run the python image with more args with `winpty docker run -it test:pandas 2021-01-15 123 hello`
+# build the image with `docker build -t taxi_ingest:v001 .` --> taxi_ingest = img name, v001 = tag
+# run the image in git bash with with 
+# URL1="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+# URL2="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
 
-# kill python with Ctrl+C
+# winpty docker run -it --network=pg-network taxi_ingest:v001     --user=root     --password=root     --host=pgdatabase     --port=5432     --database=ny_taxi     --yellow_taxi_table_name=yellow_taxi_data     --yellow_taxi_url=${URL1}     --zones_table_name=zones     --zones_url=${URL2}
+
 # Kill Docker image with Ctrl+D

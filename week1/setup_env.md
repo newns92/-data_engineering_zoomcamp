@@ -55,6 +55,13 @@
 - Make sure the Docker container for Postgres is running (via `docker run -it` or `docker-compose up`)
 - Run the command
 - Double-check that the tables were remade
+- **Now, to put this into Docker**
+- Add `sqlalchemy` and `psycopg2` to the `pip install pandas` line in `Dockerfile` file
+- Add `RUN apt-get install wget` to the `Dockerfile` file
+- Change all instances of `pipeline.py` to `load_data.py`
+- In `docker-compose.yml`, add the `networks` to each service, then add the `network`
+- Run `docker build -t taxi_ingest:v001 .`
+- Once complete, run the same command as manually running the Python script to ingest data, but via Docker starting with `docker run -it --network=pg-network taxi_ingest:v001`
 # Docker Compose
 - Docker Compose lets us run multiple containers and link them in a network
 - Docker compose lets us codify the Docker shell commands into a YAML file so that we don't have to remember the correct sequence to run network commands, + all of the flags and environment variables
