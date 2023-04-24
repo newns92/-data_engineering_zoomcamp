@@ -1,6 +1,7 @@
 services:
   pgdatabase:
     image: postgres:13
+    # restart: always
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
@@ -11,34 +12,16 @@ services:
       - "5432:5432"
   pgadmin:
     image: dpage/pgadmin4
+    # restart: always
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
       - PGADMIN_DEFAULT_PASSWORD=root
     ports:
       - "8080:80" 
 
-# check for running containers with `docker ps`
-
-# run with `winpty docker run -it [imagename]` => `winpty docker run -it postgres:13`
-
-# Volumes = way of mapping a folder from our file system on the host machine 
-#   to a folder in the container (mounting)
-# - This is making sure our data is still there if we stop running Docker
-# - Because Docker does NOT keep the state
-# - We are mapping/mounting "./ny_taxi_postgres_data" to "/var/lib/postgresql/data"
-# - needs the full path
-
-# Need to specify the port we are mapping from the host machine to one on the container
-
-# -it instructs Docker to allocate a pseudo-TTY connected to the container’s stdin; creating an interactive bash shell in the container
-# set environment variables with `-e` flag
-# set volumes with `-v` flag
-# set port with `-p` flag
-# winpty docker run -it \
-#  -e POSTGRES_USER="root" \
-#  -e POSTGRES_PASSWORD="root" \
-#  -e POSTGRES_DB="ny_taxi" \
-#  -v C://Users//[rest of path]//ny_taxi_postgres_data:/var/lib/postgresql/data:rw \
-#  -p 5432:5432 \
-#  postgres:13
-
+# [winpty] docker-compose up
+# Shut it down with `winpty docker-compose down`
+# Don't need to write the full path for the volumes
+# Docker provides `restart` policies to control whether your containers start automatically when they exit, or when Docker restarts
+#   - These that linked containers are started in the correct order
+# The containers automatically become part of a network, so we don't have to specify it here

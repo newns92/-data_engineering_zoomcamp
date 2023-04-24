@@ -46,8 +46,21 @@
 - Can view data with `SELECT * FROM public.yellow_taxi_data LIMIT 100`
 - Can write the same query by going to "Tools" --> "Query Tool"
 - Next, we will put those two `docker run -it` commands into a single YAML file to run both containters with one terminal via `docker compose`
+# Dockerize Data Load Script
+- See 
 # Docker Compose
-- 
+- Docker Compose lets us run multiple containers and link them in a network
+- Docker compose lets us codify the Docker shell commands into a YAML file so that we don't have to remember the correct sequence to run network commands, + all of the flags and environment variables
+- Create the `docker-compose.yml` file
+    - Don't need to write the full path for the volumes\
+    - Docker provides `restart` policies to control whether your containers start automatically when they exit, or when Docker restarts, and these that linked containers are started in the correct order
+    - The containers automatically become part of a network, so we don't have to specify it here
+- Check that nothing is running with `docker ps`
+- Then run `docker-compose up`
+    - will have to create a new instance of the database server in the browser since we didn't do volumes mappings
+- Or run in detached mode with `docker-compose up -d` to get control of the terminal back once things are spun up
+- Shut it down with `docker-compose down`
+
 # Terraform
 - Install chocolatey
     - Run `Get-ExecutionPolicy` in Windows Powershell. If it returns `Restricted`, then run `Set-ExecutionPolicy AllSigned` or `Set-ExecutionPolicy Bypass -Scope Process`
