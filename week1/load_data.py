@@ -10,7 +10,7 @@ def main(params):
     password = params.password
     host = params.host
     port = params.port
-    db = params.db
+    databasedb = params.database
     yellow_taxi_table_name = params.yellow_taxi_table_name
     yellow_taxi_url = params.yellow_taxi_url
     zones_table_name = params.zones_table_name
@@ -32,7 +32,7 @@ def main(params):
 
     # need to convert this DDL statement into something Postgres will understand
     #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
-    engine = create_engine('postgresql://root:root@localhost:5432/ny_taxi')
+    engine = create_engine('postgresql://{user}:{password}@{host}:{port}/{database}')
 
     # # add in the connection to the DDL statement
     # ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data', con=engine)
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     parser.add_argument('--password', help='Password for Postgres')
     parser.add_argument('--host', help='Host for Postgres')
     parser.add_argument('--port', help='Port for Postgres')
-    parser.add_argument('--db', help='Database name for Postgres')
+    parser.add_argument('--database', help='Database name for Postgres')
     parser.add_argument('--yellow_taxi_table_name', help='Name of table to write the taxi data to')
     parser.add_argument('--yellow_taxi_url', help='URL of the Taxi CSV file')
     parser.add_argument('--zones_table_name', help='Mame of table to write the taxi zones to')
