@@ -60,7 +60,9 @@
     - will have to create a new instance of the database server in the browser since we didn't do volumes mappings
 - Or run in detached mode with `docker-compose up -d` to get control of the terminal back once things are spun up
 - Shut it down with `docker-compose down`
-
+- **To make pgAdmin configuration persistent**, create a folder `data_pgadmin`
+    - Change its permission potentially (on Linux, `sudo chown 5050:5050 data_pgadmin`)
+    - Mount it to the `/var/lib/pgadmin` folder under `volumes` in the `pgadmin1` service in `docker-compose.yml`
 # Terraform
 - Install chocolatey
     - Run `Get-ExecutionPolicy` in Windows Powershell. If it returns `Restricted`, then run `Set-ExecutionPolicy AllSigned` or `Set-ExecutionPolicy Bypass -Scope Process`
