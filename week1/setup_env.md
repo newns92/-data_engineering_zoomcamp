@@ -57,6 +57,7 @@
 - Then run `docker-compose up`
     - will have to create a new instance of the database server in the browser since we didn't do volumes mappings
 - Or run in detached mode with `docker-compose up -d` to get control of the terminal back once things are spun up
+- Open browser and go to `http://localhost:8080/` to see the landing page for pgAdmin
 - Shut it down with `docker-compose down`
 - **To make pgAdmin configuration persistent**, create a folder `data_pgadmin`
     - Change its permission potentially (on Linux, `sudo chown 5050:5050 data_pgadmin`)
@@ -79,8 +80,100 @@
 - Once complete, run the same command as manually running the Python script to ingest data, but via Docker starting with `docker run -it --network=pg-network taxi_ingest:v001`
 # SQL Refresher
 - Run the network via `docker-compose.yml` via `docker-compose up -d` in Git Bash or command prompt
+# GCP 
+- Create account and get the GCP free trial if needed
+- Create a new project and note the Project ID
+- Go to "IAM" (Identity and Access Management) --> Service Accounts
+    - **Service account** = an account with limited permissions that is assigned to a service (ex: a server or VM)
+        - Allows us to create a set of credentials that does not have full access to the owner/admin account
+- Create a service account: "de_zoomcamp_user"
+- Grant access as "Basic" --> "Viewer"
+    - We will fine tune the permissions in a later step
+- We do not need to "grant users access to this service account"
+    - But this is useful in a PROD environment where it may be useful for multiple users to share the same permissions
+- To create a key, click the three dots under "Actions" --> "Manage keys"
+- Click "Add key" --> "Create new key" --> "JSON"
+    - This downloads a *private* key JSON File
+    - Do NOT save it in git
+- Install the Google Cloud CL (https://cloud.google.com/sdk/docs/install-sdk)
+- **If you uncheck bundled Python**:
+    - In Google Cloud SDK Shell, check `python -c "import os, sys; print(os.path.dirname(sys.executable))"` to see where Python is installed
+    - Check the environment variable in Git Bash via `printenv CLOUDSDK_PYTHON`
+    - Use a python (Miniconda) you have installed in a special location via `export CLOUDSDK_PYTHON=C:\ProgramData\Miniconda3\python.exe`
+    - Also attempt to set it up via Environment Variables for User and System
+    - Re-run the SDK installer
+    - Test in Git Bash via `gcloud -h`
+- Set environment variable to point to your downloaded GCP keys via `export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service-account-authkeys>.json"`
+    - This is how we authenticate our other resources (OAuth)
+- Refresh token/session, and verify authentication via `gcloud auth application-default login`
+    - The browser will open up, so choose the right email and then click "Allow" to see the "You are now authenticated with the gcloud CLI!" webpage
+- Next we will set up 2 resources in the Google environment (Google Cloud Storage data lake and BigQuery data warehouse)
+    - Cloud storage is a bucket in our GCP environment where we can store data in flat files
+    - This data lake is where we will store data in a more organized fashion
+    - In our BigQuery data warehouse, our data will be in a more structured format (Fact and Dimension tables)
+- 1st, we will add more permissions to our service account
+    - Click on "IAM" on the left
+    - Click "edit principal" pencil on the right for the user account we just created
+    - Add "Storage Admin" to create and the GCP data lake
+        - Allows us to create and modify buckets and packets (Terraform) and files
+        - In PROD, we'd actually create *custom* roles to limit user access to a particular bucket/certain resources
+            - We'd create separate service accounts for Terraform, for the data pipeline, etc. (In this course we are only making *one* for simplicity's sake)
+    - Add "Storage Object Admin" to add/control things within our bucket/data lake
+    - Add "BigQuery Admin"
+    - Click "Save"
+- Next, we need to enable API's
+    - When the local environment interacts with the cloud enviroment, it does not interact *directly* with the resource
+    - These API's are the form of communication
+    - We have 2 API's for the IAM itself
+        - Click on the 3 bars to the left of "Google Cloud" in the upper-left
+        - Click "API's and Services" --> "Library" --> Search for "Identity and Access Management"
+        - Choose "Identity and Access Management (IAM) API" --> "Enable"
+        - Go back to the library and search for "IAM"
+        - Choose "IAM Service Account Credentials API" (which may already be enabled)
 # Terraform
+- Open source tool for provisioning infrastructure resources
+- Supports DevOps best practices for **change management**
+- **Infrastructure as Code (IaC)** - check in cloud infrastucture configuration to version control
+    - Framework that allows us to build, change, and manage infrastructure in a safe, consistent, and repeatable way by defining resource configurations that you can version, reuse, and share
+    - Can manage infrastructure with `config` files alone rather than via a GUI
+- Advantages
+    - Infrastructure lifecycle management
+    - Version control commits
+    - Very useful for stack-based deployments, and with cloud providers such as AWS, GCP, Azure, K8S…
+    - State-based approach to track resource changes throughout deployments
 - Install chocolatey
     - Run `Get-ExecutionPolicy` in Windows Powershell. If it returns `Restricted`, then run `Set-ExecutionPolicy AllSigned` or `Set-ExecutionPolicy Bypass -Scope Process`
     - Run `Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))`
 - Install with `choco install terraform`
+- Have some required files:
+    - `.teraform-version` = defines the version of Terraform
+    - `main.tf` = defines the resources needed
+    - `variables.tf` = defines runtime arguments that will be passed to Terraform
+        - Default values can be defined in which case a run time argument is not required
+- Execution steps
+    - `terraform init:`
+        - Initializes & configures the backend, installs plugins/providers, & checks out an existing configuration from a version control
+    - `terraform plan:`
+        - Matches/previews local changes against a remote state, and proposes an Execution Plan.
+        - Describes the actions Terraform will take to create an infrastructure that will to match with our configuration
+        - Does not actually create the resources
+    - `terraform apply:`
+        - Asks for approval to the proposed plan from the previous command, and applies changes to the cloud
+        - Actually creates the resources
+    - `terraform destroy`
+        - Removes your stack from the Cloud
+- After getting the requires files, run `terraform init` in the `terraform` directory containing said files
+- Run `ls -la` in Git Bash to see some new files, like `.terraform`, which is like any package installer like `pip`
+- Run `cd .terraform` and run `ls` to see its files
+- Go back with `cd ..` and run `terraform plan`
+- If we did not enter our GCP project ID into `variables.tf`, enter it here when prompted
+    - Or just run `terraform plan -var="project=<your-gcp-project-id>"`
+- Run `terraform apply` and enter the GCP project ID again
+    - Or just run `terraform apply -var="project=<your-gcp-project-id>"`
+- Enter `yes` and should see `Apply complete! Resources: 2 added, 0 changed, 0 destroyed`
+- Go to "Cloud Storage" on the left of the project page in the browser, and should see our new data lake
+- Go to "Big Query" on the left of the project page in the browser, and should see our new instance in the "Explorer" tab on the left
+- Delete this infrastructure after our work as to avoid costs on any running services via `terraform destroy`
+    - If we did not enter our GCP project ID into `variables.tf`, enter it here when prompted
+    - Should see `Destroy complete! Resources: 2 destroyed.`
+    - Afterwards, should see nothing after going to "Cloud Storage" or "BigQuery" on the left-hand side of GCP
