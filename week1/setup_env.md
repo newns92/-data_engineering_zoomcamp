@@ -285,7 +285,7 @@
             - Test with `\dt`
             - Then add port "8080" in VSCode
             - Then open `localhost:8080/` in a browser window, and you should see pgAdmin like before locally
-                - ***GETTING TIMED OUT ERROR HERE 4/26/2023, CHECK LATER**
+                - ***GETTING TIMED OUT ERROR HERE 4/26/2023, CHECK LATER***
             - Install jupyter on the VM via `conda install -c conda-forge notebook`
             - Then add port "8888" in VSCode
             - Run `jupyter notebook` in the GCP Git Bash terminal window, copy the URL, and open it locally in a browswer to see everything
