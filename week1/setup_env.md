@@ -151,16 +151,16 @@
     - `variables.tf` = defines runtime arguments that will be passed to Terraform
         - Default values can be defined in which case a run time argument is not required
 - Execution steps
-    - `terraform init:`
+    - `terraform init`:
         - Initializes & configures the backend, installs plugins/providers, & checks out an existing configuration from a version control
-    - `terraform plan:`
+    - `terraform plan`:
         - Matches/previews local changes against a remote state, and proposes an Execution Plan.
         - Describes the actions Terraform will take to create an infrastructure that will to match with our configuration
         - Does not actually create the resources
-    - `terraform apply:`
+    - `terraform apply`:
         - Asks for approval to the proposed plan from the previous command, and applies changes to the cloud
         - Actually creates the resources
-    - `terraform destroy`
+    - `terraform destroy`:
         - Removes your stack from the Cloud
 - After getting the requires files, run `terraform init` in the `terraform` directory containing said files
 - Run `ls -la` in Git Bash to see some new files, like `.terraform`, which is like any package installer like `pip`
@@ -177,3 +177,152 @@
     - If we did not enter our GCP project ID into `variables.tf`, enter it here when prompted
     - Should see `Destroy complete! Resources: 2 destroyed.`
     - Afterwards, should see nothing after going to "Cloud Storage" or "BigQuery" on the left-hand side of GCP
+# Setting up Environment on GCP
+- Need to generate an SSH key to log into the VM instance that we will create
+- First, create an `.ssh/` directory via `mkdir` in the Git Bash terminal if it doesn't already exist
+- Then use the `ssh-keygen` command with a `-C` flag to create a new SSH key pair
+    - Do this via `ssh-keygen -t rsa -f ~/.ssh/[name for SSH key file] -C [username on the VM] -b 2048`
+    - Enter a passphrase if desired
+    - Should see `gcp` and `gcp.pub` key files via `ls`
+    - **Never** show the private key
+- Next go to "Compute --> "Compute Engine" on the left --> "Settings" --> "Metadata"
+    - Enable the Compute Engine API if prompted
+    - See the SSH Keys tab, click "Add SSH key"
+    - Get the public SSH key in the terminal via `cat gcp.pub` and copy it to the browser, and click "Save" at the bottom
+        - All instances in the project will be able to use this SSH key
+- Go to "Compute --> "Compute Engine" on the left --> "VM instances"
+    - Click "Create an instance"
+    - Name it something, like "de-zoomcamp"
+    - Add relevant time zone
+    - Select the "e2-standard-4 (4vCPU 16 GB memory)" machine
+    - Under "Boot Disk", choose "Ubuntu", "Ubuntu 20.04 LTS" OS, and "30GB" of "balanced persistant disk" storage
+    - Click "Create"
+- The VM should spin up
+    - Copy the external IP to the terminal and SSH into it with the `-i` flag to indicate the private key file
+        - Do this via `ssh -i ~/.ssh/gcp [Username]@[external IP]`
+            - `ssh -i ~/.ssh/gcp nimz@34.130.181.226`
+        - Click "yes" if prompted to continue connecting
+        - Enter the passphrase if used and prompted
+        - Should see `Welcome to Ubuntu 20.04.5 LTS (GNU/Linux 5.15.0-1030-gcp x86_64)` to start
+        - Can check the machine via `htop`
+        - Check that `gcloud` is installed via `gcloud --version`
+        - Exit with Ctrl + D
+- Configure the SSH connection on your local machine for a better experience by, inside of the `.ssh` directory, create a file called `config` via `touch config`, and open it with `code config` and add the following contents:
+    ``` bash 
+    Host de-zoomcamp
+        HostName [External IP]
+        User [Username]
+        IdentityFile C:\[rest of path]\.ssh\gcp
+    ```
+    - Now, in order to connect to the host via SSH ssh, just enter `ssh de-zoomcamp`, rather than use all the additional arguments above
+- To configure the VM instance:
+    - Download the Anaconda installer via `wget https://repo.anaconda.com/archive/Anaconda3-2023.03-1-Linux-x86_64.sh`
+        - Start the install via `bash Anaconda3-2023.03-1-Linux-x86_64.sh`
+        - Accept license agreement and press Enter to begin installation
+        - Enter "yes" when prompoted about `conda init`
+        - When Anaconda is finished, logout and log back in, *or* run `source .bashrc`
+            - Can look at `.bashrc` via `less .bashrc`
+            - This file is executed every time we log into the machine
+        - Should see `(base)` in front of the line in the command prompt
+    - Can optionally install the Fish shell (a Unix shell with a focus on interactivity and usability)
+        - After running the code below, - Can enter via `exec fish` or just `fish`
+        - Can then add `exec fish` to the end of the `.bashrc` file
+        - Exit via Ctrl + D
+    ```bash
+    sudo apt update
+    sudo apt-get install fish
+    curl https://raw.githubusercontent.com/oh-my-fish/oh-my-fish/master/bin/install | fish
+    omf install agnoster
+    ```        
+    - Install Docker via `sudo apt-get update` then `sudo apt-get install docker.io`
+        - Run `sudo groupadd docker` if it doesn't already exist
+        - Then run `sudo gpasswd -a $USER docker` (`$USER` adds current user)
+        - Then `sudo service docker restart` to restart the Docker daemon
+        - Then logout and log back (Ctrl + D) so that we don't have to type `sudo` everytime we use a `docker` command
+        - Test with `docker run hello-world`
+    - Clone the course repo
+        - `git clone https://github.com/newns92/data_engineering_zoomcamp.git`
+    - To configure VSCode to access the VM:
+        - Install the remote extension for VS Code if needed
+        - Connect to the remote host by clicking the little green square in the bottom left corner of VSCode --> "Connect to host" --> select "de-zoomcamp", which should be there due to the config
+        - VSCode should be connected to the GCP VM
+    - Install docker-compose
+        - First, create a directory for storing binary files called `~/bin` via `mkdir bin` and `cd bin/`
+        - Enter `wget https://github.com/docker/compose/releases/download/v2.17.3/docker-compose-linux-x86_64 -O docker-compose` (specifying the output to be `docker-compose` via the `-O` arg)
+            - **NOTE: check for latest version**
+        - Check that `docker-compose` is in `/bin/` via `ls`
+        - Enter `chmod +x docker-compose` to make it executable
+            - Should be green text now after running `ls`
+            - Check the version via `./docker-compose version`
+        - To make `docker-compose` visible from any directory, add it to path by adding `export PATH="${HOME}/bin:${PATH}"` to the `.bashrc` file
+            - **DO THIS OUTSIDE OF FISH SHELL**
+            - `cd` up to the home directory
+            - Open `.bashrc` via `nano .bashrc`
+            - Go to the bottom and add `export PATH="${HOME}/bin:${PATH}"`
+            - Save with Ctrl + O, then Enter
+            - Exit via Ctrl + X 
+            - Run `source .bashrc`
+            - Test with `which docker-compose` and `docker-compose version`
+        - Then, navigate to the directory with our Postgres `docker-compose.yml` file from the cloned repo
+        - Run `docker-compose up -d`
+        - Check that everything is running with `docker ps`
+    - Install pgcli
+        - `cd` back to the home directory, `~`
+        - Run `conda update conda`
+        - Enter `conda install -c conda-forge pgcli` then `pip install -U mycli`
+            - There is some weird error if you only try one of these
+        - Run `pgcli -h localhost -u root -d ny_taxi`, enter password "root"
+        - Should see a new command line, test with `\dt` to list the tables (will be empty right now)
+        - Exit with Ctrl + D
+    - To access the VM Postgres via the local machine
+        - Forward the port from VCSode port forwarding for ports `5432` for postgres and `8080` for pgAdmin
+            - Open a terminal in the SSH VSCode window connected to the VM
+            - Go to the "Ports" tab
+            - Click "Forward a Port"
+            - Enter "5432" in the "Port" column. Now we will be able to access this port from our local machine
+            - In a new Git Bash terminal, *without SSH-ing into the VM*, run `pgcli -h localhost -u root -d ny_taxi`
+            - Might see an "only 3 protocol supported" error, but just hit Enter and you should see the `pgcli` command line
+            - Test with `\dt`
+            - Then add port "8080" in VSCode
+            - Then open `localhost:8080/` in a browser window, and you should see pgAdmin like before locally
+                - ***GETTING TIMED OUT ERROR HERE 4/26/2023, CHECK LATER**
+            - Install jupyter on the VM via `conda install -c conda-forge notebook`
+            - Then add port "8888" in VSCode
+            - Run `jupyter notebook` in the GCP Git Bash terminal window, copy the URL, and open it locally in a browswer to see everything
+            - Download the taxi data to the VM if needed
+            - Run the ingestion script via `python load_data.py` 
+                - **DON'T ACTUALLY DO THIS YET 4/26/2023**
+    - Install Terraform
+        - `cd` to the `~/bin/` directory
+        - Run `wget https://releases.hashicorp.com/terraform/1.4.6/terraform_1.4.6_linux_amd64.zip`
+        - Install `unzip` via `sudo apt-get install unzip`
+        - Then run `unzip terraform_1.4.6_linux_amd64.zip`
+        - Should see it via `ls`
+        - Remove the ZIP via `rm terraform_1.4.6_linux_amd64.zip`
+    - Need that credentials JSON file from earlier in order to run Terraform
+        - Go to the direcotry with the JSON file in a Git Bash terminal (my local User's Documents folder)
+        - Do this with SFTP via:
+        ```bash
+        sftp de-zoomcamp
+        mkdr .gc
+        cd .gc
+        put <path/to/your/service-account-authkeys>.json
+        ```        
+        - Check that it's there via `ls`
+        - Then, in the VM, run `export GOOGLE_APPLICATION_CREDENTIALS=~/.gc/[file name].json`
+        - Then run `gcloud auth activate-service-account --key-file $GOOGLE_APPLICATION_CREDENTIALS` to use this JSON file to authenticate our CLI
+        - Then, `cd` to the `/terraform/` directory in the cloned repo
+        - Then, run the 4 terraform commands `terraform init`, `terraform plan`, `terraform apply`, `terraform destroy`, if desired
+            - Update the `variables.tf` file to automatically use the GCP Project ID if needed
+            ```bash
+            variable "project" {
+            description = "Your GCP Project ID"
+            default = "[actual project ID]"
+            type = string
+            }
+            ```
+            - **Note**: In week 2, we move and rename this file to `~/.google/credentials/google_credentials.json`
+- ***SHUT OFF THE INSTANCE ONCE YOU'RE DONE***
+    - Run `sudo shutdown now` if not stopping via the browser
+    - Check that it's shutdown in the GCP console
+    - When restarting, the external IP may have changed, so update `Host Name` in `.ssh/config`
