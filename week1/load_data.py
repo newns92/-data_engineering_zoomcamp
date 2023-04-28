@@ -119,8 +119,8 @@ if __name__ == '__main__':
     parser.add_argument('--database', help='Database name for Postgres')
     parser.add_argument('--yellow_taxi_table_name', help='Name of table to write the taxi data to')
     parser.add_argument('--yellow_taxi_url', help='URL of the Taxi CSV file')
-    parser.add_argument('--zones_table_name', help='Mame of table to write the taxi zones to')
-    parser.add_argument('--zones_url', help='URl of the Taxi zones data')
+    parser.add_argument('--zones_table_name', help='Name of table to write the taxi zones to')
+    parser.add_argument('--zones_url', help='URL of the Taxi zones data')
 
     # Gather all the args we just made
     args = parser.parse_args()
