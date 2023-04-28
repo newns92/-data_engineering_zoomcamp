@@ -16,6 +16,7 @@ AIRFLOW_HOME = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 PG_HOST = os.getenv('PG_HOST')
 PG_USER = os.getenv('PG_USER')
 PG_PASSWORD = os.getenv('PG_PASSWORD')
+print('PG_PORT:', os.getenv('PG_PORT'))
 PG_PORT = os.getenv('PG_PORT')
 PG_DATABASE = os.getenv('PG_DATABASE')
 
@@ -51,7 +52,7 @@ with local_workflow:
             password=PG_PASSWORD,
             host=PG_HOST,
             port=PG_PORT,
-            db=PG_DATABASE,
+            database=PG_DATABASE,
             yellow_taxi_table_name=TAXI_TABLE_NAME_TEMPLATE,
             yellow_taxi_csv_file=TAXI_OUTPUT_FILE_TEMPLATE,
             zones_table_name=ZONES_TABLE_NAME_TEMPLATE,
