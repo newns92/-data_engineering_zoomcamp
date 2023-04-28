@@ -4,32 +4,8 @@ import time
 import argparse  # for named arguments like user, password, host, port, database, table, file locations, etc.
 import os
 
-def main(params):
-    # Gather the passed in params
-    user = params.user
-    password = params.password
-    host = params.host
-    port = params.port
-    database = params.database
-    yellow_taxi_table_name = params.yellow_taxi_table_name
-    yellow_taxi_url = params.yellow_taxi_url
-    zones_table_name = params.zones_table_name
-    zones_url = params.zones_url    
-
-
+def load_data(user, password, host, port, database, taxi_table_name, taxi_url, zones_table_name, zones_url):
     print('Starting...')
-    # # read in 1st 100 rows of dataset
-    # df = pd.read_csv('yellow_tripdata_2021-01.csv', nrows=100)
-    # # print(df.head())
-
-    # # Convert meter engaged and meter disengaged columns from text to dates
-    # df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-    # df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
-
-    # # Convert the dataframe into a Data Definition Language (DDL) statement to create the SQL table
-    # # ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data')
-    # # print(ddl)
-
     print("Creating the engine...")
     # need to convert this DDL statement into something Postgres will understand
     #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
@@ -42,7 +18,7 @@ def main(params):
     # Download the data
     print("Downloading the taxi data...")
     taxi_csv_name = 'yellow_tripdata_2021-01.csv'
-    os.system(f'wget {yellow_taxi_url} -O {taxi_csv_name}')  # -O = output to the given file name
+    os.system(f'wget {taxi_url} -O {taxi_csv_name}')  # -O = output to the given file name
 
     print("Downloading the taxi zone data...")
     zones_csv_name = 'taxi+_zone_lookup.csv'
@@ -50,11 +26,11 @@ def main(params):
 
     # Add in the timezones first before the long loop
     df_zones = pd.read_csv(zones_csv_name)
-    df_zones.to_sql(name='zones', con=engine, if_exists='replace')
+    df_zones.to_sql(name=zones_table_name, con=engine, if_exists='replace')
     print('Loaded in time zone data')
 
     print('Loading in taxi data...')
-    # chunk dataset into smaller sizes to load into the database
+    # Unzip dataset and chunk dataset into smaller sizes to load into the database
     df_iter = pd.read_csv(taxi_csv_name, compression='gzip', iterator=True, chunksize=100000)
     # return the next item in an iterator with next()
     df = next(df_iter) 
@@ -69,11 +45,11 @@ def main(params):
     # print(header)
 
     # add the column headers to the yellow_taxi_data table in the database connection, and replace the table if it exists
-    header.to_sql(name='yellow_taxi_data', con=engine, if_exists='replace')
+    header.to_sql(name=taxi_table_name, con=engine, if_exists='replace')
 
     # add first chunk of data
     start = time.time()
-    df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
+    df.to_sql(name=taxi_table_name, con=engine, if_exists='append')
     end = time.time()
     print('Time to insert first chunk: in %.3f seconds.' % (end - start))
 
@@ -90,7 +66,7 @@ def main(params):
             df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
             
             # add chunk
-            df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
+            df.to_sql(name=taxi_table_name, con=engine, if_exists='append')
 
             end = time.time()
 
@@ -109,39 +85,14 @@ def main(params):
             continue
 
 if __name__ == '__main__':
-    # Create a new ArgumentParser object to have text to display before the argument help (description)
-    parser = argparse.ArgumentParser(description="Ingest CSV Data to Postgres")
-    # Add all of our arguments
-    parser.add_argument('--user', help='Username for Postgres')
-    parser.add_argument('--password', help='Password for Postgres')
-    parser.add_argument('--host', help='Host for Postgres')
-    parser.add_argument('--port', help='Port for Postgres')
-    parser.add_argument('--database', help='Database name for Postgres')
-    parser.add_argument('--yellow_taxi_table_name', help='Name of table to write the taxi data to')
-    parser.add_argument('--yellow_taxi_url', help='URL of the Taxi CSV file')
-    parser.add_argument('--zones_table_name', help='Name of table to write the taxi zones to')
-    parser.add_argument('--zones_url', help='URL of the Taxi zones data')
+    user = "root"
+    password = "root"
+    host = "localhost"
+    port = "5432"
+    database = "ny_taxi"
+    taxi_table_name = "yellow_taxi_data_2"
+    taxi_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+    zones_table_name = "zones_2"
+    zones_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
 
-    # Gather all the args we just made
-    args = parser.parse_args()
-
-    # Pass them into main
-    main(args)
-
-    '''
-    Run in Git Bash with 
-    
-    URL1="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
-    URL2="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
-
-    python load_data.py \
-    --user=root \
-    --password=root \
-    --host=localhost \
-    --port=5432 \
-    --database=ny_taxi \
-    --yellow_taxi_table_name=yellow_taxi_data \
-    --yellow_taxi_url=${URL1} \
-    --zones_table_name=zones \
-    --zones_url=${URL2}
-    '''
+    load_data(user, password, host, port, database, taxi_table_name, taxi_url, zones_table_name, zones_url)
