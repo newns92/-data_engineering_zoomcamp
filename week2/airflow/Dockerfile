@@ -2,8 +2,8 @@
 # NOTE: First-time build can take up to 10 mins.
 
 # Point to the latest version of Airflow
-# FROM apache/airflow:2.2.3
-FROM apache/airflow:latest
+FROM apache/airflow:2.2.3
+# FROM apache/airflow:latest
 
 # Airflow needs a home. `~/airflow` is the default, but you can put it somewhere else if you prefer (optional)
 ENV AIRFLOW_HOME=/opt/airflow
