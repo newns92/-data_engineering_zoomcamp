@@ -11,7 +11,7 @@
 - Spin up the Postgres database via `docker-compose up -d` in the `week1/` directory
 - Notice that the tables should have been loaded
 
-## Prefect Flow and Scheduler
+## Prefect Flow
 - That was great but, we had to manually trigger this python script via a `python` command
 - Using a **workflow orchestration** tool will allow us to add a **scheduler** so that we won’t have to trigger this script manually
 - Additionally, we’ll get all the functionality that comes with workflow orchestation such as visibility, additional resilience to the dataflow with automatic retries or caching, and more
@@ -37,17 +37,17 @@
         - Do `from prefect.tasks import task_input_hash`, then within the `extract_data()` `@task` decorator, add `cache_key_fn=task_input_hash`
         - Also add a chache expiration within this `@task` decorator via `cache_expiration=timedelta(days=1)`
             - Also `from datetime import timedelta` so this works
-    - Next up is to build a transform task to get rid of those `passenger_count` values of 0
-        - We do:
-        ```bash
-        @task(log_prints=True)
-        def transform_data(df):
-            print(f"pre: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
-            df = df[df['passenger_count'] != 0]
-            print(f"post: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
-            return df
-        ```
-    - Now, to simplify `load_data()`
+- Next up is to build a transform task to get rid of those `passenger_count` values of 0
+    - We do:
+    ```bash
+    @task(log_prints=True)
+    def transform_data(df):
+        print(f"pre: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
+        df = df[df['passenger_count'] != 0]
+        print(f"post: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
+        return df
+    ```
+- Now, to simplify `load_data()`
     ```bash
         @task(log_prints=True, retries=3)
         def load_data(user, password, host, port, database, taxi_table_name, df_taxi, zones_table_name, df_zones):
@@ -68,7 +68,7 @@
 
             # add column headers to yellow_taxi_data table in the database connection, replace table if it exists
             header.to_sql(name=taxi_table_name, con=engine, if_exists='replace')
-            
+
             print('Loading in taxi data...')
             # add first chunk of data
             start = time.time()
@@ -76,8 +76,8 @@
             end = time.time()
             print('Time to insert taxi data: %.3f seconds.' % (end - start))
     ```
-    - We can now add in more things from Prefect, like **parameterization**
-        - We can parameterize the flow to take a table name so that we could change the table name loaded each time the flow was run
+- We can now add in more things from Prefect, like **parameterization**
+    - We can parameterize the flow to take a table name so that we could change the table name loaded each time the flow was run
         ```bash
         def main_flow(taxi_table_name: str, zones_table_name: str):
             user = "root"
@@ -95,9 +95,54 @@
             load_data(user, password, host, port, database, taxi_table_name, 
                     transformed_data_taxi, zones_table_name, transformed_data_zones)
         ```
-    - We could even add a **subflow** (There’s a lot more you can do but here are just a few examples)
+- We could even add a **subflow** (There’s a lot more you can do but here are just a few examples)
+    ```bash
+    @flow(name="Subflow", log_prints=True)
+    def log_subflow(table_name: str):
+        print(f"Logging Subflow for: {table_name}")
+    ```
+- Next, we can spin up the UI
+    - First, in the *Anaconda command prompt* we've been using, run `prefect config set PREFECT_API_URL="http://127.0.0.1:4200/api"`
+    - Then, run `prefect orion start`
+    - In a browser, open up `http://localhost:4200/` to see the Orion UI and see all the flows we have ran in a nice dashboard
+    - A quick navigation lets us dive into the logs of a flow run
+    - Navigate around and you’ll notice on the left-hand side we have Deployments, Work Queues, Blocks, Notifications, and TaskRun Concurrency
+        - You can set a multitude of different notifications for flows
+            - Notifications are important so that we know when something has failed or if is wrong with our system
+            - Instead of having to monitor our dashboard(s) frequently, we can get a notification when something goes wrong and needs to be investigated
+        - Task Run concurrency can be configured on tasks by adding a tag to the task and then setting a limit through a CLI command
+        - **Blocks** are a primitive within Prefect that enables the storage of configuration(s) and provides an interface with interacting with external systems
+            - There are several different types of blocks you can build, and you can even create your own
+            - **Block names are immutable** so they can be *reused* across multiple flows
+                - So you can update credentials in the block without updating multiple sources of code
+            - Blocks can also build upon blocks (like the Postgres connector that we will later build), or be installed as part of Intergration collection which is prebuilt tasks and blocks that are pip installable
+                - For example, a lot of users use the SqlAlchemy
+- Let’s now take our Postgres configuration and store that in a Block
+    - Prefect has multiple different types of collections
+    - Since SQLAlechmy was in our `requirements.txt`, if you don't see "SQLAlchemy Connector" as an available block, do `pip install sqlalchemy`
+    - We are going to utilize this block to modify our flow to avoid hard-coding our user, password, port, and host
+    - First, import the connector with `from prefect_sqlalchemy import SqlAlchemyConnector`
+    - Then, we create the block in the UI
+        - Give it a name "postgres-connector"
+        - Then choose "SyncDriver" --> "postgresql+psycopg2"
+        - Then add in our user, password, port, and host in the specified fields
+    - Go to "Blocks" in the UI on the left, and see the code needed to use it
+    - Then, we edit the `load_data()` function to utilize it
         ```bash
-        @flow(name="Subflow", log_prints=True)
-        def log_subflow(table_name: str):
-            print(f"Logging Subflow for: {table_name}")
+        def load_data(taxi_table_name, df_taxi, zones_table_name, df_zones):
+            # print("Creating the engine...")
+            # need to convert a DDL statement into something Postgres will understand
+            #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+            # engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')
+            connection_block = SqlAlchemyConnector.load("postgres-connector")
+            with connection_block.get_connection(begin=False) as engine:  
+                print('Loading in time zone data...')
+                start = time.time()
+                df_zones.to_sql(name=zones_table_name, con=engine, if_exists='replace')
+                end = time.time()
+                print('Time to insert zone data: %.3f seconds.' % (end - start))
+                ...
         ```
+    - Now run the load script again in a *new Anaconda command prompt* and you should see the flows in the Orion UI
+
+## Prefect and GCP

@@ -6,6 +6,7 @@ import os
 from prefect import flow, task
 from prefect.tasks import task_input_hash
 from datetime import timedelta
+from prefect_sqlalchemy import SqlAlchemyConnector
 
 @task(log_prints=True, retries=3, cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
 def download_data(taxi_url, zones_url):
@@ -52,62 +53,63 @@ def transform_data(df):
     return df
 
 @task(log_prints=True, retries=3)
-def load_data(user, password, host, port, database, taxi_table_name, df_taxi, zones_table_name, df_zones):
+def load_data(taxi_table_name, df_taxi, zones_table_name, df_zones):
     # print("Creating the engine...")
     # need to convert a DDL statement into something Postgres will understand
     #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
-    engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')    
-    
-    print('Loading in time zone data...')
-    start = time.time()
-    df_zones.to_sql(name=zones_table_name, con=engine, if_exists='replace')
-    end = time.time()
-    print('Time to insert zone data: %.3f seconds.' % (end - start))
+    # engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')
+    connection_block = SqlAlchemyConnector.load("postgres-connector")
+    with connection_block.get_connection(begin=False) as engine:  
+        print('Loading in time zone data...')
+        start = time.time()
+        df_zones.to_sql(name=zones_table_name, con=engine, if_exists='replace')
+        end = time.time()
+        print('Time to insert zone data: %.3f seconds.' % (end - start))
 
-    # get the header/column names
-    header = df_taxi.head(n=0)
-    # print(header)
+        # get the header/column names
+        header = df_taxi.head(n=0)
+        # print(header)
 
-    # add column headers to yellow_taxi_data table in the database connection, replace table if it exists
-    header.to_sql(name=taxi_table_name, con=engine, if_exists='replace')
-    
-    print('Loading in taxi data...')
-    # add first chunk of data
-    start = time.time()
-    df_taxi.to_sql(name=taxi_table_name, con=engine, if_exists='append')
-    end = time.time()
-    print('Time to insert taxi data: %.3f seconds.' % (end - start))
+        # add column headers to yellow_taxi_data table in the database connection, replace table if it exists
+        header.to_sql(name=taxi_table_name, con=engine, if_exists='replace')
+        
+        print('Loading in taxi data...')
+        # add first chunk of data
+        start = time.time()
+        df_taxi.to_sql(name=taxi_table_name, con=engine, if_exists='append')
+        end = time.time()
+        print('Time to insert taxi data: %.3f seconds.' % (end - start))
 
-    # def load_chunks(df):
-    #     try:
-    #         print("Loading next taxi data chunk...")
-    #         start = time.time()
+        # def load_chunks(df):
+        #     try:
+        #         print("Loading next taxi data chunk...")
+        #         start = time.time()
 
-    #         # get next chunk
-    #         df = next(df_iter)
+        #         # get next chunk
+        #         df = next(df_iter)
 
-    #         # fix datetimes
-    #         df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-    #         df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
-            
-    #         # add chunk
-    #         df.to_sql(name=taxi_table_name, con=engine, if_exists='append')
+        #         # fix datetimes
+        #         df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+        #         df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+                
+        #         # add chunk
+        #         df.to_sql(name=taxi_table_name, con=engine, if_exists='append')
 
-    #         end = time.time()
+        #         end = time.time()
 
-    #         print('Inserted another taxi data chunk in %.3f seconds.' % (end - start))
+        #         print('Inserted another taxi data chunk in %.3f seconds.' % (end - start))
 
-    #     except:
-    #         # will come to this clause when we throw an error after running out of data chunks
-    #         print('All taxi data chunks loaded.')
-    #         quit()
+        #     except:
+        #         # will come to this clause when we throw an error after running out of data chunks
+        #         print('All taxi data chunks loaded.')
+        #         quit()
 
-    # # insert the rest of the chunks until loop breaks when all data is added
-    # while True:
-    #     if load_chunks(taxi_df):
-    #         break
-    #     else:        
-    #         continue
+        # # insert the rest of the chunks until loop breaks when all data is added
+        # while True:
+        #     if load_chunks(taxi_df):
+        #         break
+        #     else:        
+        #         continue
 
 @flow(name="Subflow", log_prints=True)
 def log_subflow(table_name: str):
@@ -115,11 +117,11 @@ def log_subflow(table_name: str):
 
 @flow(name="Ingest Flow")
 def main_flow(taxi_table_name: str, zones_table_name: str):
-    user = "root"
-    password = "root"
-    host = "localhost"
-    port = "5432"
-    database = "ny_taxi"
+    # user = "root"
+    # password = "root"
+    # host = "localhost"
+    # port = "5432"
+    # database = "ny_taxi"
     # taxi_table_name = taxi_table_name
     taxi_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
     # zones_table_name = zone_table_name
@@ -129,8 +131,7 @@ def main_flow(taxi_table_name: str, zones_table_name: str):
     log_subflow(zones_table_name)
     log_subflow(taxi_table_name)
     transformed_data_taxi, transformed_data_zones = transform_data(raw_data_taxi), raw_data_zones
-    load_data(user, password, host, port, database, taxi_table_name, 
-              transformed_data_taxi, zones_table_name, transformed_data_zones)
+    load_data(taxi_table_name, transformed_data_taxi, zones_table_name, transformed_data_zones)
 
 if __name__ == '__main__':
     main_flow("yellow_taxi_data_2", "zones_2")
