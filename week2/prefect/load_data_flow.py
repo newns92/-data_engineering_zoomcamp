@@ -109,6 +109,10 @@ def load_data(user, password, host, port, database, taxi_table_name, df_taxi, zo
     #     else:        
     #         continue
 
+@flow(name="Subflow", log_prints=True)
+def log_subflow(table_name: str):
+    print(f"Logging Subflow for: {table_name}")
+
 @flow(name="Ingest Flow")
 def main_flow(taxi_table_name: str, zones_table_name: str):
     user = "root"
@@ -122,6 +126,8 @@ def main_flow(taxi_table_name: str, zones_table_name: str):
     zones_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
 
     raw_data_taxi, raw_data_zones = download_data(taxi_url, zones_url)
+    log_subflow(zones_table_name)
+    log_subflow(taxi_table_name)
     transformed_data_taxi, transformed_data_zones = transform_data(raw_data_taxi), raw_data_zones
     load_data(user, password, host, port, database, taxi_table_name, 
               transformed_data_taxi, zones_table_name, transformed_data_zones)

@@ -78,4 +78,26 @@
     ```
     - We can now add in more things from Prefect, like **parameterization**
         - We can parameterize the flow to take a table name so that we could change the table name loaded each time the flow was run
-        - 
+        ```bash
+        def main_flow(taxi_table_name: str, zones_table_name: str):
+            user = "root"
+            password = "root"
+            host = "localhost"
+            port = "5432"
+            database = "ny_taxi"
+            # taxi_table_name = taxi_table_name
+            taxi_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+            # zones_table_name = zone_table_name
+            zones_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
+
+            raw_data_taxi, raw_data_zones = download_data(taxi_url, zones_url)
+            transformed_data_taxi, transformed_data_zones = transform_data(raw_data_taxi), raw_data_zones
+            load_data(user, password, host, port, database, taxi_table_name, 
+                    transformed_data_taxi, zones_table_name, transformed_data_zones)
+        ```
+    - We could even add a **subflow** (There’s a lot more you can do but here are just a few examples)
+        ```bash
+        @flow(name="Subflow", log_prints=True)
+        def log_subflow(table_name: str):
+            print(f"Logging Subflow for: {table_name}")
+        ```
