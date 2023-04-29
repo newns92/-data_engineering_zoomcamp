@@ -9,7 +9,8 @@
 - Install the requirements found in `requirements.txt` via `pip install -r requirements.txt`
 - Check `prefect version`
 - Spin up the Postgres database via `docker-compose up -d` in the `week1/` directory
-- Notice that the tables should have been loaded
+- Run the `load_data.py` file to load in a 2nd copy of the tables
+- Notice that the new tables should have been loaded in the PgAdmin `localhost:8080` web address
 
 ## Prefect Flow
 - That was great but, we had to manually trigger this python script via a `python` command
@@ -154,4 +155,31 @@
     - **Parquet** = a lightweight way to save data frames in a *column-oriented format* (each column (field) of a record is stored with others of its kind)
         - Uses efficient data compression and encoding schemes for fast data storing and retrieval
         - Parquet with `gzip` compression (for storage) is slightly faster to export than just CSV (if the CSV needs to be zipped, then parquet is much faster), importing is about 2X times faster than CSV, and compression is ~22% of the original file size, about the same as zipped CSV files
-- 
+- After finishing up `etl_web_to_gcs.py` in the `de_zoomcamp/week2/gcp` directory, create a new GCS bucket via "Cloud Storage" --> "Buckets" in our GCP project
+- Name the bucket `prefect-[your project id]` and leave all other options as default, and create it
+- Go to the Orion webserver UI and go to "Blocks" (Should see that SQLAlchemy `postgres-connector` from earlier)
+    - Again, a **block** is a primitive within Prefect that enables the storage of configuration(s) in order to reuse them and provides an interface with interacting with external systems
+- We will register a GCS block from the `prefect_gcp` Python module
+    - To do so, in the Anaconda command prompt with the `zoom` environment activated, run `prefect block register -m prefect_gcp`
+        - `-m` = module
+    - Should see `Successfully registered 6 blocks` as a return statement with a table of said blocks, and we can see them at `http://127.0.0.1:4200/blocks/catalog`
+    - In the cataloguem, add a GCS Bucket block, name it `zoom-gcs`, and enter your GCS Bucket name in the specified field
+    - Note the option to create GCP credentials, which is a great way to store configurations and collaborate with others if using Prefect Cloud or hosting an Orion server so that others can use them
+    - You *could* make a Bucket accessible to anyone, **but in reality, that's not a good idea**
+    - Click the "+" next to "GCP credentials (optional)" and we will create a service account credential
+        - Add in the block name `zoom-gcp-creds`
+        - Then, we have to give it some service account file, or the data/info within some service account file directly
+        - Back in GCS, go to "IAM" --> "Service Account"
+        - Start to create a new one, name it `zoom-de-service-acct`
+        - Give it the "BigQuery Admin" and "Storage Admin" roles
+        - Then hit "Done"
+        - After making this service account, we need to give it some **keys**
+        - So, go to "Actions" to the far right of the account, and click "Manage keys"
+        - Click "Add key" --> "Create new key", and select JSON
+        - Save the resulting file ***locally***, and either upload it to the Block, or add in its contents
+        - Click "create" to create the GCP credentials for the block
+- Back in the GCS Block creation screen, get `zoom-gcp-creds` from the drop-down, then click "Create"
+- We now see code that we can copy into `python etl_web_to_gcs.py` in order to use our new block
+    - We edit this to `gcs_block = GcsBucket.load(bucket='zoom_gcs')`
+- Once done writing it, run the flow via `python etl_web_to_gcs.py`
+- Should see the completed flow in the terminal and in Orion, as well as the new directory containing the data in our GCS Bucket

@@ -37,6 +37,7 @@ def write_local(df: pd.DataFrame, color, file: str) -> Path:
     path = Path(f'data/{color}/{file}.parquet')
 
     # create the data directory if it does not exist
+    # https://stackoverflow.com/questions/23793987/write-a-file-to-a-directory-that-doesnt-exist
     os.makedirs(os.path.dirname(path), exist_ok=True)
     
     # convert the DataFrame to a zipped parquet file and save to specified location
@@ -48,11 +49,15 @@ def write_local(df: pd.DataFrame, color, file: str) -> Path:
 @task(log_prints=True, retries=3)
 def write_gcs(path: Path) -> None:
     '''Upload a local parquet file to GCS'''
-    # Create the GCS Prefect block
-    gcs_block = GcsBucket.load('zoom_gcs')
+    # Connect to the GCS Prefect block that we created
+    gcs_block = GcsBucket.load('zoom-gcs')
     
-    #
+    # Use our block to upload the file
     gcs_block.upload_from_path(from_path=path, to_path=path)
+    # from_path (required) = the path to the file to upload from
+    # to_path (optional) = The path to upload the file to
+    #   - If not provided, will use the file name of from_path
+    #   - This gets prefixed with the `bucket_folder`
 
     return
 
@@ -74,8 +79,8 @@ def etl_web_to_gcs() -> None:  # at first takes no args, will change this in the
     df = extract(dataset_url)
     df = transform(df) 
     path = write_local(df, color, dataset_file)
+    write_gcs(path)
     
-
 
 if __name__ == '__main__'   :
     etl_web_to_gcs()
