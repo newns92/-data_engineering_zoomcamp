@@ -146,3 +146,12 @@
     - Now run the load script again in a *new Anaconda command prompt* and you should see the flows in the Orion UI
 
 ## Prefect and GCP
+- Now to bring some ETL into GCP
+- Open a Git bash terminal to run the Prefect Orion server, and an Anaconda prompt in the `zoom` conda environment
+- Run `prefect orion start` in the Anaconda prompt and go to `http://localhost:4200/` to see the Orion UI and our previously-ran flows
+- In a new `etl_web_to_gcs.py` file, we will define a new main **flow function** that will call a bunch of **task functions**
+- It will download the yellow taxi data, do some cleaning, and save it to a **parquet** file in our GCS data lake
+    - **Parquet** = a lightweight way to save data frames in a *column-oriented format* (each column (field) of a record is stored with others of its kind)
+        - Uses efficient data compression and encoding schemes for fast data storing and retrieval
+        - Parquet with `gzip` compression (for storage) is slightly faster to export than just CSV (if the CSV needs to be zipped, then parquet is much faster), importing is about 2X times faster than CSV, and compression is ~22% of the original file size, about the same as zipped CSV files
+- 
