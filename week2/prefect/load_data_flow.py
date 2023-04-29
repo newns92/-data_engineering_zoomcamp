@@ -110,15 +110,15 @@ def load_data(user, password, host, port, database, taxi_table_name, df_taxi, zo
     #         continue
 
 @flow(name="Ingest Flow")
-def main_flow():
+def main_flow(taxi_table_name: str, zones_table_name: str):
     user = "root"
     password = "root"
     host = "localhost"
     port = "5432"
     database = "ny_taxi"
-    taxi_table_name = "yellow_taxi_data_2"
+    # taxi_table_name = taxi_table_name
     taxi_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
-    zones_table_name = "zones_2"
+    # zones_table_name = zone_table_name
     zones_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
 
     raw_data_taxi, raw_data_zones = download_data(taxi_url, zones_url)
@@ -127,4 +127,4 @@ def main_flow():
               transformed_data_taxi, zones_table_name, transformed_data_zones)
 
 if __name__ == '__main__':
-    main_flow()
+    main_flow("yellow_taxi_data_2", "zones_2")

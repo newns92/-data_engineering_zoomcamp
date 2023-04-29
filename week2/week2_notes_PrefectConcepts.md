@@ -57,14 +57,16 @@
             engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')    
             
             print('Loading in time zone data...')
+            start = time.time()
             df_zones.to_sql(name=zones_table_name, con=engine, if_exists='replace')
-            print('Loaded in time zone data')
+            end = time.time()
+            print('Time to insert zone data: %.3f seconds.' % (end - start))
 
             # get the header/column names
             header = df_taxi.head(n=0)
             # print(header)
 
-            # add column headers to yellow_taxi_data table in the database connection, replace the table if it exists
+            # add column headers to yellow_taxi_data table in the database connection, replace table if it exists
             header.to_sql(name=taxi_table_name, con=engine, if_exists='replace')
             
             print('Loading in taxi data...')
@@ -72,5 +74,8 @@
             start = time.time()
             df_taxi.to_sql(name=taxi_table_name, con=engine, if_exists='append')
             end = time.time()
-            print('Time to insert first taxi data chunk: in %.3f seconds.' % (end - start))
+            print('Time to insert taxi data: %.3f seconds.' % (end - start))
     ```
+    - We can now add in more things from Prefect, like **parameterization**
+        - We can parameterize the flow to take a table name so that we could change the table name loaded each time the flow was run
+        - 
