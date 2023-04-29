@@ -48,3 +48,29 @@
             return df
         ```
     - Now, to simplify `load_data()`
+    ```bash
+        @task(log_prints=True, retries=3)
+        def load_data(user, password, host, port, database, taxi_table_name, df_taxi, zones_table_name, df_zones):
+            # print("Creating the engine...")
+            # need to convert a DDL statement into something Postgres will understand
+            #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+            engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')    
+            
+            print('Loading in time zone data...')
+            df_zones.to_sql(name=zones_table_name, con=engine, if_exists='replace')
+            print('Loaded in time zone data')
+
+            # get the header/column names
+            header = df_taxi.head(n=0)
+            # print(header)
+
+            # add column headers to yellow_taxi_data table in the database connection, replace the table if it exists
+            header.to_sql(name=taxi_table_name, con=engine, if_exists='replace')
+            
+            print('Loading in taxi data...')
+            # add first chunk of data
+            start = time.time()
+            df_taxi.to_sql(name=taxi_table_name, con=engine, if_exists='append')
+            end = time.time()
+            print('Time to insert first taxi data chunk: in %.3f seconds.' % (end - start))
+    ```

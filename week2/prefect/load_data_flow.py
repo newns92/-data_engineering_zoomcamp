@@ -29,9 +29,9 @@ def download_data(taxi_url, zones_url):
     # print('Loaded in time zone data')
     
     # Unzip dataset and chunk dataset into smaller sizes to load into the database
-    df_iter = pd.read_csv(taxi_csv_name, compression='gzip', iterator=True, chunksize=100000)
+    df = pd.read_csv(taxi_csv_name, compression='gzip') #, iterator=True, chunksize=100000)
     # return the next item in an iterator with next()
-    df = next(df_iter) 
+    # df = next(df_iter) 
     # print(len(df))
 
     # Convert meter engaged and meter disengaged columns from text to dates
@@ -59,14 +59,16 @@ def load_data(user, password, host, port, database, taxi_table_name, df_taxi, zo
     engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')    
     
     print('Loading in time zone data...')
+    start = time.time()
     df_zones.to_sql(name=zones_table_name, con=engine, if_exists='replace')
-    print('Loaded in time zone data')
+    end = time.time()
+    print('Time to insert zone data: %.3f seconds.' % (end - start))
 
     # get the header/column names
     header = df_taxi.head(n=0)
     # print(header)
 
-    # add the column headers to the yellow_taxi_data table in the database connection, and replace the table if it exists
+    # add column headers to yellow_taxi_data table in the database connection, replace table if it exists
     header.to_sql(name=taxi_table_name, con=engine, if_exists='replace')
     
     print('Loading in taxi data...')
@@ -74,7 +76,7 @@ def load_data(user, password, host, port, database, taxi_table_name, df_taxi, zo
     start = time.time()
     df_taxi.to_sql(name=taxi_table_name, con=engine, if_exists='append')
     end = time.time()
-    print('Time to insert first taxi data chunk: in %.3f seconds.' % (end - start))
+    print('Time to insert taxi data: %.3f seconds.' % (end - start))
 
     # def load_chunks(df):
     #     try:
