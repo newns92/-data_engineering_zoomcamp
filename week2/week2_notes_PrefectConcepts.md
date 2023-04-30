@@ -40,14 +40,14 @@
             - Also `from datetime import timedelta` so this works
 - Next up is to build a transform task to get rid of those `passenger_count` values of 0
     - We do:
-    ```bash
-    @task(log_prints=True)
-    def transform_data(df):
-        print(f"pre: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
-        df = df[df['passenger_count'] != 0]
-        print(f"post: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
-        return df
-    ```
+        ```bash
+        @task(log_prints=True)
+        def transform_data(df):
+            print(f"pre: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
+            df = df[df['passenger_count'] != 0]
+            print(f"post: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
+            return df
+        ```
 - Now, to simplify `load_data()`
     ```bash
         @task(log_prints=True, retries=3)
@@ -266,3 +266,53 @@
 
 ## Schedules & Docker Storage with Infrastructure
 - Now, we will schedule flows and run them in Docker containers
+- We have out Parameterized ETL deployment, and if we click on it in the Orion UI, we can see a "Schedule" option on the far right
+    - Click "Add" to see the 3 types of schedules (intervals, Cron jobs, or Recurring Rule (or RRule))
+        - RRule is a bit complicated to run in this UI
+    - We could say, make it run every 5 minutes from the start date, and that will run so long as there is an agent to pick it up
+- We can build a deployment for the `etl_parent_flow` flow named "etl2" with a specified schedule type (like `--cron`)from the (Anaconda `zoom` environment) CLI by, in the directory where `parameterized_flow.py` is located, running `prefect deployment build ./parameterized_flow.py:etl_parent_flow -n etl2 --cron "0 0 * * *" -a`, where `-a` is to apply the schedule
+    - This cron text `"0 0 * * *" ` specifies to run every day at midnight
+    - ***This creates a new `etl_parent_flow-deployment.yaml` file***
+- This should successfully complete (green text in the CLI), and you should see it under "Deployments" in the Orion UI
+- Toggle off/pause both of the current deployments that we have
+- In a CLI, you can see how to build a deployment via `prefect deployment build --help`
+- We can also set a schedule via the CLI *after* we've built the deployment with `--set-schedule` arguement
+- So, schedules are easy to setup via the Orion UI or the CLI, and as long as there's an agent to pick them up and the Orion server or we're connected to Prefect Cloud (always running) , deployements will run as scheduled
+- Now to run the flows in Docker containers
+    - We've been running flows locally, but to have things running in a more production-like-setting way and to let other people have access to our flow code, we *could* put it up on some version control site like GitHub or BitBucket, or in S3 or GCS or Azure.
+    - But we will store it in a **Docker image**, put it on DockerHub, and then when we run a Docker container, the code will be right there (we're baking it right into the image)
+    - There's various ways to run Docker containers, but it's nice to bake in the code that we want *along* with some other things (like what pip packages to install, for example) into the image
+    - First, make a `Dockerfile` in `week2/docker`, and once done, in the `week2/docker` dir, build the image via `docker image build -t [Dockerhub username]/prefect:zoom .`, where `-t` is how we tag the image, and we put the image in our account on Dockerhub tagged as `prefect:zoom`, and the `.` lets Docker know to use the local `Dockerfile`
+    - Once we've successfully built the image, we need to push it to Dockerhub (*make sure you're logged in*)
+    - Do this via `docker image push [Dockerhub username]/prefect:zoom`, and once it completes successfully, you should see the image at `https://hub.docker.com/r/[username]/prefect`
+    - Next, we need to make a Docker Prefect block to use when we specify our deployment
+    - In the Orion UI, go to "Blocks" and add a "Docker Container" block, name it "zoom"
+        - We *could* put in some environment variables like pip packages, but it's quicker and easier to bake that into the image in the Dockerfile
+    - Under "Image (Optional)", add in your Docker image `[Dockerhub username]/prefect:zoom`, and set "ImagePullPolicy" to "ALWAYS" so that we're always pulling the latest image
+    - Set "Auto Remove (Optional)" to "True" to help keep things tidy (removes the container on completion), and finally click "Create"
+    - See some code that we will use in our deployment:
+        ```bash
+        from prefect.infrastructure.docker import DockerContainer
+
+        docker_container_block = DockerContainer.load("zoom")
+        ```
+    - *Can use `make_docker_block.py` to make the Docker Prefect block as well*
+    - In the `week2/docker` dir, run `python docker_deploy.py`, and once it's done, you should see `etl-parent-flow/docker-flow` in your Deployments on the Orion UI
+- Back to Prefect...
+    - Running `prefect profile ls`, we'll see the Prefect profile we're using, which right now should be `*default`, which was installed with Prefect
+    - Now, we want to make sure we now, instead of using the local, ephermeral API, that we use a specific API endpoint at a specific URL
+    - We do this via `prefect config set PREFECT_API_URL="http://127.0.0.1:4200/api"` to allow the Docker container to interact with the Orion server
+        - Could set other API URL's here, like if using Prefect Cloud
+    - Start up an agent via `prefect agent start -q default` to look for work in the default work queue
+    - Once that agent is running, we can run our flow in a separate Anaconda `zoom` environment (or in the Orion UI)
+    - In the CLI, run `prefect deployment run etl-parent-flow/docker-flow -p "months=[1, 2]"`
+        - With `-p`, we override the default parameters to run this flow for 
+    - This will *not* run in our local machine/process in a subprocess, but instead will run in a Docker container
+        - Should see this in the agent CLI logs and in the Orion UI
+            - *Might have to hit some key in the agent CLI to get it running (?)*
+        - In the Orion UI, go to Deployments and click on "docker-flow", and go to the "Runs" tab
+        - Click on the current run for the deployment that we just started
+        - Can watch the logs in real-time, as well as see the subflow runs and the parameters (which we changed)
+            - Can also view the subflows and their specific logs, task runs, subflows, and parameters under "Flow Runs" in the Orion UI
+        - Can then check the GCS Bucket that we've created earlier, and we should see the `data` dir, the `yellow` subdir, and the *two* parquet files
+    - 
