@@ -206,3 +206,63 @@
      - Instead of runnning this for one month at a time, we will make a **parent flow** that will pass parameters to the ETL flow and we will set some defaults
      - This way, we're able to loop over a list of months and run the ETL pipeline for each dataset
         - i.e., Triggering this flow 3 times for 3 different months to get 3 instances of our single ETL flow all from one parent flow
+- So far, we've only been triggering flow runs via a terminal window
+- Next, we want to utilize a **deployment** inside Prefect
+    - https://docs.prefect.io/latest/concepts/deployments/
+    - A **deployment** in Prefect = a server-side concept/component that *encapsulates* a flow, allowing it to be **scheduled and triggered via the API**
+    - Using a deployment, we can have our flow code and a **deployment definition** which we send over to the Prefect API    
+        - We can think of it as the container of metadata needed for the flow to be scheduled
+            - This might be what type of infrastructure the flow will run on (Kubernetes, Docker, etc.), or where the flow code is stored (locally, GitHub, Docker, an S3 bucket), maybe it’s scheduled or has certain parameters, etc.
+    - A single flow can have *multiple* deployments    
+    - There are 2 ways to create a deployment 
+        - 1. Using a CLI command (https://docs.prefect.io/latest/concepts/deployments/#create-a-deployment-on-the-cli) 
+        - 2. With Python (https://docs.prefect.io/latest/concepts/deployments/#create-a-deployment-from-a-python-object)
+- First, we will create a deployment via the CLI
+    - In the Anaconda terminal, run `prefect deployment build ./parameterized_flow.py:etl_parent_flow -n "Parameterized ETL"`
+        - The format is `prefect deployment build [file name]:[parent flow name/entrypoint to the flow] -n "Parameterized ETL"`
+    - See that this creates a new `.prefectignore` file and a new YAML file with all of our details
+        - *This* is the metadata 
+        - We can adjust parameters here *or* in the UI after we **apply**
+        - But let’s just do it here in the CLI
+    - Edit the YAML file with `parameters: {"color": "yellow", "months" :[1, 2, 3], "year": 2021}`
+    - Then, apply the deployment in the Anaconda terminal via `prefect deployment apply etl_parent_flow-deployment.yaml`
+        - This tells the CLI to send all the metadata to the Prefect API to let it know we're scheduling/orchestrating this specific flow and how to orchestrate it
+    - Once that finishes successfully, we should see the deployment at `http://127.0.0.1:4200/deployments`, as well as seeing a message saying that if we want to execute **flow runs** from this deployment, then we need to start an **agent** that pulls work from the 'default' work queue via `prefect agent start -q 'default'`
+    - Back in the UI, we see that the deployment is "on" on the far right, as well as a hamburger menu (three dots) that let us trigger a flow run
+    - Entering the flow by clicking on "Parameterized ETL" we could add a description if it wasn't specified in the YAML already (which it was (via the Python docstring???))
+        - If we edit the description, we can give it a **work queue** or a **tag**, add a schedule, or change the default parameters
+    - After exiting the description edit window, we can see that we can access the Runs of this deployment, as well as the parameters
+    - On the top right, we see "Run"
+        - "Quick Run" is just an instance of the default flow
+        - "Custom run" is where we can customize the parameters for each individual run
+    - Trigger a Quick Run, and notice on the bottom of the screen that we can click "View run"
+    - We note that this is in a "scheduled" state (at the top of the screen in yellow)
+    - The reason it is in this state is that Prefect knows that it is ready to run, *but we have no **agent** picking up this run!!*
+        - i.e., We are now using the API to trigger and schedule flow runs with this deployment instead of manually, and we need to have an **agent** living in our execution environment (local)
+    - Go to "Work Queues" on the far left
+        - **Work queues** and **agents** are concepts in Prefect where an **agent** is a very lightweight Python process living in your execution environment (which right now, is our local machine)
+        - That agent is pulling from a **work queue**, of which we can have many, and we can pause them as well
+        - A deployment specifies where we want a flow to run by sending it to the work queue
+            - Going back to "Deployments" on the far left, we can click on "Parameterized ETL" and see which work queue it is in on the far right
+        - These are great especially if we want to run some flows locally, some on certain servers, or we have a cloud deployment as well (so we'd set up an agent on that cloud deployment, say in Kubernetes)
+            - i.e., We can dictate what work goes where
+    - Go back "Work Queues" on the left if need be, and enter the "default" work queue
+        - Should see that this deployment/our upcoming run is "late"
+        - Should see "Work queue is ready to go!" at the top along with some code to start an agent: `prefect agent start  --work-queue "default"`
+        - Enter this code into the Anaconda terminal to start the agent
+        - Notice this agent starts running the flow immediately, triggering it via a deployment with an agent
+        - Should see the parent flow and all (3) sub-flows in the "Flow runs" menu in the Orion UI
+    - Whether this would succeed or fail, we should set up some **notification** via the "Notifications" tab on the far-left
+        - Now that we can trigger flow runs through deployments (setting them on a schedule and use an agent to orchestrate where in the execution environment they're going to run) instead of doing it manually, we want to set up notifications
+        - In the Orion server UI, we want to create a new notification
+            - These are based on the **states**
+                - "Crash" indicates something is wrong with your infrastructure, not the flow itself
+            - Choose the "failed" state
+                - Could specify this for certain **tags** that we could've set for the flow/deployment
+                - We can choose different **webhooks** to be notified by
+        - Can also set notifications outside of the Orion UI, such as hard coding it via blocks or **collections** or something like that
+        - Once a notification is set, we can turn them on/off
+- Next, we'll do schedules and Docker storage with infrastructure
+
+## Schedules & Docker Storage with Infrastructure
+- Now, we will schedule flows and run them in Docker containers
