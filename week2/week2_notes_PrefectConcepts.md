@@ -184,3 +184,15 @@
 - Once done writing it, run the flow via `python etl_web_to_gcs.py`
 - Should see the completed flow in the terminal and in Orion, as well as the new directory containing the data in our GCS Bucket
 - Next, we will take this data from this GCS Bucket and move it into a BigQuery data warehouse (or data lake)
+- Once almost done writing `python etl_gcs_to_bq.py`, go to the GCP console, and go to "BigQuery" on the left
+    - Click "Add" on the top left and choose "Google Cloud Storage"
+    - To the right of "Select file from GCS bucket or use a URI pattern", click "Browse"
+    - Click the arrow to the right of your bucket to see the parquet file, and select said file
+    - Make sure "File format" is "parquet"
+    - Then, under "Destination", create a new dataset called `de_zoomcamp`, and name the table `rides`, then click "Create table" at the bottom
+    - Once it's done, you should see the project ID on the left in the Explorer, which we can expand to see our dataset, which we can expand to see our table
+    - Double-click on the table to see the Schema
+    - Then, from "Query" at the top, open a new tab, and drop the data in the table via ```TRUNCATE TABLE `[project ID].de_zoomcamp.rides` ```
+    - Enter in the required arguments to `df.to_gbq()`
+- Run `python etl_gcs_to_bq.py`
+- Once the Prefect flow completes, check that we have data in a BigQuery Query tab/window via ```SELECT * FROM `[project ID].de_zoomcamp.rides` ``` or ```SELECT COUNT(*) FROM `[project ID].de_zoomcamp.rides` ```

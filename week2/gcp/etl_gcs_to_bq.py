@@ -34,42 +34,29 @@ def transform(path: Path) -> pd.DataFrame: # typehints (: Path), returning Panda
 
     # remove the trips with 0 passengers
     print(f"Pre: Missing passenger count: {df.passenger_count.isna().sum()}")
-    df["passenger_count"].fillna(0, inplace=True)
+    df.passenger_count.fillna(0, inplace=True)
     print(f"Post: Missing passenger count: {df.passenger_count.isna().sum()}")
 
     return df
 
 
-# @task(log_prints=True, retries=3)
-# def write_local(df: pd.DataFrame, color, file: str) -> Path:
-#     '''Write DataFrame out locally as parquet file'''
-#     # create the path of where to store the parquet file
-#     path = Path(f'data/{color}/{file}.parquet')
-
-#     # create the data directory if it does not exist
-#     # https://stackoverflow.com/questions/23793987/write-a-file-to-a-directory-that-doesnt-exist
-#     os.makedirs(os.path.dirname(path), exist_ok=True)
+@task(log_prints=True, retries=3)
+def write_bq(df: pd.DataFrame) -> None:
+    '''Writes a Pandas DataFrame to BigQuery'''
+    # Connect to our credentials block
+    gcp_credentials_block = GcpCredentials.load('zoom-gcp-creds')
     
-#     # convert the DataFrame to a zipped parquet file and save to specified location
-#     df.to_parquet(path, compression='gzip')
+    # Pandas has a .to_bgq() function to write to BigQuery table
+    df.to_gbq(
+        destination_table='de_zoomcamp.rides', # Name of table to be written in form: dataset.tablename
+        project_id='de-zoomcamp-384821', # Google Cloud project ID
+        # Use Prefect helper method to serialize credentials by using service_account_file/service_account_info
+        credentials=gcp_credentials_block.get_credentials_from_service_account(), # Credentials for accessing Google APIs
+        chunksize=500_000, # Number of rows to be inserted in each chunk from the dataframe
+        if_exists='append' # If table exists, insert data. Create if does not exist
+    )
 
-#     return path
-
-
-# @task(log_prints=True, retries=3)
-# def write_gcs(path: Path) -> None:
-#     '''Upload a local parquet file to GCS'''
-#     # Connect to the GCS Prefect block that we created
-#     gcs_block = GcsBucket.load('zoom-gcs')
-    
-#     # Use our block to upload the file
-#     gcs_block.upload_from_path(from_path=path, to_path=path)
-#     # from_path (required) = the path to the file to upload from
-#     # to_path (optional) = The path to upload the file to
-#     #   - If not provided, will use the file name of from_path
-#     #   - This gets prefixed with the `bucket_folder`
-
-#     return
+    return
 
 
 # Make a flow
@@ -86,8 +73,7 @@ def etl_gcs_to_bq() -> None:  # at first takes no args, will change this in the 
     #   load the data locally *and* to GCS as a parquet file
     path = extract(color, year, month)
     df = transform(path) 
-    # path = write_local(df, color, dataset_file)
-    # write_gcs(path)
+    write_bq(df)
     
 
 if __name__ == '__main__'   :
