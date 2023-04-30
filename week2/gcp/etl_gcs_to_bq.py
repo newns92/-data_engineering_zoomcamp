@@ -1,12 +1,11 @@
 from pathlib import Path
 import pandas as pd
 from prefect import flow, task
+# https://prefecthq.github.io/prefect-gcp/
 # below is how we access our data in our GCS data lake/bucket via a reusable **block**
 from prefect_gcp.cloud_storage import GcsBucket
 # below is the block we made with our service account permissions for our Bucket and BigQuery
 from prefect_gcp import GcpCredentials
-# for creating the data directory if it does not exist
-import os, os.path
 
 
 @task(log_prints=True, retries=3)
@@ -27,19 +26,18 @@ def extract(color: str, year: int, month: int) -> Path:  # using typehints (: st
     return Path(gcs_path)
 
 
-# @task(log_prints=True, retries=3)
-# def transform(df: pd.DataFrame) -> pd.DataFrame: # typehints (: pd.DataFrame), returning Pandas dataframe
-#     '''Fix datatype issues'''
-#     # fix datetimes
-#     df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-#     df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+@task(log_prints=True, retries=3)
+def transform(path: Path) -> pd.DataFrame: # typehints (: Path), returning Pandas dataframe
+    '''Removes trips with 0 passengers, which is invalid'''
+    # read the data in a DataFrame
+    df = pd.read_parquet(path)
 
-#     # Print some stuff
-#     print(df.head(2))
-#     print(f"\nColumns:\n{df.dtypes}")
-#     print(f"Number of rows: {len(df)}")
+    # remove the trips with 0 passengers
+    print(f"Pre: Missing passenger count: {df.passenger_count.isna().sum()}")
+    df["passenger_count"].fillna(0, inplace=True)
+    print(f"Post: Missing passenger count: {df.passenger_count.isna().sum()}")
 
-#     return df
+    return df
 
 
 # @task(log_prints=True, retries=3)
@@ -87,7 +85,7 @@ def etl_gcs_to_bq() -> None:  # at first takes no args, will change this in the 
     # call Task functions to download (extract), clean (transform), and 
     #   load the data locally *and* to GCS as a parquet file
     path = extract(color, year, month)
-    # df = transform(df) 
+    df = transform(path) 
     # path = write_local(df, color, dataset_file)
     # write_gcs(path)
     
