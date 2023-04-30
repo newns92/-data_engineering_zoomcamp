@@ -1,6 +1,9 @@
 from pathlib import Path
 import pandas as pd
 from prefect import flow, task
+# for caching
+from prefect.tasks import task_input_hash
+from datetime import timedelta
 # https://prefecthq.github.io/prefect-gcp/
 # below is how we access our data in our GCS data lake/bucket via a reusable **block**
 from prefect_gcp.cloud_storage import GcsBucket
@@ -8,7 +11,7 @@ from prefect_gcp.cloud_storage import GcsBucket
 from prefect_gcp import GcpCredentials
 
 
-@task(log_prints=True, retries=3)
+@task(log_prints=True, retries=3, cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
 def extract(color: str, year: int, month: int) -> Path:  # using typehints (: str), returning a Path
     '''Read taxi data from a GCS Bucket into file locally'''
     # Create the name of the path that's in the GCS Bucket

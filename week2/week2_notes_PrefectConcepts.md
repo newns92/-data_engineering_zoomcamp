@@ -196,3 +196,13 @@
     - Enter in the required arguments to `df.to_gbq()`
 - Run `python etl_gcs_to_bq.py`
 - Once the Prefect flow completes, check that we have data in a BigQuery Query tab/window via ```SELECT * FROM `[project ID].de_zoomcamp.rides` ``` or ```SELECT COUNT(*) FROM `[project ID].de_zoomcamp.rides` ```
+
+## Parametrizing Flow & Deployments
+- Next, we add Parameterization to our flows and create deployments by expanding upon `etl_web_to_gsc.py`
+- This is building upon the existing flow and blocks that we have configured prior
+- We are allowing our flows to take in parameters, so that when we schedule these flows, values aren't hard-coded (`color`, `month`, and `year` are passed at runtime)
+- This allows multiple **flow runs** (instances of a flow) with different parameters
+- We will also utilize **sub-flows**
+     - Instead of runnning this for one month at a time, we will make a **parent flow** that will pass parameters to the ETL flow and we will set some defaults
+     - This way, we're able to loop over a list of months and run the ETL pipeline for each dataset
+        - i.e., Triggering this flow 3 times for 3 different months to get 3 instances of our single ETL flow all from one parent flow

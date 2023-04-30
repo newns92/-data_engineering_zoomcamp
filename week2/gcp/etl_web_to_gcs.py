@@ -1,13 +1,16 @@
 from pathlib import Path
 import pandas as pd
 from prefect import flow, task
+# for caching
+from prefect.tasks import task_input_hash
+from datetime import timedelta
 # below is how we will get data into our GCS data lake/bucket via a reusable **block**
 from prefect_gcp.cloud_storage import GcsBucket
 # for creating the data directory if it does not exist
 import os, os.path
 
 
-@task(log_prints=True, retries=3)
+@task(log_prints=True, retries=3, cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
 def extract(url: str) -> pd.DataFrame:  # using typehints (: str), returning a Pandas dataframe
     '''Read taxi data from the web into a Pandas dataframe'''
     df = pd.read_csv(url)
