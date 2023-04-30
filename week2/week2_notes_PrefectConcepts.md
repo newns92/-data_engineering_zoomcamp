@@ -183,3 +183,4 @@
     - We edit this to `gcs_block = GcsBucket.load(bucket='zoom_gcs')`
 - Once done writing it, run the flow via `python etl_web_to_gcs.py`
 - Should see the completed flow in the terminal and in Orion, as well as the new directory containing the data in our GCS Bucket
+- Next, we will take this data from this GCS Bucket and move it into a BigQuery data warehouse (or data lake)

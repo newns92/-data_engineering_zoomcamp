@@ -67,7 +67,7 @@ def write_gcs(path: Path) -> None:
 def etl_web_to_gcs() -> None:  # at first takes no args, will change this in the future
     # add docstring
     '''Main ETL function'''
-    # Hard-code some things *that will be parameterized in the future
+    # Hard-code some things that will be parameterized in the future
     color = 'yellow'
     year = 2021
     month = 1
