@@ -315,4 +315,15 @@
         - Can watch the logs in real-time, as well as see the subflow runs and the parameters (which we changed)
             - Can also view the subflows and their specific logs, task runs, subflows, and parameters under "Flow Runs" in the Orion UI
         - Can then check the GCS Bucket that we've created earlier, and we should see the `data` dir, the `yellow` subdir, and the *two* parquet files
-    - 
+
+## Prefect Cloud and Additional Resources
+- Can sign up and use for free at https://app.prefect.cloud
+    - Allows us to not have to rely on the local Orion server
+    - https://docs.prefect.io/latest/cloud/
+    - Also has **Automations** and 3 free collaborator users to have roles
+- Docs are available at https://docs.prefect.io/latest/
+    - Also contains Quick Starts, tutorials, and recipes
+- There are many guides written by Anna Gellar at https://github.com/anna-geller
+- There is also a robust Discource for more technical questions at https://discourse.prefect.io/
+    - You can also find their Slack channel here
+- Can also check out their GitHub at https://github.com/PrefectHQ/prefect for documentation, recipes, Helm charts, and a bunch of integrations
