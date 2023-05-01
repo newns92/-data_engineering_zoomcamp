@@ -94,11 +94,12 @@ How many rows were processed by the script?
 - ***Build the deployment via `prefect deployment build week2/homework/parameterized_flow.py:etl_parent_flow -n zoom-hw-4 -sb github/github-zoom -a`***
 - ***See the deployment in the Orion UI as `etl-parent-flow/zoom-hw-4`***
 - ***Do a custom run for the Green taxi data for the month of November 2020***
+- ***Should see the answer in the logs for the sub-flow***
 
-- 88,019
-- 192,297
-- 88,605
-- 190,225
+- ~~88,019~~
+- ~~192,297~~
+- **88,605**
+- ~~190,225~~
 
 
 
@@ -122,13 +123,27 @@ Test the functionality.
 
 Alternatively, you can grab the webhook URL from your own Slack workspace and Slack App that you create. 
 
+- ***Create the workspace `de-zoomcamp` in Prefect Cloud***
+- ***Log into Prefect Cloud in the Anaconda `zoom` environment via `prefect cloud login`***
+- ***Create a `deploy_to_cloud.py` file for the flow and deployment code***
+- ***Go to the `week2/homework/` directory and run `python deploy_to_cloud.py`***
+- ***Should see the deployment in Deployments in the Cloud UI***
+- ***Create the Automation with a valid email:***
+```bash
+[
+	"[email address]"
+]
+```
+- ***Recreate the `zoom-gcp-creds` and `zoom-gcs` Blocks in the cloud***
+- ***Run the Deployment, then start an agent in the terminal where you are logged into the Cloud via `prefect agent start -q default'`***
+
 
 How many rows were processed by the script?
 
-- `125,268`
-- `377,922`
-- `728,390`
-- `514,392`
+- ~~`125,268`~~
+- ~~`377,922`~~
+- ~~`728,390`~~
+- **`514,392`**
 
 
 ## Question 6. Secrets
