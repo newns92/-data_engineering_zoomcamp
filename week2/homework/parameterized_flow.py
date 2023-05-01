@@ -16,7 +16,7 @@ def extract(url: str) -> pd.DataFrame:  # using typehints (: str), returning a P
 
 
 @task(log_prints=True, retries=3)
-def transform(df: pd.DataFrame) -> pd.DataFrame: # typehints (: pd.DataFrame), returning Pandas dataframe
+def transform(df: pd.DataFrame, color: str) -> pd.DataFrame: # typehints (: pd.DataFrame), returning Pandas dataframe
     '''Fix datatype issues'''
     # fix datetimes
     if color == "yellow":
@@ -77,7 +77,7 @@ def etl_web_to_gcs(color: str, year: int, month: int) -> None:  # at first takes
     # call Task functions to download (extract), clean (transform), and 
     #   load the data locally *and* to GCS as a parquet file
     df = extract(dataset_url)
-    df = transform(df) 
+    df = transform(df, color) 
     path = write_local(df, color, dataset_file)
     write_gcs(path)
     

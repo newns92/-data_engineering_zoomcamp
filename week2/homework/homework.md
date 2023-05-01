@@ -89,8 +89,11 @@ Run your deployment in a local subprocess (the default if you don’t specify an
 How many rows were processed by the script?
 
 - ***First, create a GitHub block with the `make_github_block.py` file with your specific GitHub repo URL and run it via `python make_github_block.py`***
-- ***CHeck for it at `http://127.0.0.1:4200/blocks`***
-- 
+- ***Check for it at `http://127.0.0.1:4200/blocks` or via `prefect blocks ls`***
+- ***Go back to the parent directory for the repo, `/de_zoomcamp/`***
+- ***Build the deployment via `prefect deployment build week2/homework/parameterized_flow.py:etl_parent_flow -n zoom-hw-4 -sb github/github-zoom -a`***
+- ***See the deployment in the Orion UI as `etl-parent-flow/zoom-hw-4`***
+- ***Do a custom run for the Green taxi data for the month of November 2020***
 
 - 88,019
 - 192,297
