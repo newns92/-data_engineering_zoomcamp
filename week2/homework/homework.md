@@ -136,7 +136,7 @@ Alternatively, you can grab the webhook URL from your own Slack workspace and Sl
 ```
 - ***Recreate the `zoom-gcp-creds` and `zoom-gcs` Blocks in the cloud***
 - ***Run the Deployment, then start an agent in the terminal where you are logged into the Cloud via `prefect agent start -q default'`***
-
+- https://medium.com/the-prefect-blog/sending-slack-notifications-in-python-with-prefect-840a895f81c 
 
 How many rows were processed by the script?
 

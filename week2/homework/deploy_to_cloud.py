@@ -5,7 +5,6 @@ import pandas as pd
 from prefect import flow, task
 # below is how we will get data into our GCS data lake/bucket via a reusable **block**
 from prefect_gcp.cloud_storage import GcsBucket
-from prefect_slack import SlackWebhook
 # for creating the data directory if it does not exist
 import os, os.path
 
@@ -98,9 +97,7 @@ def deploy():
         flow=etl_parent_flow,
         name="zoom-cloud-deployment"
     )
-    deployment.apply()
-
-    slack_webhook_block = SlackWebhook.load("zoom-slack")    
+    deployment.apply() 
 
 if __name__ == '__main__'   :
     # # parameters to pass int
