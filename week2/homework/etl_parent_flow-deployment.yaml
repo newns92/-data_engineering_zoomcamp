@@ -1,0 +1,62 @@
+###
+### A complete description of a Prefect Deployment for flow 'etl-parent-flow'
+###
+name: homework-etl-flow-bq
+description: Take in a list of months and loop over the sub-flow for each month
+version: 36d00580e2d1a429b5e97f7f85a37692
+# The work queue that will handle this deployment's runs
+work_queue_name: default
+tags: []
+parameters: {}
+schedule:
+  cron: 0 5 1 * *
+  timezone: null
+  day_or: true
+infra_overrides: {}
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: etl-parent-flow
+manifest_path: null
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  stream_output: true
+  working_dir: null
+  _block_document_id: 1c264000-b84f-475b-97b8-55df05741d62
+  _block_document_name: anonymous-1a205fb2-5f44-4136-bfc2-34fe4a626079
+  _is_anonymous: true
+  block_type_slug: process
+  _block_type_slug: process
+storage: null
+path: C:\Users\nimz\Documents\de_zoomcamp\week2\homework
+entrypoint: parameterized_flow_bq.py:etl_parent_flow
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties:
+    color:
+      title: color
+      default: yellow
+      position: 0
+      type: string
+    year:
+      title: year
+      default: 2019
+      position: 1
+      type: integer
+    months:
+      title: months
+      default:
+      - 2
+      - 3
+      position: 2
+      type: array
+      items:
+        type: integer
+  required: null
+  definitions: null

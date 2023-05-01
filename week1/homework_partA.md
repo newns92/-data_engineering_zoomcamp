@@ -1,7 +1,6 @@
 ## Week 1 Homework- COMPLETED (see italicized and bolded comments)
 
-In this homework we'll prepare the environment 
-and practice with Docker and SQL
+In this homework we'll prepare the environment and practice with Docker and SQL
 
 
 ## Question 1. Knowing docker tags
@@ -16,10 +15,10 @@ Now run the command to get help on the "docker build" command
 
 Which tag has the following text? - *Write the image ID to the file* 
 
-- `--imageid string`
+- ~~`--imageid string`~~
 - ***`--iidfile string`***
-- `--idimage string`
-- `--idfile string`
+- ~~`--idimage string`~~
+- ~~`--idfile string`~~
 
 
 ## Question 2. Understanding docker first run 
@@ -28,7 +27,7 @@ Run docker with the python:3.9 image in an interactive mode and the entrypoint o
 Now check the python modules that are installed ( use pip list). 
 How many python packages/modules are installed?
 
-- Make a `Dockerfile` with:
+- ***Make a `Dockerfile` with:***
 ```bash
 # base image to run from/use -- base it on Python 3.9
 FROM python:3.9 
@@ -44,16 +43,16 @@ ENTRYPOINT [ "bash" ]
 # kill python with Ctrl+C
 # Kill Docker image with Ctrl+D
 ```
+- ***Then run `pip list`***
 
-- 1
-- 6
+- ~~1~~
+- ~~6~~
 - ***3: pip, setuptools, wheel***
-- 7
+- ~~7~~
 
 # Prepare Postgres
 
-Run Postgres and load data as shown in the videos
-We'll use the ***green*** taxi trips from January 2019:
+Run Postgres and load data as shown in the videos. We'll use the ***green*** taxi trips from January 2019:
 
 ```wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-01.csv.gz```
 
@@ -91,10 +90,10 @@ WHERE
 ;
 ```
 
-- 20689
+- ~~20689~~
 - ***20530***
-- 17630
-- 21090
+- ~~17630~~
+- ~~21090~~
 
 ## Question 4. Largest trip for each day
 
@@ -115,10 +114,10 @@ ORDER BY
 ;
 ```
 
-- 2019-01-18
-- 2019-01-28
+- ~~2019-01-18~~
+- ~~2019-01-28~~
 - ***2019-01-15***
-- 2019-01-10
+- ~~2019-01-10~~
 
 ## Question 5. The number of passengers
 
@@ -158,10 +157,10 @@ GROUP BY
 ;\
 ```
 
-- 2: 1282 ; 3: 266
-- 2: 1532 ; 3: 126
+- ~~2: 1282 ; 3: 266~~
+- ~~2: 1532 ; 3: 126~~
 - ***2: 1282 ; 3: 254***
-- 2: 1282 ; 3: 274
+- ~~2: 1282 ; 3: 274~~
 
 
 ## Question 6. Largest tip
@@ -218,9 +217,9 @@ LIMIT 1
 ;
 ```
 
-- Central Park
-- Jamaica
-- South Ozone Park
+- ~~Central Park~~
+- ~~Jamaica~~
+- ~~South Ozone Park~~
 - ***Long Island City/Queens Plaza***
 
 
