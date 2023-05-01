@@ -1,0 +1,59 @@
+###
+### A complete description of a Prefect Deployment for flow 'etl-parent-flow'
+###
+name: etl2
+description: Take in a list of months and loop over the sub-flow for each month
+version: d259685607c15b65a525eb7655be39d5
+# The work queue that will handle this deployment's runs
+work_queue_name: default
+tags: []
+parameters: {}
+schedule:
+  cron: 0 0 * * *
+  timezone: null
+  day_or: true
+infra_overrides: {}
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  stream_output: true
+  working_dir: null
+  block_type_slug: process
+  _block_type_slug: process
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: etl-parent-flow
+manifest_path: null
+storage: null
+path: C:\Users\nimz\Documents\de_zoomcamp\week2\gcp
+entrypoint: parameterized_flow.py:etl_parent_flow
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties:
+    color:
+      title: color
+      default: yellow
+      position: 0
+      type: string
+    year:
+      title: year
+      default: 2021
+      position: 1
+      type: integer
+    months:
+      title: months
+      default:
+      - 1
+      - 2
+      position: 2
+      type: array
+      items:
+        type: integer
+  required: null
+  definitions: null
