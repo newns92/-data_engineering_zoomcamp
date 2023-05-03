@@ -141,7 +141,7 @@
 - The field that we choose for clustering depends on how the data will be queried
 - For our taxi data, do:
     ```bash
-        CREATE OR REPLACE TABLE de-zoomcamp-384821.ny_trips.yellow_tripdata_partitoned_clustered
+        CREATE OR REPLACE TABLE de-zoomcamp-384821.ny_trips.yellow_trip_data_partitioned_clustered
         PARTITION BY DATE(tpep_pickup_datetime)
         CLUSTER BY VendorID AS
         SELECT * FROM de-zoomcamp-384821.ny_trips.external_yellow_trip_data;
@@ -159,7 +159,7 @@
     - 2:
         ```bash
             SELECT COUNT(*) as trips
-            FROM de-zoomcamp-384821.ny_trips.yellow_tripdata_partitoned_clustered
+            FROM de-zoomcamp-384821.ny_trips.yellow_trip_data_partitioned_clustered
             WHERE 
             DATE(tpep_pickup_datetime) BETWEEN '2019-01-01' AND '2020-03-31'
             AND VendorID=1;        
@@ -243,4 +243,3 @@
     - https://research.google/pubs/pub36632/
     - https://panoply.io/data-warehouse-guide/bigquery-architecture/
     - http://www.goldsborough.me/distributed-systems/2019/05/18/21-09-00-a_look_at_dremel/
-
