@@ -230,4 +230,26 @@
 
 
 ## ML Deployment in BigQuery
-- 
+- https://cloud.google.com/bigquery/docs/export-model-tutorial
+- https://cloud.google.com/bigquery/docs/bq-command-line-tool
+- https://cloud.google.com/bigquery/docs/exporting-data#bq
+- First, enable the AI Platform Training and Prediction API and Compute Engine APIs
+- Create a `de-zoomcamp-384821-taxi-data` GCS Bucket
+- Then, in an Anaconda command prompt, run `gcloud auth login` and chose the correct project
+- Then, run `bq --project_id de-zoomcamp-384821 extract -m ny_trips.taxi_tip_model_tuned gs://de-zoomcamp-384821-taxi-data/tip_model_tuned`
+    - Destination format is `gs://[Bucket name]/[Model name]`
+    - This will take 1-3 minutes, and you will see a `tip_model_tuned/` directory in the bucket with various files within it
+    - `-m` is for model
+- Make a temporary directory for the model in the host machine's `C:/` drive locally via `mkdir \tmp\model`
+- Bring down the model locally via `gsutil cp -r gs://de-zoomcamp-384821-taxi-data/tip_model_tuned \tmp\model`
+    - `-r` = copy an entire directory tree
+- In the local `week3` sub-directory, run `mkdir -p serving_dir\tip_model\1` to make a **serving directory**
+- Copy everything from `\tmp\model` to there via `cp -r C:/tmp/model/tip_model_tuned/* serving_dir/tip_model/1` (Git Bash) or `copy -r \tmp\model\tip_model\* serving_dir\tip_model\1` (Anaconda)
+- *In Git Bash* in the local `week3` sub-directory, run `docker pull tensorflow/serving` to get the Docker image
+- Then run the Docker image on port 8501 via ```docker run -p 8501:8501 --mount type=bind,source=`pwd`/serving_dir/tip_model,target=/models/tip_model -e MODEL_NAME=tip_model -t tensorflow/serving &```
+- Then go to http://localhost:8501/v1/models/tip_model, and we see something we can make HTTP requests on
+    - In this JSON, we see that we are in model version 1, and that there's no error
+- Then, in a separate Git Bash window, run `curl -d '{"instances": [{"passenger_count":1, "trip_distance":12.2, "PULocationID":"193", "DOLocationID":"264", "payment_type":"2", "fare_amount":20.4, "tolls_amount":0.0}]}' -X POST http://localhost:8501/v1/models/tip_model:predict` to make a request for a prediction for these specified field values/parameters
+    - Should recieve some JSON like `"predictions": [[-0.40399080437614221]]`
+    - Can play around with these parameters values
+- Stop the Docker image via `docker stop [container ID]`
