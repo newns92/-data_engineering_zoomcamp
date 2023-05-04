@@ -48,7 +48,7 @@
 ## Building a Linear Regression Model
 - In BigQuery, re-create the yellow taxi partitioned and partitioned + clustered tables if needed
 - We will be trying to predict tip amount based on some specific columns
-- F or the partitioned table, in a query editor, investigate some rows
+- For the partitioned table, in a query editor, investigate some rows
     ```bash
         SELECT 
         passenger_count,

@@ -3,7 +3,11 @@
 - You can load the data however you would like, but keep the files in .GZ Format. 
 - If you are using orchestration such as Airflow or Prefect do not load the data into Big Query using the orchestrator.
 - Stop with loading the files into a bucket.
-- *NOTE:* You can use the CSV option for the GZ files when creating an External Table.
+- *NOTE:* You can use the CSV option for the GZ files when creating an External Table
+
+- ***Ignore "Stop with loading the files into a bucket" (see Question 8)***
+- ***Run `get_fhv_data.py` in a `zoom` Anaconda environment (to be safe)***
+- ***Once all 12 data files are in a GCS Bucket, proceed to next step***
 
 ***SETUP:***
 - Create an external table using the fhv 2019 data.
