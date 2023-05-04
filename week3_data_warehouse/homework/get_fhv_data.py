@@ -40,9 +40,9 @@ def download_data():
         # print(f"Unique PUlocationID values: {df.PUlocationID.unique()}")
         # print(f"Unique DOlocationID values: {df.DOlocationID.unique()}")
         # print(f"Unique SR_Flag values: {df.SR_Flag.unique()}")
-        df.PUlocationID = df.PUlocationID.fillna(0).astype('int')
-        df.DOlocationID = df.DOlocationID.fillna(0).astype('int')
-        df.SR_Flag = df.SR_Flag.fillna(0).astype('int')
+        df.PUlocationID = df.PUlocationID.fillna(999).astype('int')
+        df.DOlocationID = df.DOlocationID.fillna(999).astype('int')
+        df.SR_Flag = df.SR_Flag.fillna(999).astype('int')
         
         # convert the DataFrame to a zipped parquet file and save to specified location
         print(f'Converting fhv_tripdata_2019-{month:02d}.csv.gz to a parquet file')
