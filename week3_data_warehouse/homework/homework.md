@@ -23,7 +23,7 @@
         )
         ;
     ```
-- Create a table in BigQuery (NOT external)
+- ***Create a table in BigQuery (NOT external)***
     ```bash
         CREATE OR REPLACE TABLE `de-zoomcamp-384821.fhv.fhv_data`
         AS
@@ -34,7 +34,7 @@
 ## Question 1:
 What is the count for fhv vehicle records for year 2019?
 
-- Run:
+- ***Run:***
     ```bash
         SELECT COUNT(*) FROM `de-zoomcamp-384821.fhv.fhv_data`
     ```
@@ -65,45 +65,82 @@ What is the count for fhv vehicle records for year 2019?
 
 ## Question 3:
 How many records have both a blank (null) PUlocationID and DOlocationID in the entire dataset?
-- 717,748
-- 1,215,687
-- 5
-- 20,332
+
+-- ***Run:***
+    ```bash
+        SELECT COUNT(*) FROM `de-zoomcamp-384821.fhv.external_fhv_data`
+        WHERE
+        PUlocationID = 999
+        AND DOlocationID = 999
+        ;
+    ```
+
+- ***717,748***
+- ~~1,215,687~~
+- ~~5~~
+- ~~20,332~~
 
 ## Question 4:
-What is the best strategy to optimize the table if query always filter by pickup_datetime and order by affiliated_base_number?
-- Cluster on pickup_datetime Cluster on affiliated_base_number
-- Partition by pickup_datetime Cluster on affiliated_base_number
-- Partition by pickup_datetime Partition by affiliated_base_number
-- Partition by affiliated_base_number Cluster on pickup_datetime
+What is the best strategy to optimize the table if queries always filter by `pickup_datetime` and order by `affiliated_base_number`?
+- ~~Cluster on pickup_datetime Cluster on affiliated_base_number~~
+- ***Partition by pickup_datetime Cluster on affiliated_base_number***
+- ~~Partition by pickup_datetime Partition by affiliated_base_number~~
+- ~~Partition by affiliated_base_number Cluster on pickup_datetime~~
+    - Can only partition on integer of date-like values, and "filter" should be the key hint here
 
 ## Question 5:
-Implement the optimized solution you chose for question 4. Write a query to retrieve the distinct affiliated_base_number between pickup_datetime 2019/03/01 and 2019/03/31 (inclusive).</br> 
-Use the BQ table you created earlier in your from clause and note the estimated bytes. Now change the table in the from clause to the partitioned table you created for question 4 and note the estimated bytes processed. What are these values? Choose the answer which most closely matches.
-- 12.82 MB for non-partitioned table and 647.87 MB for the partitioned table
-- 647.87 MB for non-partitioned table and 23.06 MB for the partitioned table
-- 582.63 MB for non-partitioned table and 0 MB for the partitioned table
-- 646.25 MB for non-partitioned table and 646.25 MB for the partitioned table
+Implement the optimized solution you chose for question 4. Write a query to retrieve the distinct `affiliated_base_number` between `pickup_datetime` 2019/03/01 and 2019/03/31 (inclusive). Use the BQ table you created earlier in your from clause and note the estimated bytes. Now change the table in the from clause to the partitioned table you created for question 4 and note the estimated bytes processed. What are these values? Choose the answer which most closely matches.
+
+- ***Run:***
+    ```bash
+        CREATE OR REPLACE TABLE `de-zoomcamp-384821.fhv.fhv_data_partitioned_clustered`
+        PARTITION BY
+            DATE(pickup_datetime)
+        CLUSTER BY
+            Affiliated_base_number
+        AS
+        SELECT * FROM `de-zoomcamp-384821.fhv.fhv_data`;    
+    ```
+- ***Then run:***
+    ```bash
+        SELECT DISTINCT(Affiliated_base_number)
+        FROM `de-zoomcamp-384821.fhv.fhv_data`
+        WHERE DATE(pickup_datetime) BETWEEN '2019-03-01' AND '2019-03-31'
+        ;
+    ```
+- ***Then run:***
+    ```bash
+        SELECT DISTINCT(Affiliated_base_number)
+        FROM `de-zoomcamp-384821.fhv.fhv_data_partitioned_clustered`
+        WHERE DATE(pickup_datetime) BETWEEN '2019-03-01' AND '2019-03-31'
+        ;
+    ```
+
+
+- ~~12.82 MB for non-partitioned table and 647.87 MB for the partitioned table~~
+- ***647.87 MB for non-partitioned table and 23.06 MB for the partitioned table***
+- ~~582.63 MB for non-partitioned table and 0 MB for the partitioned table~~
+- ~~646.25 MB for non-partitioned table and 646.25 MB for the partitioned table~~
 
 
 ## Question 6: 
 Where is the data stored in the External Table you created?
 
-- Big Query
-- GCP Bucket
-- Container Registry
-- Big Table
+- ~~Big Query~~
+- ***GCP Bucket***
+- ~~Container Registry~~
+- ~~Big Table~~
 
 
 ## Question 7:
 It is best practice in Big Query to always cluster your data:
-- True
-- False
+- ~~True~~
+- ***False***
+    - If data size is < 1GB, this will create some metadata overhead that may outweigh any performance boost from clustering
 
 
 ## (Not required) Question 8:
 A better format to store these files may be parquet. Create a data pipeline to download the gzip files and convert them into parquet. Upload the files to your GCP Bucket and create an External and BQ Table. 
-
 
 Note: Column types for all files used in an External Table must have the same datatype. While an External Table may be created and shown in the side panel in Big Query, this will need to be validated by running a count query on the External Table to check if any errors occur. 
  
