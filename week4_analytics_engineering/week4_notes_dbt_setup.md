@@ -69,3 +69,7 @@
             - Click on "Add deploy key" and paste in the deploy key provided by dbt Cloud, while **making sure to check on "write access"**
             - *You could simplify the process of adding and creating repositories by linking your GitHub account* (https://docs.getdbt.com/docs/cloud/git/connect-github)
     - **Review your project settings**
+        - Checkout the `dbt` branch in the project within the dbt Cloud IDE
+        - Click "Initialize dbt project"
+        - Commit the changes
+        - Open a PR
