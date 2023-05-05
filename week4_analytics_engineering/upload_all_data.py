@@ -41,14 +41,65 @@ def upload_to_gcs(bucket, object_name, local_file):
 def remove_files():
     # https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
     dir_name = "./"
-    test = os.listdir(dir_name)
+    local_data = os.listdir(dir_name)
 
-    for item in test:
+    # remove the local CSV's
+    for item in local_data:
         if item.endswith(".csv.gz"):
             os.remove(os.path.join(dir_name, item))
 
+    # Remove the local parquet files
     # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
     shutil.rmtree('./data/')
+
+
+def clean_data(df, service):
+    '''Fix datatype issues'''
+
+    if service == 'yellow':
+        # fix datetimes
+        df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+        df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+
+        # this fixes fields for files that have NAN values and thus aren't INTs
+        # when they should be INTs
+        df.VendorID = df.passenger_count.fillna(999).astype('int')
+        df.passenger_count = df.passenger_count.fillna(999).astype('int')
+        df.payment_type = df.payment_type.fillna(999).astype('int')
+        df.RatecodeID = df.RatecodeID.fillna(999).astype('int')
+        df.VendorID = df.VendorID.fillna(999).astype('int')
+
+    elif service == 'green':
+        # fix datetimes
+        df.lpep_pickup_datetime = pd.to_datetime(df.lpep_pickup_datetime)
+        df.lpep_dropoff_datetime = pd.to_datetime(df.lpep_dropoff_datetime)
+
+        # this fixes fields for files that have NAN values and thus aren't INTs
+        # when they should be INTs
+        df.VendorID = df.passenger_count.fillna(999).astype('int')
+        df.passenger_count = df.passenger_count.fillna(999).astype('int')
+        df.payment_type = df.payment_type.fillna(999).astype('int')
+        df.trip_type = df.trip_type.fillna(999).astype('int')
+        df.RatecodeID = df.RatecodeID.fillna(999).astype('int')
+        df.VendorID = df.VendorID.fillna(999).astype('int')
+
+    # elif service == 'fhv':
+    else:
+        # Rename columns
+        df.rename({'dropOff_datetime':'dropoff_datetime'}, axis='columns', inplace=True)
+        df.rename({'PUlocationID':'PULocationID'}, axis='columns', inplace=True)
+        df.rename({'DOlocationID':'DOLocationID'}, axis='columns', inplace=True)
+
+        # fix datetimes
+        df.pickup_datetime = pd.to_datetime(df.pickup_datetime)
+        df.dropoff_datetime = pd.to_datetime(df.dropoff_datetime)
+
+        # this fixes fields for files that have NAN values and thus aren't INTs
+        # when they should be INTs
+        df.PULocationID = df.PULocationID.fillna(999).astype('int')
+        df.DOLocationID = df.DOLocationID.fillna(999).astype('int')            
+
+    return df
 
 
 def web_to_gcs(year, service, gcs_bucket):
@@ -76,6 +127,10 @@ def web_to_gcs(year, service, gcs_bucket):
         # Read it back into a parquet file
         print(f'Saving {file_name} to {path}...')
         df = pd.read_csv(file_name, compression='gzip')
+
+        # clean the data and fix the data types
+        df = clean_data(df, service)
+
         file_name = file_name.replace('.csv.gz', '.parquet')
         df.to_parquet(path, engine='pyarrow')
 
