@@ -121,25 +121,6 @@
 
 
 ## Development of dbt Models
-- First, create the external tables via:
-    ```bash
-        CREATE OR REPLACE EXTERNAL TABLE `de-zoomcamp-384821.ny_trips.yellow_trip_data`
-        OPTIONS (
-        format = 'PARQUET',
-        uris = ['gs://de-zoomcamp-384821-taxi-data/data/yellow/yellow_tripdata_2019-*.parquet', 'gs://de-zoomcamp-384821-taxi-data/data/yellow/yellow_tripdata_2020-*.parquet']
-        );
-
-        CREATE OR REPLACE EXTERNAL TABLE `de-zoomcamp-384821.ny_trips.green_trip_data`
-        OPTIONS (
-        format = 'PARQUET',
-        uris = ['gs://de-zoomcamp-384821-taxi-data/data/green/green_tripdata_2019-*.parquet', 'gs://de-zoomcamp-384821-taxi-data/data/green/green_tripdata_20209-*.parquet']
-        );
-    ```
-- Then, create a free dbt Cloud account via https://www.getdbt.com/signup/
-- Then, follow the instructions at https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/week_4_analytics_engineering/dbt_cloud_setup.md and https://www.youtube.com/watch?v=uF76d5EmdtU&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=31docker 
-    - First, create a client ID and secret for authentication with BigQuery
-        - This client ID and secret will be stored in dbt Cloud to manage the OAuth connection between dbt Cloud users and BigQuery
-    - 
 - ***Anatomy of a dbt model***
     - There's the dbt model itself (a SQL file)
         - Several **materilization** strategies (Table, View, incremental, ephemeral, etc.)
