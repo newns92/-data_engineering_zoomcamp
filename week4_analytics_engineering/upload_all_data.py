@@ -52,35 +52,37 @@ def remove_files():
 
 
 def web_to_gcs(year, service, gcs_bucket):
+
+    # Loop through the months
     for i in range(12):
         
-        # sets the month part of the file_name string
-        month = '0'+str(i+1)
+        # Set the month part of the file_name string
+        month = '0'+str(i + 1)
         month = month[-2:]
 
-        # CSV file_name and path to write parquet file to
+        # create CSV file_name and path to write parquet file to
         file_name = f'{service}_tripdata_{year}-{month}.csv.gz'
         path = Path(f'data/{service}_tripdata_{year}-{month}.parquet').as_posix()
 
+        # Make the directory to hold the parquet file if it doesn't exist
         os.makedirs(os.path.dirname(path), exist_ok=True)
 
-        # download it using requests via a pandas df
+        # Download CSV using requests via a Pandas DataFrame
+        print(f'\nDownloading {file_name}...')
         request_url = f"{init_url}{service}/{file_name}"
         r = requests.get(request_url)
         open(file_name, 'wb').write(r.content)
-        print(f"Local: {file_name}")
 
-        # read it back into a parquet file
+        # Read it back into a parquet file
+        print(f'Saving {file_name} to {path}...')
         df = pd.read_csv(file_name, compression='gzip')
         file_name = file_name.replace('.csv.gz', '.parquet')
         df.to_parquet(path, engine='pyarrow')
-        print(f'Parquet: {path}')
 
-        # upload it to gcs 
+        # Upload parquet to GCS Bucket
+        print(f'Uploading {path} to GCS...')
         upload_to_gcs(gcs_bucket, f'data/{service}/{file_name}', f'data/{file_name}')
-        print(f'GCS: {service}/{file_name}')
 
-        remove_files()
 
 if __name__ == '__main__':
     web_to_gcs('2019', 'green', gcs_bucket)
@@ -88,4 +90,5 @@ if __name__ == '__main__':
     web_to_gcs('2019', 'yellow', gcs_bucket)
     web_to_gcs('2020', 'yellow', gcs_bucket)
     web_to_gcs('2019', 'fhv', gcs_bucket)
+    remove_files()
 

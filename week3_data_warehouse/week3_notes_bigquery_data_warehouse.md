@@ -94,7 +94,7 @@
     ```
 - Next, create a partitioned table from the same external table via
     ```bash
-        CREATE OR REPLACE TABLE `de-zoomcamp-384821.ny_trips.yellow_trip_data_non_partitioned`
+        CREATE OR REPLACE TABLE `de-zoomcamp-384821.ny_trips.yellow_trip_data_partitioned`
         PARTITION BY
             DATE(tpep_pickup_datetime) AS
         SELECT * FROM `de-zoomcamp-384821.ny_trips.external_yellow_trip_data`;
