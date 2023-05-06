@@ -85,6 +85,13 @@
         - Click "Initialize dbt project"
         - Commit the changes
         - Open a PR
+- Once you have initialized the dbt project in the cloud, in `dbt_project.yml`, change the project name to `taxi_data`, but keep the profile `default` and leave the defaults for where our different files are located (under the `# These configurations specify where dbt...` section/comment)
+    - The `profile` will define/configure which data warehouse dbt will use to create the project
+    - Again, we could have one dbt project, and by changing the profile, we could change where we run the project (from Postgres to BigQuery or vice versa, for example)    
+- Then, under `models:` near the bottom of `dbt_project.yml`, change it's value from `my_new_project` to `taxi_data`
+- Then, since we're not using it yet, delete the `example: +materiliazed: view` part of the YAML file
+- Can also note that in the `models/` directory, we can see some sample models with basic DAGs already set up
+    - But we don't worry about this, as we will create our own models
 
 
 ## Local setup for Postgres
@@ -93,7 +100,13 @@
     - Need to specify the host address in the "Connection" tab, which should be `pgdatabase`, port is `5432`, username and password is `root`
 - In the `zoom` Conda environment, run `pip install dbt-bigquery` and `pip install dbt-postgres`
     - Installing `dbt-bigquery` or `dbt-postgres` will install `dbt-core` and any other dependencies
-- 
+- Create a `dbt_local/` directory, `cd` into it, and run `dbt init`
+- Name the project `taxi_data` and select the Postgres option of a database
+- `profiles.yml` should be updated with stock **outputs**.
+- Update these outputs to be the correct root username, password, host, port, etc. for the Postgres database
+- Copy/Cut the `profiles.yml` file into the `taxi_data` directory that `dbt init` created
+- Run `dbt debug`
+    - This will check the database connection and display any errors or warnings that it finds
 
 
 ## Local setup for BigQuery with Docker
