@@ -13,4 +13,10 @@
 - Copy in the green staging SQL file, the `schema.yml` file, the macros file
 - Create the `packages.yml` file
 - Then run `dbt deps --profiles-dir=../`
-- Then attempt
+- Then attempt `dbt run -m stg_green_trip_data --profiles-dir=../`
+- This *should* work, and you should see the View in the `public` schema of Postgres
+    - ***If needed, create `staging` and `prod` schemas now***
+- Then create the yellow staging SQL file
+- Then attempt `dbt run -m stg_yellow_trip_data --profiles-dir=../`
+- You should see the second View in the `public` schema of Postgres
+- 
