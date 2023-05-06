@@ -3,4 +3,5 @@ data_pgadmin/
 .db
 config.py
 week3_data_warehouse/data/
-profile.yml
+profiles.yml
+bigquery_dbt_credentials.json
