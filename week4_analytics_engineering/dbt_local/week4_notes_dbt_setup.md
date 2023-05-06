@@ -10,3 +10,7 @@
 - Update these outputs to be the correct root username, password, host, port, etc. for the Postgres database
 - Run `dbt debug --profiles-dir ../`
     - This will find the `profiles.yml` file in the parent directory of the dbt project and check the database connection and display any errors or warnings that it finds
+- Copy in the green staging SQL file, the `schema.yml` file, the macros file
+- Create the `packages.yml` file
+- Then run `dbt deps --profiles-dir=../`
+- Then attempt

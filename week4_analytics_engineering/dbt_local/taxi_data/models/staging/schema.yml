@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: staging
+    database: ny_taxi  # i.e., the Postgres database in BigQuery
+    schema: public  # the Postgres schema
+
+    tables:
+      - name: green_trip_data
+      - name: yellow_trip_data
