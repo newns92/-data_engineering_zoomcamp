@@ -184,4 +184,17 @@ a ## Cloud setup
 - Meant to be used for smaller files that contain data that won't change often
 - Cannot be loaded in the Cloud UI
 - If done locally, can just copy the CSV to the `seeds/` subdirectory of the project
-- In the cloud, you have to add the file to the GitHub repo and then pull it into the dbt Cloud UI
+- In the cloud, you can add the file to the GitHub repo and then pull it into the dbt Cloud UI
+    - Or just create the CSV in the Cloud UI and paste in the exact contents
+- Once the CSV is there, run `dbt seed`, which will create the table in the data warehouse and will define for each of the fields, the data type that it corresponds to
+- Once you run `dbt seed`, you should see the table in BigQuery
+- However, we can define the data types ourselves in the `dbt_project.yml` file
+- Here's an example of explicilty defining one column's data type, leaving the rest as defaults:
+    ```bash
+        seeds:
+            taxi_data:
+                taxi_zone_lookup:
+                    +column_types:
+                        locationid: numeric
+    ```
+- Run `dbt seed` again, you should see the updated table in BigQuery
