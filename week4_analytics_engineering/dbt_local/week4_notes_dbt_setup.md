@@ -19,4 +19,6 @@
 - Then create the yellow staging SQL file
 - Then attempt `dbt run -m stg_yellow_trip_data --profiles-dir=../`
 - You should see the second View in the `public` schema of Postgres
-- 
+- Create the seed CSV, then add it to the `dbt_project.yml`
+- Then run `dbt seed --profiles-dir=../`
+- You should see a new table in Postgres
