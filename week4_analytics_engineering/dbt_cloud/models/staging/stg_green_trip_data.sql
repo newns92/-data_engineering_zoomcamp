@@ -33,4 +33,11 @@ select
     {{ get_payment_type_description('payment_type') }} as payment_type_description,  {# macro #}
     cast(congestion_surcharge as numeric) as congestion_surcharge
 from {{ source('staging', 'green_trip_data') }}
-limit 100
+where vendorid is not null
+
+-- dbt build -m [model.sql] --var 'is_test_run: false'
+{% if var('is_test_run', default=true) %}
+    
+    limit 100
+
+{% endif %}
