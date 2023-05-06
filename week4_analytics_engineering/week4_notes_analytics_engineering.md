@@ -159,6 +159,7 @@
         - Benefits of version controlling
         - Equivalent to a `copy` command to create tables
         - *Recommended for data that doesn't change frequently*
+        - i.e., Meant to be used for smaller files that contain data that won't change often
         - Run via `dbt seed -s file_name`
     - **Ref**: a macro to reference the underlying tables and views that were building the data warehouse (*created from dbt models or dbt seeds*)
         - Run the same code in any environment, and it will resolve the correct schema for you
