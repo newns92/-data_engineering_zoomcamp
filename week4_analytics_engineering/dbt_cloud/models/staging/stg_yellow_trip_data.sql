@@ -4,6 +4,7 @@
 {# SELECT * FROM {{ source([source name from schema.yml], [table name from schema.yml]) }} #}
 select
     -- identifiers
+    -- 1.0.0 version of dbt utilis, `dbt_utils.surrogate_key` has been replaced by `dbt_utils.generate_surrogate_key`
     {{ dbt_utils.surrogate_key(['vendorid', 'tpep_pickup_datetime']) }} as tripid,
     cast(vendorid as integer) as vendorid,
     cast(ratecodeid as integer) as ratecodeid,
