@@ -85,6 +85,13 @@
         - Click "Initialize dbt project"
         - Commit the changes
         - Open a PR
+- Once you have initialized the dbt project in the cloud, in `dbt_project.yml`, change the project name to `taxi_data`, but keep the profile `default` and leave the defaults for where our different files are located (under the `# These configurations specify where dbt...` section/comment)
+    - The `profile` will define/configure which data warehouse dbt will use to create the project
+    - Again, we could have one dbt project, and by changing the profile, we could change where we run the project (from Postgres to BigQuery or vice versa, for example)    
+- Then, under `models:` near the bottom of `dbt_project.yml`, change it's value from `my_new_project` to `taxi_data`
+- Then, since we're not using it yet, delete the `example: +materiliazed: view` part of the YAML file
+- Can also note that in the `models/` directory, we can see some sample models with basic DAGs already set up
+    - But we don't worry about this, as we will create our own models
 
 
 ## Local setup for Postgres
