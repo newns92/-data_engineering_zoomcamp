@@ -1,3 +1,4 @@
+## Cloud setup
 - First, upload the data to a GCS bucket via the `upload_all_data.py` file in the `week4/` directory
 - Then, in BigQuery, create the external tables via:
     ```bash
@@ -32,6 +33,17 @@
         CREATE OR REPLACE TABLE `de-zoomcamp-384821.ny_trips.fhv_trip_data`
         AS
         SELECT * FROM `de-zoomcamp-384821.ny_trips.external_fhv_trip_data`;
+    ```
+- Then, check the row counts via
+    ```bash
+        SELECT COUNT(*) FROM `de-zoomcamp-384821.ny_trips.fhv_trip_data`;
+        --- 43,244,696
+
+        SELECT COUNT(*) FROM `de-zoomcamp-384821.ny_trips.yellow_trip_data`;
+        --- 109,047,518
+
+        SELECT COUNT(*) FROM `de-zoomcamp-384821.ny_trips.green_trip_data`;
+        --- 7,778,101
     ```
 - Then, create a free dbt Cloud account via https://www.getdbt.com/signup/
 - Then, follow the instructions at https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/week_4_analytics_engineering/dbt_cloud_setup.md and https://www.youtube.com/watch?v=uF76d5EmdtU&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=31docker 
@@ -73,3 +85,24 @@
         - Click "Initialize dbt project"
         - Commit the changes
         - Open a PR
+
+
+## Local setup for Postgres
+- In the `week4/` directory, spin up the Postgres database via `docker-compose up -d`
+    - If needed, create a new server: `taxi_data` by right-clicking on "Servers" and hit "Register" --> "Server"
+    - Need to specify the host address in the "Connection" tab, which should be `pgdatabase`, port is `5432`, username and password is `root`
+- In the `zoom` Conda environment, run `pip install dbt-bigquery` and `pip install dbt-postgres`
+    - Installing `dbt-bigquery` or `dbt-postgres` will install `dbt-core` and any other dependencies
+- 
+
+
+## Local setup for BigQuery with Docker
+- https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/week_4_analytics_engineering/docker_setup/README.md
+- Create the `Dockerfile` and `docker-compose.yaml` and `profiles.yaml` files in the `dbt_local_docker/` directory
+- In a `zoom` Anaconda terminal, run `docker compose build` to build the `dbt/bigquery` Docker image
+- Then run `docker compose run dbt-bq-dtc init`
+    - **Note**: We are essentially running `dbt init` above because the `ENTRYPOINT` in the `Dockerfile` is ['dbt']
+    - Input the required values, such as project name as "taxi_data", select the BigQuery database when prompted, enter the path to the credentials JSON, enter the GCP project ID, the BigQuery dataset, 4 threads, 300 timeout seconds, then select "US" at the desired location
+    - This should create `dbt/taxi_data/` and you should see `dbt_project.yml` in there.
+    - In `dbt_project.yml`, replace `profile: 'taxi_rides_ny'` with `profile: 'bq-dbt-workshop'` as we have a profile with the latter name in our `profiles.yml`
+- Get your credentials file in the right directory, then run `docker compose run --workdir="//usr/app/dbt/taxi_rides_ny" dbt-bq-dtc debug` to test your connection
