@@ -192,13 +192,14 @@
 ## Testing and Documenting dbt Models
 - **Tests**
     - Assumptions we make about our data
-    - These are essentially a `SELECT` SQL query
-    - These assumptions get compiled to SQL that returns the amount of failing records
-    - Tests are defined *on the column* in a YAML file
+    - These are essentially a `SELECT` SQL query, just like dbt models are
+    - These assumptions get compiled to SQL that returns the amount of failing records (those that don't follow our assumptions)
+    - Tests are defined *on the column* in a `schema.yml` file
     - dbt provides basic tests to check if column values are: unique, not null, accepted values, a foreign key to another table
     - You can create custom tests as queries
 - **Documentation**
     - dbt provides a way to generate documentation for a dbt project and render it as a website
+        - Can provide descriptions for models in a YAML file
     - Documentation for a dbt project includes:
         - Information about your project:
             - Model code (both from the SQL file and the compiled code)
@@ -210,6 +211,7 @@
             - Column names and data types
             - Table stats like size and rows
     - dbt docs can also be hosted in dbt Cloud
+        - Or created in the CLI locally
 
 
 ## Deployment of a dbt Project
