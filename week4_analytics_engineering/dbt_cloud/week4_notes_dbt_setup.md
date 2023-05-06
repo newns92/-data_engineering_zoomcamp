@@ -152,3 +152,22 @@
 - Can view installed packages in the `dbt_packages/` subdirectory of the project, and see its own `macros/` subdirectory to see all of its macros
 - We then create a **surrogate key** via `{{ dbt_utils.surrogate_key(['vendorid', 'lpep_pickup_datetime']) }} as tripid,` in our staging table model
 - Run the model again via `dbt run --select stg_green_trip_data`, and again see the updated compiled code in `target/compiled` and the updated staging table in BigQuery's `ny_trips_dev`
+
+
+## Variables
+- Same as any other programming language
+- Useful for defining values that should be used across the project
+- With a macro, dbt allows us to provide data via variables to models for translation during compilation
+- To use a variables, use the `{{ var('...')}}` function/macro
+- Can do this in the CLI `via:
+    ```bash
+        -- dbt build -m [model.sql] --var 'is_test_run: false'
+        {% if var('is_test_run', default=true) %}
+
+            limit 100
+            
+        {% endif %}
+    ```
+- Add the above to the end of the `stg_green_trip_data.sql` model
+- We can run our model and change the value of `is_test_run` using the command `dbt run --select stg_green_trip_data.sql --var 'is_test_run: false'` and you should NOT see `limit 100` in the compiled code
+- Just running `dbt run --select stg_green_trip_data` should give the default value of `true` and you should see `limit 100` in the compiled code

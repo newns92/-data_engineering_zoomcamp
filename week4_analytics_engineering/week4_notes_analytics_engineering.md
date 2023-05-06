@@ -181,8 +181,9 @@
     - A list of useful dbt packages: https://hub.getdbt.com/
     - Can call them similar to library functions: `{{ [dbt package].[macro name]([parameter(s)]) }}`
 - **Variables**
+    - Same as any other programming languages
     - Useful for defining values that should be used across the project
-    - With a macro, dbt allows us to provide data to models for compilation
+    - With a macro, dbt allows us to provide data via variables to models for translation during compilation
     - To use a variables, use the `{{ var('...')}}` function
     - Variables can be defined in 2 ways: In the `dbt_project.yml` file OR on the command line
 
