@@ -22,3 +22,14 @@
 - Create the seed CSV, then add it to the `dbt_project.yml`
 - Then run `dbt seed --profiles-dir=../`
 - You should see a new table in Postgres
+- Now, we can create a model based on this seed
+    - Under `models/core/`, create a file `dim_zones.sql`
+    - Here, we will first define the config as a materialized *table* rather than a view like we have been doing thus far in our models
+        - Ideally we want everything in `models/core` to be a table, since this is what's exposed (to BI tools and/or to stakeholders)
+    - Add the SQL to create the dim table
+    - Before runnning this model, create a new one called `fact_trips.sql`
+        - In here, we'll take both the staging yellow and staging green data and UNION them
+    - Once `fact_trips.sql` is done, we can run `dbt run` which will run all of our models, *but not the seed*
+        - To run the seed as well, run `dbt build` to build everything that we have, along with running some tests
+    - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips.sql`
+        - But to run everything that `fact_trips.sql` depends on first, we can run `dbt build --select +fact_trips.sql`
