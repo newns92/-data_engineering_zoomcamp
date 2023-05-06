@@ -109,24 +109,62 @@ def web_to_pg(year, service):
         r = requests.get(request_url)
         open(file_name, 'wb').write(r.content)
 
-        df = pd.read_csv(file_name, compression='gzip')
+        df_iter = pd.read_csv(file_name, compression='gzip', iterator=True, chunksize=100000)
+        df = next(df_iter)
 
         # clean the data and fix the data types
         df = clean_data(df, service)
 
-        # get the header/column names
-        header = df.head(n=0)
-        # print(header)
+        # # get the header/column names
+        # header = df.head(n=0)
+        # # print(header)
+
+        print(f'Uploading {file_name} to Postgres...')
+        # add first chunk of data
+        start = time.time()
+        df.to_sql(f'{service}_trip_data',  con=engine, if_exists='append')
+        end = time.time()
+        print('Time to insert first chunk: in %.3f seconds.' % (end - start))        
 
         # add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
         # header.to_sql(name=f'{service}_trip_data', con=engine, if_exists='replace')
 
-        # add data
-        print(f'Uploading {file_name} to Postgres...')
-        start = time.time()
-        df.to_sql(name=f'{service}_trip_data', con=engine, if_exists='append')
-        end = time.time()
-        print(f'Time to insert {file_name}: %.3f seconds.' % (end - start))             
+        def load_chunks(df):
+                try:
+                    print("Loading next chunk...")
+                    start = time.time()
+
+                    # get next chunk
+                    df = next(df_iter)
+
+                    # clean the data and fix the data types
+                    df = clean_data(df, service)
+                    
+                    # add chunk
+                    df.to_sql(name=f'{service}_trip_data', con=engine, if_exists='append')
+
+                    end = time.time()
+
+                    print('Inserted another of ' + file_name +  ' chunk in %.3f seconds.' % (end - start))
+
+                except:
+                    # will come to this clause when we throw an error after running out of data chunks
+                    print('All data chunks loaded.')
+                    quit()
+
+        # insert the rest of the chunks until loop breaks when all data is added
+        while True:
+            if load_chunks(df):
+                break
+            else:        
+                continue
+
+        # # add data
+        # print(f'Uploading {file_name} to Postgres...')
+        # start = time.time()
+        # df.to_sql(name=f'{service}_trip_data', con=engine, if_exists='append')
+        # end = time.time()
+        # print(f'Time to insert {file_name}: %.3f seconds.' % (end - start))    
 
 if __name__ == '__main__':
     user = "root"  # admin@admin.com
