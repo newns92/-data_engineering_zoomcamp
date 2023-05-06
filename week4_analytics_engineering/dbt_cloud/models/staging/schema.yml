@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: staging
+    database: de-zoomcamp-384821  # i.e., the dataset (Project ID) in BigQuery
+    schema: ny_trips  # the dataset itself
+
+    tables:
+      - name: green_trip_data
+      - name: yellow_trip_data

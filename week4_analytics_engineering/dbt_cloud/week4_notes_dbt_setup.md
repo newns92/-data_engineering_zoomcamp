@@ -94,4 +94,31 @@
     - But we don't worry about this, as we will create our own models
 
 ## Creating the model
-- 
+- Create a `staging/` subdirectory under the `models` directory
+    - This is where we take in the raw data and apply some transforms if needed
+- Create a `core/` subdirectory under the `models` directory
+    - This is where we'll create models to expose to a BI tool or to stakeholders
+- Under `staging/`
+    - Create a new file: `stg_green_trip_data.sql`
+    ```bash
+        -- create views so we don't have the need to refresh constantly but still have the latest data loaded
+        {{ config(materialized='view') }}
+
+        {# SELECT * FROM {{ source([source name from schema.yml], [table name from schema.yml]) }} #}
+        select * from {{ source('staging', 'green_trip_data') }}
+        limit 100
+    ```
+    - Create a `schema.yml` file
+    ```bash
+        version: 2
+
+        sources:
+        - name: staging
+            database: de-zoomcamp-384821  # i.e., the dataset (Project ID) in BigQuery
+            schema: ny_trips  # the dataset itself
+
+            tables:
+            - name: green_trip_data
+            - name: yellow_trip_data    
+    ```
+- Run `dbt run -m stg_green_trip_data` in the terminal at the bottom of the dbt Cloud IDE
