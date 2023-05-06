@@ -61,7 +61,7 @@
     - **Create a dbt cloud project**
         - Create a dbt cloud account from their website (it's free for solo developers)
         - Once you have logged in into dbt cloud you will be prompt to create a new project
-        - Name your project "Taxi Data" and under "Advanced Settings", set the directory to where we want to work with dbt (`week4_analytics_engineering/`)
+        - Name your project "Taxi Data" and under "Advanced Settings", set the directory to where we want to work with dbt (`week4_analytics_engineering/dbt_cloud`)
         - Choose BigQuery as the data warehouse
         - Upload the key JSON file you just downloaded under the "Upload from file" section for "Settings"
             - This will fill out most fields related to the production credentials
