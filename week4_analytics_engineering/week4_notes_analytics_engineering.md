@@ -173,11 +173,13 @@
     - Operate on the results of one query to generate another query
     - Abstract snippets of SQL into reusable macros (anagolous to *functions* in most programming languages)
 - ***Packages***
+    - Can import these from other projects, which have models and macros of their own
+        - i.e., Standalone dbt projects, with models and macros that tackle a specific problem area
     - Like *libraries* in other programming languages
-    - Standalone dbt projects, with models and macros that tackle a specific problem area
     - By adding a package to a project, the package's models and macros will be part of your project
-    - Imported in the `packages.yml` file and imported via `dbt deps`
+    - Imported in the `packages.yml` file, *which you create* in the main dir of the project, and imported via `dbt deps`
     - A list of useful dbt packages: https://hub.getdbt.com/
+    - Can call them similar to library functions: `{{ [dbt package].[macro name]([parameter(s)]) }}`
 - **Variables**
     - Useful for defining values that should be used across the project
     - With a macro, dbt allows us to provide data to models for compilation

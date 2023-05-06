@@ -136,3 +136,19 @@
 - We create the `get_payment_type_description` macro under the `macros` subdirectory of the project in the `get_payment_type_description.sql` file
 - We then use it in our `stg_green_trip_data.sql` model file and run it again via `dbt run --select stg_green_trip_data`
 - Will then see the updated compiled code in `target/compiled` and the updated staging table in BigQuery's `ny_trips_dev`
+
+
+## Packages
+- Imported in the `packages.yml` file, *which you create* in the main dir of the project, and imported via `dbt deps`
+- Can call them similar to library functions: `{{ [dbt package].[macro name]([parameter(s)]) }}`
+- We are importing `dbt_utils` from dbt labs
+- Create the `packages.yml` file and add in:
+    ```bash
+        packages:
+        - package: dbt-labs/dbt_utils
+            version: 0.8.0
+    ```
+- Then run `dbt deps` in the terminal at the bottom of the Cloud IDE
+- Can view installed packages in the `dbt_packages/` subdirectory of the project, and see its own `macros/` subdirectory to see all of its macros
+- We then create a **surrogate key** via `{{ dbt_utils.surrogate_key(['vendorid', 'lpep_pickup_datetime']) }} as tripid,` in our staging table model
+- Run the model again via `dbt run --select stg_green_trip_data`, and again see the updated compiled code in `target/compiled` and the updated staging table in BigQuery's `ny_trips_dev`
