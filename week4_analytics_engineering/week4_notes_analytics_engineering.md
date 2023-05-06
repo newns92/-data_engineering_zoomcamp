@@ -124,6 +124,7 @@
     - A DEV schema (`ny_trips`?), something like a sandbox
     - A PROD one (`ny_trips_prod`?), which is where we will run models after deployment
         - Potentially a STAGING schema/environment?
+- ***In local Postgres, we should also have these schemas***:
 - Once you have initialized the dbt project in the cloud, in `dbt_project.yml`, change the project name to `taxi_data`, but keep the profile `default` and leave the defaults for where our different files are located (under the `# These configurations specify where dbt...` section/comment)
     - The `profile` will define/configure which data warehouse dbt will use to create the project
     - Again, we could have one dbt project, and by changing the profile, we could change where we run the project (from Postgres to BigQuery or vice versa, for example)
@@ -138,17 +139,28 @@
     - There's the dbt model itself (a SQL file)
         - Several **materilization** strategies (Table, View, incremental, ephemeral, etc.)
     - dbt takes this and returns compiled code and also runs the compiled code in the data warehouse
+    - There's a lot of `{}`'s in the model code
+    - This is because in the SQL files where we write the statements to transform our data, we are also writing in **Jinja**
+        - **Jinja** = a web template engine for Python/a Python-ic language that we identify between the `{{}}`'s (or `{%}`)
+        - Inside the Jinja, we can write macros/functions that later help us generate the full code when it compiles
+        - Normally at the start of the model, we use the `config()` macro, which will add the DDL or DML to the model that we're writing
+        - Typically, here is where we set the **materialization** strategy (table, view, incremental, and ephemeral are included by default, but we could define our own)
+            - *Table* = drops the table if it already exists in the data warehouse, then creates the table in the schema that we're working with (DEV or PROD) with the name of the model
+                - The compiled code is what creates the table in the correct schema, and this runs in the data warehouse
+            - *Incremental* = essentially a table, but this allows us to run our model incrementally (useful for data that doesn't change every day) to run our model and transform and load only *new* data
+        - *Ephemeral* = more like a derived model
 - ***The FROM clause of a dbt model***
     - **Sources**: the data loaded to our data warehouse that we use as sources for our models
-        - The configuration is defined in the YAML files in the `models/` directory
-        - Used with the **source macro** that will resolve the name to the correct schema, plus build the dependencies automatically
-        - Source freshness can be defined and tested
+        - The configuration of the sources is defined in the YAML files in the `models/` directory
+            - Set the database/BigQuery dataset, the schema, and as many tables in the schema as we want
+        - Used with the **`source()` macro** that will resolve the name to the correct schema, plus build the dependencies automatically
+        - Source freshness can be *defined* and *tested*
     - **Seeds**: CSV files stored in our repository under the `seed/` directory
         - Benefits of version controlling
-        - Equivalent to a `copy` command
-        - Recommended for data that doesn't change frequently
+        - Equivalent to a `copy` command to create tables
+        - *Recommended for data that doesn't change frequently*
         - Run via `dbt seed -s file_name`
-    - **Ref**: a macro to reference the underlying tables and views that were building the data warehouse
+    - **Ref**: a macro to reference the underlying tables and views that were building the data warehouse (*created from dbt models or dbt seeds*)
         - Run the same code in any environment, and it will resolve the correct schema for you
         - Dependencies are build automatically
 - ***Macros***
