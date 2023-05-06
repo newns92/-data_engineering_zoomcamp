@@ -122,3 +122,17 @@
             - name: yellow_trip_data    
     ```
 - Run `dbt run -m stg_green_trip_data` in the terminal at the bottom of the dbt Cloud IDE
+- Then, change the `SELECT` statement to run with the new column definitions to make all column names consistent
+- Then, can run `dbt run --select stg_green_trip_data`, which is equivalent to `dbt run -m stg_green_trip_data`
+- Should see the new view under `ny_trips_dev` in BigQuery (since *that's what we named the dataset to be when we defined the project*)
+- Can also see compiled code under `target/compiled`
+
+
+## Macros
+- These are similar to functions and are written in Jinja and SQL
+- dbt has many build in macros (`config()`, `source()`), and we can define our own
+- They return code, and are in the style `{% macro [macro name]([parameter(s)]) -%}   [some code]   {%- end macro %}`
+- Helpful if we want to maintain the same type of transformation in several different models
+- We create the `get_payment_type_description` macro under the `macros` subdirectory of the project in the `get_payment_type_description.sql` file
+- We then use it in our `stg_green_trip_data.sql` model file and run it again via `dbt run --select stg_green_trip_data`
+- Will then see the updated compiled code in `target/compiled` and the updated staging table in BigQuery's `ny_trips_dev`

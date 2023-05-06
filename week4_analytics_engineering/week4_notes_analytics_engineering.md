@@ -164,6 +164,10 @@
         - Run the same code in any environment, and it will resolve the correct schema for you
         - Dependencies are build automatically
 - ***Macros***
+    - These are similar to functions and are written in Jinja and SQL
+    - dbt has many build in macros (`config()`, `source()`), and we can define our own
+    - They return code, and are in the style `{% macro [macro name]([parameter(s)]) -%}   [some code]   {%- end macro %}`
+    - Helpful if we want to maintain the same type of transformation in several different models
     - Use **control structures** (e.g., IF statements and FOR loops) in SQL
     - Use environment variables in your dbt project for production deployments
     - Operate on the results of one query to generate another query
