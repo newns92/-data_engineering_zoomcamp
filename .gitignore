@@ -3,3 +3,4 @@ data_pgadmin/
 .db
 config.py
 week3_data_warehouse/data/
+profile.yml
