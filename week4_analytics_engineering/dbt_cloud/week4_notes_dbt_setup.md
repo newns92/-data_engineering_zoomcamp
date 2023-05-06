@@ -171,3 +171,9 @@
 - Add the above to the end of the `stg_green_trip_data.sql` model
 - We can run our model and change the value of `is_test_run` using the command `dbt run --select stg_green_trip_data.sql --var 'is_test_run: false'` and you should NOT see `limit 100` in the compiled code
 - Just running `dbt run --select stg_green_trip_data` should give the default value of `true` and you should see `limit 100` in the compiled code
+
+
+## Yellow Taxi
+- Create the `stg_yellow_trip_data.sql` model with a few changes from the `stg_green_trip_data.sql` model
+- Then run *both* models it via `dbt run --var 'is_test_run: false'`
+- Check for the new compiled code and the views in BigQuery
