@@ -119,9 +119,11 @@ def web_to_pg(year, service):
         # header = df.head(n=0)
         # # print(header)
 
-        print(f'Uploading {file_name} to Postgres...')
-        # add first chunk of data
         start = time.time()
+        start_datetime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start))
+
+        print(f'Uploading {file_name} to Postgres starting at {start_datetime}...')
+        # add first chunk of data
         df.to_sql(f'{service}_trip_data',  con=engine, if_exists='append')
         end = time.time()
         print('Time to insert first chunk: in %.3f seconds.' % (end - start))        
@@ -130,27 +132,27 @@ def web_to_pg(year, service):
         # header.to_sql(name=f'{service}_trip_data', con=engine, if_exists='replace')
 
         def load_chunks(df):
-                try:
-                    print("Loading next chunk...")
-                    start = time.time()
+            try:
+                print("Loading next chunk...")
+                start = time.time()
 
-                    # get next chunk
-                    df = next(df_iter)
+                # get next chunk
+                df = next(df_iter)
 
-                    # clean the data and fix the data types
-                    df = clean_data(df, service)
+                # clean the data and fix the data types
+                df = clean_data(df, service)
                     
-                    # add chunk
-                    df.to_sql(name=f'{service}_trip_data', con=engine, if_exists='append')
+                # add chunk
+                df.to_sql(name=f'{service}_trip_data', con=engine, if_exists='append')
 
-                    end = time.time()
+                end = time.time()
 
-                    print('Inserted another of ' + file_name +  ' chunk in %.3f seconds.' % (end - start))
+                print('Inserted another of ' + file_name +  ' chunk in %.3f seconds.' % (end - start))
 
-                except:
-                    # will come to this clause when we throw an error after running out of data chunks
-                    print('All data chunks loaded.')
-                    quit()
+            except:
+                # will come to this clause when we throw an error after running out of data chunks
+                print('All data chunks loaded.')
+                return('All data chunks loaded.')
 
         # insert the rest of the chunks until loop breaks when all data is added
         while True:
@@ -175,8 +177,8 @@ if __name__ == '__main__':
 
     engine = create_pg_engine(user, password, host, port, database)
 
-    # web_to_pg('2019', 'green')
-    # web_to_pg('2020', 'green')
+    web_to_pg('2019', 'green')
+    web_to_pg('2020', 'green')
     web_to_pg('2019', 'yellow')
     web_to_pg('2020', 'yellow')
     web_to_pg('2019', 'fhv')
