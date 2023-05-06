@@ -69,21 +69,20 @@
 
 ## What is dbt?
 - ***dbt (Data Build Tool)*** **= a transformation tool that allows anyone that knows SQL to deploy analytics code following software engineering best practices (like modularity, portability, CI/CD, and documentation)**
-- After doing the Extracting and the Loading into a data warehouse (ELT), we need to transform this data to present to stakeholders and to be able to perform analysis
-- dbt will help us Transform the data in the data warehouse as well as introduce good software engineering practices by defining a **development workflow**
-- We do this by adding a **modeling layer** where we transform raw data into a derived model that's persisted back into the data warehouse
+- After doing the Extracting and the Loading into a data warehouse (ELT), we need to transform all this raw data to later expose and present to stakeholders and to be able to perform analysis
+- dbt will help us Transform the data in the data warehouse as well as introduce good software engineering practices by defining a **development workflow**: develop the models, then test and document them, then go through the deployment phase (version control and CI/DI)
+- We do this by adding a **modeling layer** where we transform raw data into a **derived dbt model** that's persisted back into the data warehouse
 - Each **dbt model** is:
-    - A `*.sql` file (dbt models    )
-    - A `Select~ statement (*no* DDL (Data Definition Language = defines the structure/schema of the database) or DML(Data Manipulation Language, helps deal with managing and manipulating data in the database))
+    - A `*.sql` file
+    - A `SELECT` statement (*no* DDL (Data Definition Language = defines the structure/schema of the database) or DML (Data Manipulation Language, helps deal with managing and manipulating data in the database))
     - A file that dbt will compile and run in our data warehouse
-        - It will compile the DDL/DML and push it to our data warehouse
+        - It will compile the DDL/DML file and push that compute to our data warehouse in order to see our new table/view
 - Again, we turn data warehouse *tables into models* by transforming them from raw data into derived dbt models, which then persist back to the data warehouse
 - Can use dbt in 2 ways:
-    - **dbt Core**: Open-source project that allows the data transformation
+    - **dbt Core**: Open-source and free to use project that allows the data transformation
         - The essence of dbt that builds and runs a **dbt project** (SQL and YAML files)
-        - Includes SQL compilation logic, **macros**, and database adapters
+        - Includes SQL compilation logic, **macros** (think functions), and database adapters
         - Includes a CLI to run dbt commands *locally*
-        - Open-source and free to use
     - **dbt Cloud**: SaaS application to develop and manage dbt projects
         - Web-based IDE to develop, run, and test a dbt project
         - Jobs orchestration
@@ -96,7 +95,7 @@
 - dbt in Postgres
     - Cannot connect a local database to dbt Cloud
     - Development using a local IDE of your choice
-    - Local installation of dbt core connecting to the Postgres database
+    - Local installation of dbt core connecting to a local Postgres database
     - Running dbt models through the CLI
 - In the end, we'll have the taxi trip data loaded into our database/GCS Bucket (along with a CSV file for the taxi zones) as raw data
 - We will transform this raw data into transformed data via dbt withing our BigQuery (or Postgres) data warehouse
