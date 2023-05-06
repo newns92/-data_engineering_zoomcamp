@@ -8,6 +8,5 @@
 - Name the project `taxi_data` and select the Postgres option of a database
 - `profiles.yml` should be updated with stock **outputs**.
 - Update these outputs to be the correct root username, password, host, port, etc. for the Postgres database
-- Copy/Cut the `profiles.yml` file into the `taxi_data` directory that `dbt init` created
-- Run `dbt debug`
-    - This will check the database connection and display any errors or warnings that it finds
+- Run `dbt debug --profiles-dir ../`
+    - This will find the `profiles.yml` file in the parent directory of the dbt project and check the database connection and display any errors or warnings that it finds
