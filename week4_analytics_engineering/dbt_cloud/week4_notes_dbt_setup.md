@@ -1,4 +1,4 @@
-## Cloud setup
+a ## Cloud setup
 - First, upload the data to a GCS bucket via the `upload_all_data.py` file in the `week4/` directory
 - Then, in BigQuery, create the external tables via:
     ```bash
@@ -177,3 +177,11 @@
 - Create the `stg_yellow_trip_data.sql` model with a few changes from the `stg_green_trip_data.sql` model
 - Then run *both* models it via `dbt run --var 'is_test_run: false'`
 - Check for the new compiled code and the views in BigQuery
+
+
+## Seeds
+- These are CSV files that we can have in our repo and then run and use as tables via a **Ref macro**
+- Meant to be used for smaller files that contain data that won't change often
+- Cannot be loaded in the Cloud UI
+- If done locally, can just copy the CSV to the `seeds/` subdirectory of the project
+- In the cloud, you have to add the file to the GitHub repo and then pull it into the dbt Cloud UI
