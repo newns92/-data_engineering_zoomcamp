@@ -36,6 +36,10 @@ models:
     example:
       +materialized: view
 
+# for a test in the schema.yml file for staging
+vars:
+  payment_type_values: [1, 2, 3, 4, 5, 6]
+
 seeds:
   taxi_data:
     taxi_zone_lookup:

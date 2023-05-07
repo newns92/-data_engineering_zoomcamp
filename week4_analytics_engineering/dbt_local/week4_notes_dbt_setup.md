@@ -29,7 +29,9 @@
     - Add the SQL to create the dim table
     - Before runnning this model, create a new one called `fact_trips.sql`
         - In here, we'll take both the staging yellow and staging green data and UNION them
-    - Once `fact_trips.sql` is done, we can run `dbt run` which will run all of our models, *but not the seed*
-        - To run the seed as well, run `dbt build` to build everything that we have, along with running some tests
-    - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips.sql`
-        - But to run everything that `fact_trips.sql` depends on first, we can run `dbt build --select +fact_trips.sql`
+    - Once `fact_trips.sql` is done, we can run `dbt run --profiles-dir=../` which will run all of our models, *but not the seed*
+        - To run the seed as well, run `dbt build --profiles-dir=../` to build everything that we have, along with running some tests
+    - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips.sql --profiles-dir=../`
+        - But to run everything that `fact_trips.sql` depends on first, we can run `dbt build --select +fact_trips.sql --profiles-dir=../`
+- Then add all the test and the correct `schema.yml` files and the `dm_montly_zone_revenue.sql` core model
+- Run `dbt build --profiles-dir=../`
