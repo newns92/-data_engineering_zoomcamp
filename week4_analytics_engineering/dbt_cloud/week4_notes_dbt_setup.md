@@ -268,6 +268,15 @@
     - Refresh the dbt Cloud IDE, and then the "Documentation" tab at the top of the IDE should take you to this documentation
 
 
+## BEFORE VISUALIZATION
+- *Cloud*
+    - Add *ALL* data via `dbt build --var 'is_test_run: false'` in the dbt Cloud for DEV
+    - In the Job, edit `dbt run` to be `dbt run  --var 'is_test_run: false'`
+- *Local*
+    - Add *ALL* data via `dbt build --var 'is_test_run: false' --profiles-dir=../` in the CLI for DEV
+    - Add *ALL* data via `dbt build -t prod --var 'is_test_run: false' --profiles-dir=../` in the CLI for PROD
+
+
 ## Visualization
 - **Google Looker**
     - Go to https://lookerstudio.google.com/u/0/navigation/reporting

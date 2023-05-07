@@ -22,5 +22,3 @@ models:
         tests:
             - not_null:
                 severity: error
-      
-      
