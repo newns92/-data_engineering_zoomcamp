@@ -230,3 +230,6 @@ a ## Cloud setup
     - can run on a specific model and its children via `dbt test --select [model.sql]+`
     - can run on a specific model and its ancestors via `dbt test --select +[model.sql]`
     - Also, `dbt build` would run *everything* we have in our project (seeds, test, and models)
+- Might see that `tripid` is not unique as a warning after running `dbt test`, so add some de-duplication logic to both staging tables, then run `dbt build`
+- Finally, add the `schema.yml` for the `models/core/` models
+- Could even document seeds or macros if you wanted to
