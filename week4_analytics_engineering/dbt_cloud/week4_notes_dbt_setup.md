@@ -273,8 +273,8 @@
     - Add *ALL* data via `dbt build --var 'is_test_run: false'` in the dbt Cloud for DEV
     - In the Job, edit `dbt run` to be `dbt run  --var 'is_test_run: false'` for PROD
 - *Local*
-    - Add *ALL* data via `dbt build --var 'is_test_run: false' --profiles-dir=../` in the CLI for DEV
-    - Add *ALL* data via `dbt build -t prod --var 'is_test_run: false' --profiles-dir=../` in the CLI for PROD
+    - Add *ALL* data via `dbt build --vars "is_test_run: false" --profiles-dir=../` in the CLI for DEV
+    - Add *ALL* data via `dbt build -t prod --vars "is_test_run: false" --profiles-dir=../` in the CLI for PROD
 
 
 ## Visualization
