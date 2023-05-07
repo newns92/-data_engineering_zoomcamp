@@ -233,3 +233,36 @@ a ## Cloud setup
 - Might see that `tripid` is not unique as a warning after running `dbt test`, so add some de-duplication logic to both staging tables, then run `dbt build`
 - Finally, add the `schema.yml` for the `models/core/` models
 - Could even document seeds or macros if you wanted to
+
+
+## Deployment
+- At the top of the Cloud IDE, go to "Deploy" -> "Environments"
+    - We should see a DEV environment that was created from the initial dbt Cloud setup
+    - We then create a PROD environment named "Production" with a type of "Deployment" with the latest dbt version (1.4 to match the DEV environment as of 05/07/2023)
+    - We then name the dataset we want to connect to: "ny_trips_prod"
+- Then go to "Deploy" -> "Jobs"
+    - https://docs.getdbt.com/docs/quickstarts/overview#create-a-new-job
+    - https://discourse.getdbt.com/t/best-practices-for-cicd-deployment/618
+    - Create a new job: "dbt build", make sure it's in the "Production" environment, inherit the dbt version from the environment, and leave the target as "default" to mean our target is the PROD database we defined when creating the environment
+    - Check off to create docs, and we haven't defined a source freshness yet, so it doesn't make sense to check that off just yet
+    - For commands to run, put:
+        - `dbt seed`
+        - `dbt run`
+        - `dbt test`
+    - Then, to schedule, we could use a CRON job, or every day, or any specific day and hour. We will do every day, every 6 hours
+    - ~~Under the "webhooks" tab is where we can make this job run on a PR~~
+    - Save the job, and then run it
+    - Once it successfully completes, you should see all the tables in BigQuery in the PROD dataset
+    - In the dbt Cloud IDE, you can click on the completed job to see the steps run under "Run Timing"
+        - First, we see it cloned the repo for the main branch, then created the connection to BigQuery
+        - It then ran `dbt deps` to make sure it always has the latest packages that we defined, and then it ran the dbt CLI commands we specified
+        - We can see console and debug logs, and can download both
+    - Under "Model Timing", we can see model timing, and under "Artifacts", we can see the compiled code (and the documentation as `manifest.json`)
+    - There is also a "View documentation" button the top of the screen that takes you to a webpage with your docs: definitions, dependencies, test, macros, references, code, and compiled code
+        - Should see that the compiled code for the `core/` models is connecting to `ny_trips_prod`
+        - Can also access see the lineage graph on the bottom-right
+            - Which you can full-screen to get a full DAG/lineage graph
+            - Here, you can also play around with different `--select` arguments to see how the lineage graph changes
+- We can then go to "Account Settings" and open the project
+    - We can then click "Edit" and under "Artifacts", add/link our documentation from the `dbt taxi build` job
+    - Refresh the dbt Cloud IDE, and then the "Documentation" tab at the top of the IDE should take you to this documentation

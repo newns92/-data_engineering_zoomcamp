@@ -226,7 +226,7 @@
     5. Schedule the models
 - DEV environment (Test, document, and develop) --> Deployemnt (Version control and CI/CD) --> PROD environment
 - *Running a dbt project in production*:
-    - dbt Cloud includes a scheduler to create jobs to run in production
+    - dbt Cloud includes a scheduler to create jobs to run in production (run in a PROD database)
     - A single job can contain mulitple commands
     - Jobs can be triggered manually or on a schedule
     - Each job keeps a log of runs over time
@@ -238,8 +238,8 @@
     - The goal is to reduce adding bugs to production code and maintain a more stable project
     - dbt allows us to enable CI on PR's
     - It's enabled via webhooks from GitHub or GitLab
-    - When a PR is ready to be merged, a webhook is recieved in dbt Cloud that will enqueue a new run of the specific job
-    - The run of the CI job will be against a temporary schema
+    - When a PR is ready to be merged, a webhook sent from GitHub/GitLab is recieved in dbt Cloud that will enqueue a new run of the specific job
+    - The run of the CI job will be against a temporary schema made for the PR
     - No PR will be able to be merged unless the run has been completed successfully
 
 
