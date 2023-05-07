@@ -19,6 +19,8 @@
 - Then create the yellow staging SQL file
 - Then attempt `dbt run -m stg_yellow_trip_data --profiles-dir=../`
 - You should see the second View in the `public` schema of Postgres
+
+## Seeds
 - Create the seed CSV, then add it to the `dbt_project.yml`
 - Then run `dbt seed --profiles-dir=../`
 - You should see a new table in Postgres
@@ -33,5 +35,27 @@
         - To run the seed as well, run `dbt build --profiles-dir=../` to build everything that we have, along with running some tests
     - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips.sql --profiles-dir=../`
         - But to run everything that `fact_trips.sql` depends on first, we can run `dbt build --select +fact_trips.sql --profiles-dir=../`
-- Then add all the test and the correct `schema.yml` files and the `dm_montly_zone_revenue.sql` core model
+
+## Testing
+- Then add all the tests and the correct `schema.yml` files and the `dm_montly_zone_revenue.sql` core model
 - Run `dbt build --profiles-dir=../`
+
+
+## Deployment
+- Add the PROD code to the `profiles.yml` file
+- Then run `dbt build -t prod --profiles-dir=../` to change the target (`-t`) to PROD
+- We could then `git checkout` into `master` and use it to deploy models in PROD once done development
+- We could also use a CRON job to indicate the command and the target
+    - The Windows equivalent to a CRON job is a **scheduled task**
+    - A scheduled task can be in **Task Scheduler** (or just run `Win+R` then execute `taskschd.msc`)
+    - But it can also be done via CLI with `schtasks` (if you, for instance, need to script it or add it to version control)
+        - Ex: `schtasks /create /tn calculate /tr calc /sc weekly /d MON /st 06:05 /ru "System"`
+            - This creates the task "calculate", which starts the calculator(calc) every Monday at 6:05 (should you ever need that)
+        - All available commands:
+            - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks
+            - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-create
+    - There's also `pycron`
+        - https://pypi.org/project/python-crontab/
+    - Other options (Airflow, Prefect, Dagster, Databricks, etc.):
+        - https://docs.getdbt.com/docs/deploy/deployment-tools
+            - https://prefecthq.github.io/prefect-dbt/
