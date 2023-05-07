@@ -1,4 +1,4 @@
-a ## Cloud setup
+## Cloud setup
 - First, upload the data to a GCS bucket via the `upload_all_data.py` file in the `week4/` directory
 - Then, in BigQuery, create the external tables via:
     ```bash
@@ -266,3 +266,23 @@ a ## Cloud setup
 - We can then go to "Account Settings" and open the project
     - We can then click "Edit" and under "Artifacts", add/link our documentation from the `dbt taxi build` job
     - Refresh the dbt Cloud IDE, and then the "Documentation" tab at the top of the IDE should take you to this documentation
+
+
+## Visualization
+- **Google Looker**
+    - Go to https://lookerstudio.google.com/u/0/navigation/reporting
+    - "Create" a "Data Source", choose BigQuery
+    - Next, we'll be able to see our projects, so choose the correct one and then choose the PROD dataset, and select the `fact_trips` table, and click "Connect"
+    - We now see all of our columns, with the option to do some default aggregations and write some descriptions, if desired
+        - *Make sure just `passenger_count` has a sum on it*
+        - Under "Metrics", we see the default of record count, which is useful to see how many trips we're looking at
+        - We also could create our own fields here, but we will do that later
+        - We can also define data freshness at the top of the webpage, as well as change the name of the table from `fact_trips` in the upper-left (which we should do if presenting to stakeholders who are not aware of dimensional modeling terms)
+    - Click "Create report"
+        - Remove the default table Looker places in the report
+        - Go to "Add a chart", and select a "Sparkline" chart under "Time series", and see that Looker automatically populates it with a dimension (`pickup_datetime`) and metric (`Record count`)
+        - Add a **breakdown dimension** of `service_type` to see the chart broken out by "Yellow" and "Green"
+        - Change the chart to a normal "Time series" chart
+        - If any outliers popped up in your data (years beyond what the data contains, for example), Looker has some **controls** like "Date range" controls
+- **Metabase**
+    - 
