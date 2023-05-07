@@ -212,3 +212,24 @@ a ## Cloud setup
         - To run the seed as well, run `dbt build` to build everything that we have, along with running some tests
     - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips.sql`
         - But to run everything that `fact_trips.sql` depends on first, we can run `dbt build --select +fact_trips.sql`
+
+
+## Testing
+- Create the `dm_monthly_zone_revenue.sql` file in `models/core`
+- In the `staging/schema.yml` file, add the model descriptions, along with their column descriptions and some defined tests on each
+    - Those tests with `severity: [severity]` will ask if dbt should keep running if it fails or not, or should it stop entirely
+        - `severity: warn` means everything will run but it will give warnings at the end
+        - `severity: never` means it will stop immediately
+- Add the necessary section to `dbt_project.yml`
+    ```bash
+        vars:
+            payment_type_values: [1, 2, 3, 4, 5, 6]
+    ```
+- Finally, run `dbt test` (which would run on all deployed models)
+    - can run on a specific model via `dbt test --select [model.sql]`
+    - can run on a specific model and its children via `dbt test --select [model.sql]+`
+    - can run on a specific model and its ancestors via `dbt test --select +[model.sql]`
+    - Also, `dbt build` would run *everything* we have in our project (seeds, test, and models)
+- Might see that `tripid` is not unique as a warning after running `dbt test`, so add some de-duplication logic to both staging tables, then run `dbt build`
+- Finally, add the `schema.yml` for the `models/core/` models
+- Could even document seeds or macros if you wanted to
