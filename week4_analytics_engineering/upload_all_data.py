@@ -63,11 +63,11 @@ def clean_data(df, service):
 
         # this fixes fields for files that have NAN values and thus aren't INTs
         # when they should be INTs
-        df.VendorID = df.passenger_count.fillna(999).astype('int')
-        df.passenger_count = df.passenger_count.fillna(999).astype('int')
-        df.payment_type = df.payment_type.fillna(999).astype('int')
-        df.RatecodeID = df.RatecodeID.fillna(999).astype('int')
-        df.VendorID = df.VendorID.fillna(999).astype('int')
+        # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
+        df.VendorID = pd.array(df.VendorID, dtype=pd.Int64Dtype())
+        df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
+        df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
+        df.RatecodeID = pd.array(df.RatecodeID, dtype=pd.Int64Dtype())
 
     elif service == 'green':
         # fix datetimes
@@ -76,12 +76,12 @@ def clean_data(df, service):
 
         # this fixes fields for files that have NAN values and thus aren't INTs
         # when they should be INTs
-        df.VendorID = df.passenger_count.fillna(999).astype('int')
-        df.passenger_count = df.passenger_count.fillna(999).astype('int')
-        df.payment_type = df.payment_type.fillna(999).astype('int')
-        df.trip_type = df.trip_type.fillna(999).astype('int')
-        df.RatecodeID = df.RatecodeID.fillna(999).astype('int')
-        df.VendorID = df.VendorID.fillna(999).astype('int')
+        # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
+        df.VendorID = pd.array(df.VendorID, dtype=pd.Int64Dtype())
+        df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
+        df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
+        df.trip_type = pd.array(df.trip_type, dtype=pd.Int64Dtype())
+        df.RatecodeID = pd.array(df.RatecodeID, dtype=pd.Int64Dtype())
 
     # elif service == 'fhv':
     else:
@@ -96,8 +96,9 @@ def clean_data(df, service):
 
         # this fixes fields for files that have NAN values and thus aren't INTs
         # when they should be INTs
-        df.PULocationID = df.PULocationID.fillna(999).astype('int')
-        df.DOLocationID = df.DOLocationID.fillna(999).astype('int')            
+        # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
+        df.PULocationID = pd.array(df.PULocationID, dtype=pd.Int64Dtype())
+        df.DOLocationID = pd.array(df.DOLocationID, dtype=pd.Int64Dtype())           
 
     return df
 
