@@ -316,6 +316,7 @@
     - Can then either go back into "Edit" mode, or share the dashboard/report by inviting people to it, sharing a link, downloading the dashboard/report as a PDF, or scheduling an email with it (like sending it every Monday with the last week's data)
         - https://lookerstudio.google.com/s/lWmNXPZMwb4
 - **Metabase**
+    - https://www.youtube.com/watch?v=BnLkrA7a6gM&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=40
     - When using a local environment like Postgres, we can't use Looker Studio
     - Metabase also has a cloud solution, but they also have an open-source solution that is free to use and install locally
     - Go to https://www.metabase.com/start/oss/
@@ -331,3 +332,8 @@
     - We will also see distributions of each of our columns
     - Can click "" at the bottom of the screen to see some time series and some other distributions
     - This is helpful to do EDA, especially if the data is new to us
+    - Can click "+ New" and "ask a question"
+        - Then pick `fact_trips`, add a filter for 1/1/2019 to 12/31/2020, pick a metric of "count of rows", and then group by `pickup_datetime` (week)
+        - Click on the arrow on the right to preview, which should show a table
+            - Can also add sorting and row limits here
+        - 
