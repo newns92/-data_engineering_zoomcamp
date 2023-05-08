@@ -271,10 +271,10 @@
 ## BEFORE VISUALIZATION
 - *Cloud*
     - Add *ALL* data via `dbt build --var 'is_test_run: false'` in the dbt Cloud for DEV
-    - In the Job, edit `dbt run` to be `dbt run  --var 'is_test_run: false'`
+    - In the Job, edit `dbt run` to be `dbt run  --var 'is_test_run: false'` for PROD
 - *Local*
-    - Add *ALL* data via `dbt build --var 'is_test_run: false' --profiles-dir=../` in the CLI for DEV
-    - Add *ALL* data via `dbt build -t prod --var 'is_test_run: false' --profiles-dir=../` in the CLI for PROD
+    - Add *ALL* data via `dbt build --vars "is_test_run: false" --profiles-dir=../` in the CLI for DEV
+    - Add *ALL* data via `dbt build -t prod --vars "is_test_run: false" --profiles-dir=../` in the CLI for PROD
 
 
 ## Visualization
@@ -293,5 +293,47 @@
         - Add a **breakdown dimension** of `service_type` to see the chart broken out by "Yellow" and "Green"
         - Change the chart to a normal "Time series" chart
         - If any outliers popped up in your data (years beyond what the data contains, for example), Looker has some **controls** like "Date range" controls
+            - So, add the control and set the date range to 1/1/2019 to 12/31/2020
+        - Can also add **filters** under the "Style" tab on the right
+            - Or play around with different settings like grid type, background colors, borders, etc.
+        - Can add text boxes to be chart titles
+        - Let's now add a "Scorecard with compact numbers" chart, and remove the dimension that's automatically added to see the total number of records (in the current date range)
+        - Next, add a pie chart to see service type distribution (Should happen automatically), and remove the dimension (also removes the filter since there's nothing to filter on)
+        - We can note the dominance of yellow taxis (pie chart) as well as the huge drop in rides in Mar. 2020 due to COVID (line chart)
+        - Add a "Table with heatmap", remove the date range dimension, and change the dimension to `pickup_zone` for trips per pickup zone
+        - Then, for trips per month, add a "Column chart", then change the dimension to `pickup_datetime` and remove the breakdown dimension
+            - We will now add (create) a new field to allow us to filter by month
+            - Call it `pickup_month` and add the formula `MONTH(pickup_datetime)`
+            - Then save it, click "Done", then add it as the dimension
+            - But, we know there is a big discrepency between 2019 and 2020, so we want to drill down by year
+            - Create `pickup_year` and add the formula `YEAR(pickup_datetime)`, and add it as the breakdown dimenstion
+            - Make sure the bar chart is sorted by `pickup_month` and not `Record Count`, and remove the second sort
+            - Then, under "Style", make sure there are 12 bars, one per month
+        - Now, *change this to a stacked column chart*
+        - Then, add a new control: a drop-down list, and make the dimension `service_type`
+        - Finally, title the report "Taxi Trips Analysis: 2019-2020"
+    - In the upper-right, can click "View" to preview it in an interactive mode
+    - Can then either go back into "Edit" mode, or share the dashboard/report by inviting people to it, sharing a link, downloading the dashboard/report as a PDF, or scheduling an email with it (like sending it every Monday with the last week's data)
+        - https://lookerstudio.google.com/s/lWmNXPZMwb4
 - **Metabase**
-    - 
+    - https://www.youtube.com/watch?v=BnLkrA7a6gM&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=40
+    - When using a local environment like Postgres, we can't use Looker Studio
+    - Metabase also has a cloud solution, but they also have an open-source solution that is free to use and install locally
+    - Go to https://www.metabase.com/start/oss/
+        - Get the Dockerfile from DockerHub via `docker pull metabase/metabase:latest` in the `dbt_local/` directory
+        - Then run `docker run -d -p 3000:3000 --net=pg-network --name metabase metabase/metabase` *while the Postgres instance is running/available*, since that's what we're connecting to (*we specify the network*)
+        - OR you can use the `.jar` file locally in order to run Metabase
+    - Once you run `docker run`, check that it's running with `docker ps`
+    - Once you have everything running, open `localhost:3000` in a browser
+    - Set everything up by choosing a language, creating a profile, then creating the database connection to `localhost` with the Display name "Taxi Postgres", port `5432`, database name `ny_taxi`, username and password `root`, and "All" schemas.
+    - At first, it will ask for some things for the initial settings, such as user and the connection to the database, and which database to use exactly
+    - You should then be able to see your schemas (`public`, `staging`, `prod`) and each table within the schema
+    - Once you select a table, Metabase tiles will be generate some **tiles** and filters about the table automatically
+    - We will also see distributions of each of our columns
+    - Can click "" at the bottom of the screen to see some time series and some other distributions
+    - This is helpful to do EDA, especially if the data is new to us
+    - Can click "+ New" and "ask a question"
+        - Then pick `fact_trips`, add a filter for 1/1/2019 to 12/31/2020, pick a metric of "count of rows", and then group by `pickup_datetime` (week)
+        - Click on the arrow on the right to preview, which should show a table
+            - Can also add sorting and row limits here
+        - 
