@@ -316,4 +316,18 @@
     - Can then either go back into "Edit" mode, or share the dashboard/report by inviting people to it, sharing a link, downloading the dashboard/report as a PDF, or scheduling an email with it (like sending it every Monday with the last week's data)
         - https://lookerstudio.google.com/s/lWmNXPZMwb4
 - **Metabase**
-    - 
+    - When using a local environment like Postgres, we can't use Looker Studio
+    - Metabase also has a cloud solution, but they also have an open-source solution that is free to use and install locally
+    - Go to https://www.metabase.com/start/oss/
+        - Get the Dockerfile from DockerHub via `docker pull metabase/metabase:latest` in the `dbt_local/` directory
+        - Then run `docker run -d -p 3000:3000 --net=pg-network --name metabase metabase/metabase` *while the Postgres instance is running/available*, since that's what we're connecting to (*we specify the network*)
+        - OR you can use the `.jar` file locally in order to run Metabase
+    - Once you run `docker run`, check that it's running with `docker ps`
+    - Once you have everything running, open `localhost:3000` in a browser
+    - Set everything up by choosing a language, creating a profile, then creating the database connection to `localhost` with the Display name "Taxi Postgres", port `5432`, database name `ny_taxi`, username and password `root`, and "All" schemas.
+    - At first, it will ask for some things for the initial settings, such as user and the connection to the database, and which database to use exactly
+    - You should then be able to see your schemas (`public`, `staging`, `prod`) and each table within the schema
+    - Once you select a table, Metabase tiles will be generate some **tiles** and filters about the table automatically
+    - We will also see distributions of each of our columns
+    - Can click "" at the bottom of the screen to see some time series and some other distributions
+    - This is helpful to do EDA, especially if the data is new to us
