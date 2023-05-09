@@ -1,0 +1,8 @@
+.piperider
+.user.yml
+*.duckdb
+venv/
+target/
+dbt_modules/
+logs/
+dbt_packages/
