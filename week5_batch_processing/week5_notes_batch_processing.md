@@ -170,4 +170,4 @@
     - Run it
     - Run `pip install pandas` if need be
     - Copy over `create_taxi_schema.py` and run `python create_taxi_schema.py`
-    - Can view this stuff in a terminal via `tree data/pq`
+    - Can view this stuff in a terminal via `tree data/parquet`

@@ -13,7 +13,7 @@ def process_data(service, year, month, green_schema, yellow_schema, spark_sessio
         schema = yellow_schema
     
     # IF RAN download_data.sh
-    input_path = f'data/raw/green/{year}/{month:02d}/'
+    input_path = f'data/raw/{service}/{year}/{month:02d}/'
 
     # # IF DOWNLOADED PARQUET FILES FROM GCS BUCKET
     # # example file name: green_tripdata_2019-01.parquet
@@ -26,7 +26,7 @@ def process_data(service, year, month, green_schema, yellow_schema, spark_sessio
     #     .schema(schema) \
     #     .parquet(input_path)
     print(f'Reading {input_path}')
-    df = spark_session  .read \
+    df = spark_session.read \
         .option('header', 'true') \
         .schema(schema) \
         .csv(input_path)
