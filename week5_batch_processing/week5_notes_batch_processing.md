@@ -131,6 +131,19 @@
 
             df.show()
         ```
+        - In the above code:
+            - `SparkSession` is the class of the object that we instantiate
+                - This class is the entry point into all functionality in Spark 
+                - A `SparkSession` can be used create DataFrames, register DataFrames as tables, execute SQL over tables, cache tables, and read parquet files
+            - `builder` is the builder method
+                - It's a class attribute that is an instance of `pyspark.sql.session.SparkSession.Builder` that is used to construct SparkSession instances
+            - `master()` sets the Spark master URL to connect to
+                - The `local[*]` string means Spark will run on a local cluster (local machine)
+                    - `[*]` means Spark will run with as many CPU cores as possible
+                        - i.e., tells Spark to use all available cores (e.g., if we wanted to use only 2 cores, we would write `local[2]`)
+            - `appName()` defines the name of our application/session, which will show in the Spark UI at http://localhost:4040/
+            - `getOrCreate()` will create the session or recover the object if it was previously created
+                - i.e., returns an existing `SparkSession`, if available, or creates a new one
         - Can also test that writing works via `df.write.parquet('zones')`
 - To see conda environments in Juptyter notebooks:
     - Run `conda install nb_conda_kernels` in your base environment
