@@ -160,3 +160,12 @@
     - Information about the running executors
 - If multiple SparkContexts are running on the same host, they will bind to successive ports beginning with `4040` (`4041`, `4042`, etc)
 - More info: https://spark.apache.org/docs/2.2.3/monitoring.html
+
+## Get the data
+- Run `./download_data.sh` to download 2020 and 2021 yellow and green taxi data
+- Run `python create_taxi_schema.py` ***in a `zoom` Conda environment terminal***
+- Can view this stuff in a Git Bash terminal via `tree data/pq` while in the `week5/` directory
+- IN THE VM
+    - Copy over the `download_data.sh` file to the VM via a VSCode Remote Window into the `pyspark_testing/` dir
+    - `cd` into that dir, then run `chmod +x download_data.sh`
+    - Run it
