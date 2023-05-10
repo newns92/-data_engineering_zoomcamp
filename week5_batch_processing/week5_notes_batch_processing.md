@@ -150,3 +150,13 @@
     - In the `zoom` environment, run `conda install ipykernel`
     - Restart Jupyter Notebooks
     - Should see the conda environments as options under the "Kernel" tab
+
+## Spark UI:
+- Available at http://localhost:4040/
+- Every **SparkContext** launches a web UI, by default on port `4040`, and it displays useful information about the application including:
+    - A list of scheduler stages and tasks
+    - A summary of RDD sizes and memory usage
+    - Environmental information
+    - Information about the running executors
+- If multiple SparkContexts are running on the same host, they will bind to successive ports beginning with `4040` (`4041`, `4042`, etc)
+- More info: https://spark.apache.org/docs/2.2.3/monitoring.html

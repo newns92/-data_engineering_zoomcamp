@@ -182,6 +182,7 @@
 - First, create an `.ssh/` directory via `mkdir` in the Git Bash terminal if it doesn't already exist
 - Then use the `ssh-keygen` command with a `-C` flag to create a new SSH key pair
     - Do this via `ssh-keygen -t rsa -f ~/.ssh/[name for SSH key file] -C [username on the VM] -b 2048`
+        - Username = `nimz`
     - Enter a passphrase if desired
     - Should see `gcp` and `gcp.pub` key files via `ls`
     - **Never** show the private key
