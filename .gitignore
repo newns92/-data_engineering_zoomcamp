@@ -5,3 +5,8 @@ config.py
 week3_data_warehouse/data/
 profiles.yml
 bigquery_dbt_credentials.json
+week5_batch_processing/data
+week5_batch_processing/fhv
+week5_batch_processing/fhvhv
+week5_batch_processing/zones
+week5_batch_processing/*.csv*
