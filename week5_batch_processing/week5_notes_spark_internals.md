@@ -59,8 +59,10 @@
 - Each executor does filtering and then an *initial* GROUP BY to get **subresults**
     - We say "initial" GROUP BY's since each executor can only process one partition at a time, so the GROUP BY is within a partition
     - These executors will output those subresults GROUP-ed BY just for that partition
-    - Then, for each partition, we have a bunch of temp files (our subresults), that we must combine
-- Subresults are **(re)-shuffled** and then there is an **external merge sort** (an algorithm for sorting the data in a distributed manner)
+    - Then, for each partition, we have a bunch of *temp files* (our *subresults*), that we must combine
+- Subresults are **(re)-shuffled** (Spark moves records between partitions in order to group records with the same key in the same partition)
+- Then there is an **external merge sort** (an algorithm for sorting the data in a distributed manner)
+- After re-shuffling, Spark does *another* GROUP BY to group all records with the same key and then reduces the groups to *single* records
 - **Shuffling** = a mechanism Spark uses to move/redistribute data across different executors/partitions and even across machines
     - It moves data from smaller partitions into larger partitions, and that's where the external merge sort is applied
     - Within these larger partitions, we can do *another* GROUP BY
@@ -77,7 +79,15 @@
     - https://developer.ibm.com/blogs/spark-performance-optimization-guidelines/
 
 ## JOINs in Spark
-- Spark can join two tables quite easily, and syntax is easy to understand via `.join()`
-- Spark **broadcast joins** are perfect for joining a large DataFrame with a small DataFrame.
-    - Spark can "broadcast" a small DataFrame by sending all the data in that small DataFrame to all nodes in the cluster
+- Spark can join 2 tables quite easily, and syntax is easy to understand via `.join()`
+- For the JOINs, suppose we have 2 partitions per dataset (i.e., 2 partitions for yellow and 2 partitions for green), where `Y1`, `Y2`, `Y3` and `G1`, `G2`, `G3` are the records of each dataset 
+    - Each record is composed by multiple columns: `hour`, `zone`, `amount` and `number_of_trips`
+    - Records will be joined by a **composite key** [`hour`, `zone`]
+    - In the next step, Spark once again does re-shuffling with External Merge Sort
+    - Suppose we have 3 output partitions: every record with composite key 1 will go to the 1st partition, every record with composite key 2 will go to the 2nd, every record with composite key 3 to the 3rd, and every record with composite key 4 would go to the *1st* partition
+        - As a reminder, *re-shuffling is performed to ensure records with the same keys end up in the same partitions*
+    - Lastly, Spark performs a REDUCE step similar to the one in GROUP BY, where *multiple records are reduced into one*
+- Spark **broadcast joins** are perfect for joining a *large* DataFrame with a *small* DataFrame.
+    - Spark can "broadcast" a small DataFrame by sending *all* the data in that small DataFrame to *all* nodes in the cluster
     - After the small DataFrame is broadcasted, Spark can perform a join *without shuffling any of the data in the large DataFrame*
+    - Example: Joining our joined green and yellow results DataFrame with a small zones lookup CSV/table
