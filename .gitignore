@@ -10,3 +10,4 @@ week5_batch_processing/fhv
 week5_batch_processing/fhvhv
 week5_batch_processing/zones
 week5_batch_processing/*.csv*
+.ipynb_checkpoints/
