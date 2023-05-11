@@ -1,0 +1,83 @@
+# Spark Internals
+
+## Anatomy of a Spark Cluster
+- We can have a cluster in our local environment, and it contains **executors**, which execute **Spark jobs**
+- When we set our Spark context, we specify the **master**, and for a local cluster, we set `local[*]` to use as many CPU cores as possible locally
+- **Spark Execution modes**: It's possible to run a Spark application using **cluster mode**, **local mode (pseudo-cluster)** or with an **interactive shell** (`pypsark` or `spark-shell`)
+- So far we’ve used a local cluster to run Spark code, but Spark clusters often contain multiple CPU's that act as executors
+- Usually, we write a script in Java/Python/Scala on a local machine (or on Airflow)
+- Without our cluster, we have a manager/coordinator called a **Spark master**, which behaves similarly to an **entry point** to a Kubernetes cluster
+    - The master usually has a web UI on port `4040` to see what's being executed on a cluster
+    - We use a special command `spark-submit` to send code to the master
+- On the cluster, we have **executors** (CPU's that actually doing computation/running jobs coordinated/orchestrated by the master)
+    - A **driver** (an Airflow DAG, a CPU running a local script, etc.) who wants to run a Spark job sends the job to the master, who in turn distributes the work among the executors in the cluster
+    - Since the master should always be running, if an executor fails/goes down, the master will know this, and reassign the task that should've went to that executor to another executor
+    - Executors will pull and process data (say parquet files contained in S3 or GCS that contain partitions of a DataFrame) and then store it somewhere
+        - In prior years, this was done with Hadoop/HDFS
+        - Here, data from a data lake is stored on the executors *with redudancies* (some partitions stored on multiple different executors) in case a node fails
+        - In Hadoop/HDFS, instead of bringing in/downloading data onto a machine, *you download code to a machine that already has the data* (**data locality**)
+        - Data locality made sense, since the partition files were large, while the code to run was relatively small
+        - **Nowadays, thanks to cloud providers, the Spark clusters and the cloud storage services live in the same data center**
+            - Now, downloading data for an executor is fast (a little slower than reading from disk, but not significantly slower)
+            - Executors now don't keep data on their machines, but just pull it from data storage and save results to a data lake
+        - This all reduces overhead that came from Hadoop/HDFS
+- Using cluster mode:
+    - Spark applications are run as *independent* sets of processes, coordinated by a **SparkContext** object in your main program (called the **driver program**)
+    - The **context** connects to the **cluster manager** which allocate resources.
+    - Each **worker** in the cluster is managed by an executor
+    - The executor manages computation *as well as* storage and caching on each machine
+    - The application code is sent from the driver to the executors, and the executors specify the context and the various tasks to be run
+    - The driver program must listen for and accept incoming connections from its executors throughout its lifetime
+- **Clusters and partitions**
+    - To distribute work across a cluster and reduce memory requirements of each node, Spark splits data into smaller parts called **Partitions**
+    - Each of these is then sent to an Executor to be processed
+    - Only *one* partition is computed per executor thread at a time, therefore the size and quantity of partitions passed to an executor is directly proportional to the time it takes to complete
+    - https://blog.scottlogic.com/2018/03/22/apache-spark-performance.html
+- **More terms**
+    - https://spark.apache.org/docs/3.3.2/cluster-overview.html
+    - **Application**: a user program built on Spark that consists of a driver program and executors on the cluster
+    - **Application jar**: A `jar` containing a user’s Spark application
+        - In some cases users will want to create an "uber `jar`" containing their application along with its dependencies
+        - The user’s `jar` should *never* include Hadoop or Spark libraries, however, as these will be added at runtime
+    - **Driver program**: The process running the `main()` function of the application and creating the **SparkContext**
+    - **Cluster manager**: External service for acquiring resources on the cluster (e.g. standalone manager, Mesos, YARN, Kubernetes)
+    - **Deploy mode**: Distinguishes where the driver process runs
+        - In "cluster" mode, the framework launches the driver inside of the cluster
+        - In "client" mode, the submitter launches the driver outside of the cluster
+    - **Worker node**: Any node that can run application code in the cluster
+    - **Executor**: A process launched for an application on a worker node that runs tasks and keeps data in memory or disk storage across them
+        - *Each application has its own executors*
+    - **Task**: A unit of work that will be sent to *one* executor
+    - **Job**: A parallel computation consisting of multiple tasks that gets spawned in response to a Spark **action** (e.g. save, collect)
+        - You’ll see this term used in the driver’s logs
+    - **Stage**: Each job gets divided into smaller sets of tasks called stages that depend on each other (similar to the map and reduce stages in MapReduce)
+        - You’ll see this term used in the driver’s logs
+
+
+## GROUP BY in Spark
+- Spark works with *multiple* partitions and clusters in order to combine files
+- Each executor does filtering and then an *initial* GROUP BY to get **subresults**
+    - We say "initial" GROUP BY's since each executor can only process one partition at a time, so the GROUP BY is within a partition
+    - These executors will output those subresults GROUP-ed BY just for that partition
+    - Then, for each partition, we have a bunch of temp files (our subresults), that we must combine
+- Subresults are **(re)-shuffled** and then there is an **external merge sort** (an algorithm for sorting the data in a distributed manner)
+- **Shuffling** = a mechanism Spark uses to move/redistribute data across different executors/partitions and even across machines
+    - It moves data from smaller partitions into larger partitions, and that's where the external merge sort is applied
+    - Within these larger partitions, we can do *another* GROUP BY
+    - Shuffle is an *expensive* operation, as it involves moving data across the nodes in a cluster, which involves network and disk I/O
+    - **It is always a good idea to reduce the amount of data that needs to be shuffled**
+    - *Tips to reduce shuffle*:
+        - Tune the `spark.sql.shuffle.partitions`
+        - Partition the input dataset appropriately so each task size is not too big
+        - Use the Spark UI to study the plan to look for opportunity to reduce the shuffle as much as possible
+        - Formula recommendation for `spark.sql.shuffle.partitions`:
+            - For large datasets, aim for anywhere from 100MB to < 200MB task target size for a partition (use target size of 100MB, for example)
+            - `spark.sql.shuffle.partitions` = quotient (shuffle stage input size/target size)/total cores) * total cores
+- See "Explore best practices" for Spark performance optimization for more information
+    - https://developer.ibm.com/blogs/spark-performance-optimization-guidelines/
+
+## JOINs in Spark
+- Spark can join two tables quite easily, and syntax is easy to understand via `.join()`
+- Spark **broadcast joins** are perfect for joining a large DataFrame with a small DataFrame.
+    - Spark can "broadcast" a small DataFrame by sending all the data in that small DataFrame to all nodes in the cluster
+    - After the small DataFrame is broadcasted, Spark can perform a join *without shuffling any of the data in the large DataFrame*
