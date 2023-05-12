@@ -91,3 +91,15 @@
     - Spark can "broadcast" a small DataFrame by sending *all* the data in that small DataFrame to *all* nodes in the cluster
     - After the small DataFrame is broadcasted, Spark can perform a join *without shuffling any of the data in the large DataFrame*
     - Example: Joining our joined green and yellow results DataFrame with a small zones lookup CSV/table
+
+## Operations on Resilient Distributed Datasets (RDDs)
+- **Resilient Distributed Datasets (RDDs)** = the main abstraction provided by Spark
+- In the very first versions of Spark, these were the basis of its distributed computing
+- Consists of **collections** of elements *partitioned accross the nodes of the cluster*
+    - i.e., a distributed dataset that is partitioned
+- Spark DataFrames are implemented *on top of* RDDs (which itself is made up of **rows**, which are special objects used to build DataFrames)
+    - Gives us another layer of abstraction and a nice API and functions so that we don't have to use RDD's anymore
+    - Difference: DataFrames *have a schema* while (plain) RDDs are *only a distributed collection of objects*
+- NOTE: Most of our data processing can be done using Spark DataFrames
+- Imagine we have a distributed dataset (it's made up of partitions)
+    - Then, we have a bunch of executors, and each one takes a partition and executes it (same as DataFrames)
