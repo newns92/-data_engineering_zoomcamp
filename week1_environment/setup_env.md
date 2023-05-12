@@ -201,7 +201,7 @@
 - The VM should spin up
     - Copy the external IP to the terminal and SSH into it with the `-i` flag to indicate the private key file
         - Do this via `ssh -i ~/.ssh/gcp [Username]@[external IP]`
-            - `ssh -i ~/.ssh/gcp nimz@34.130.181.226`
+            - `ssh -i ~/.ssh/gcp nimz@[external IP]`
         - Click "yes" if prompted to continue connecting
         - Enter the passphrase if used and prompted
         - Should see `Welcome to Ubuntu 20.04.5 LTS (GNU/Linux 5.15.0-1030-gcp x86_64)` to start
