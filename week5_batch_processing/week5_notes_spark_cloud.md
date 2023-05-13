@@ -61,6 +61,28 @@
                 --input_yellow=data/parquet/yellow/2020/*/ \
                 --output=data/report-2020
         ```
-    - Should see the `report-2020/` directory in the VM
+    - Should see the `report-2020/` directory in the VM once the job is finished
+- Download `09_pyspark_local_cluster_v2.py` via the VSCode window connected to the VM
+- Now, if we have *multiple* clusters, specifying the Spark master URL inside our script is not very practical
+    - Instead, we will specifiy the master outside in the CLI with `spark-submit` via:
+    ```bash
+        URL="<URL to Spark master>"
+
+        spark-submit \
+            --master="${URL}" \
+            09_pyspark_local_cluster_v3.py \
+                --input_green=data/parquet/green/2021/*/ \
+                --input_yellow=data/parquet/yellow/2021/*/ \
+                --output=data/report-2021
+    ```
+    - You will see a lot more CLI output, and then should see the `report-2021/` directory in the VM once the job is finished
+    - `spark-submit`'s script in Spark’s `bin\` directory is used to launch applications on a cluster.  
+        - https://spark.apache.org/docs/latest/submitting-applications.html
+- Download `09_pyspark_local_cluster_v3.py` via the VSCode window connected to the VM
+- Before finishing, we have to stop the workers and stop the master in the VM CLI via:
+    - `cd $SPARK_HOME`
+    - `./sbin/stop-worker.sh`
+    - `./sbin/stop-master.sh`
+- Then, exit the VM in all windows via `Ctrl + D` and shut down the VM in the Google Cloud Console
 
 #### Creating a Cloud Spark Cluster
