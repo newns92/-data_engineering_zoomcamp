@@ -17,7 +17,7 @@ input_green = args.input_green
 input_yellow = args.input_yellow
 output = args.output
 
-# use the new master from the VM to start a SparkSession
+# start a SparkSession
 spark = SparkSession.builder \
     .appName('test') \
     .getOrCreate()

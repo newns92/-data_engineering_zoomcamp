@@ -86,3 +86,113 @@
 - Then, exit the VM in all windows via `Ctrl + D` and shut down the VM in the Google Cloud Console
 
 #### Creating a Cloud Spark Cluster
+- Now we will create a Spark cluster on Google Cloud
+- Google Cloud **Dataproc** = a *managed service* for running Apache Hadoop and Spark jobs
+    - Can be used for big data processing and ML
+    - Actually uses Compute Engine instances under the hood, but takes care of the management details for you
+    - It’s a layer on top that makes it easy to spin up and down clusters as you need them
+    - Main **benefits**:
+        - **Managed service** (don’t need a sysadmin to set it up)
+        - **Fast** (can spin up a cluster in about 90 seconds)
+        - **Cheaper** than building your own cluster (because you can spin up a Dataproc cluster when you need to run a job and shut it down afterward, so you *only pay when jobs are running*)
+        - **Integrated with other Google Cloud services** (including GCS, BigQuery, and Cloud Bigtable, so it’s easy to get data into and out of it)
+    - More info: https://cloudacademy.com/course/introduction-to-google-cloud-dataproc/what-is-cloud-dataproc-1/
+- In Google Cloud, use search to search for "Dataproc", and then enable the API, if needed
+    - Then, click "Create Cluster", then click on "Create" next to "Cluster on Compute Engine"
+    - Then, enter "de-zoomcamp-cluster" for the cluster name, the same region as your GCS bucket for "region" (try "northamerica-northeast2" if your Bucket is multi-region), "Single Node (1 master, 0 workers)" (because we are only experimenting with a relatively small dataset) for cluster type, and select Jupyter Notebook and Docker for components
+    - Click "Create", and then this will take a little bit of time to create
+    - Once it is done, you should see a VM instance named "de-zoomcamp-cluster-m" under your VM instances
+- Now, we can submit a **job** to the cluster
+- With Dataproc, we *don’t* need to use the same instructions as before to establish a connection with GCS, since **Dataproc is already configured to access GCS**
+    - First, we upload `09_pyspark_local_cluster_v3.py` file to the GCS bucket (the file with the CLI args that we pass in)
+    - Before we do, make sure you are not specifying the master when creating the SparkSession:
+        ```bash
+            # start a SparkSession
+            spark = SparkSession.builder \
+                .appName('test') \
+                .getOrCreate()
+        ```
+    - After checking that, in the directory where said file is located, run `gsutil cp 09_pyspark_local_cluster_v3.py gs://de-zoomcamp-384821-taxi-data/code/09_pyspark_local_cluster_v3.py`
+    - You should see the new `code/` directory with this file in your GCS Bucket
+- To **create/submit a new job**:
+    - In Dataproc, select our cluster "de-zoomcamp-cluster" and click "Submit Job" at the top
+    - For job type, select "PySpark", for main python file, put `gs://de-zoomcamp-384821-taxi-data/code/09_pyspark_local_cluster_v3.py`, and then add the following 3 args separately:
+        - `--input_green=gs://de-zoomcamp-384821-taxi-data/parquet/green/2021/*/`
+        - `--input_yellow=gs://de-zoomcamp-384821-taxi-data/parquet/yellow/2021/*/`
+        - `--output=gs://de-zoomcamp-384821-taxi-data/reports/report-2021`
+    - Then, click "Submit, and this will again take some time
+    - When the job is finished, you should see a line in the output that says `Successfully repaired` and that "Status" is "Succeeded" at the top of the web page
+    - You should then be able to see the new `reports/report-2021` in the GCS Bucket
+- So, we've submitted a job through the UI, which isn't that convienent
+    - On the web page where we ran the job, under the "Configuration" tab, at the bottom, you should see a button "Equivalent REST"
+        - This makes Dataproc have the Google Console construct an equivalent REST API request or `gcloud` tool command to use in code or from the CLI to create a cluster:
+        - It looks something like:
+            ```bash
+                {
+                    "reference": {
+                        "jobId": "job-c6ee59da",
+                        "projectId": "de<>Your Project ID"
+                    },
+                    "placement": {
+                        "clusterName": "de-zoomcamp-cluster"
+                    },
+                    "status": {
+                        "state": "DONE",
+                        "stateStartTime": "2023-05-13T23:38:37.597784Z"
+                    },
+                    "yarnApplications": [
+                        {
+                        "name": "test",
+                        "state": "FINISHED",
+                        "progress": 1,
+                        "trackingUrl": "http://de-zoomcamp-cluster-m:8088/proxy/application_1684020424028_0002/"
+                        }
+                    ],
+                    "statusHistory": [
+                        {
+                        "state": "PENDING",
+                        "stateStartTime": "2023-05-13T23:37:43.045331Z"
+                        },
+                        {
+                        "state": "SETUP_DONE",
+                        "stateStartTime": "2023-05-13T23:37:43.147308Z"
+                        },
+                        {
+                        "state": "RUNNING",
+                        "details": "Agent reported job success",
+                        "stateStartTime": "2023-05-13T23:37:43.653333Z"
+                        }
+                    ],
+                    "driverControlFilesUri": "gs://dataproc-staging-northamerica-northeast2-404348555020-lh0oatca/google-cloud-dataproc-metainfo/d0ae4e50-a49d-434e-93c1-d9a91d52a6ca/jobs/job-c6ee59da/",
+                    "driverOutputResourceUri": "gs://dataproc-staging-northamerica-northeast2-404348555020-lh0oatca/google-cloud-dataproc-metainfo/d0ae4e50-a49d-434e-93c1-d9a91d52a6ca/jobs/job-c6ee59da/driveroutput",
+                    "jobUuid": "212e17cb-a903-46e4-bbcc-1428bd04c510",
+                    "done": true,
+                    "pysparkJob": {
+                        "mainPythonFileUri": "gs://de-zoomcamp-384821-taxi-data/code/09_pyspark_local_cluster_v3.py",
+                        "args": [
+                        "--input_green=gs://de-zoomcamp-384821-taxi-data/parquet/green/2021/*/",
+                        "--input_yellow=gs://de-zoomcamp-384821-taxi-data/parquet/yellow/2021/*/",
+                        "--output=gs://de-zoomcamp-384821-taxi-data/reports/report-2021"
+                        ]
+                    }
+                }
+            ```
+    - Can also do this via the CLI using **Google Cloud SDK**
+        - https://cloud.google.com/dataproc/docs/guides/submit-job
+        - First, add the role "Dataproc Administrator" to the permissions for user "de_zoomcamp_user"
+        - Then, to submit a job to a Dataproc cluster, run the command below from the CLI:
+            ```bash
+                gcloud dataproc jobs submit pyspark \
+                    --cluster=de-zoomcamp-cluster \
+                    --region=northamerica-northeast2 \
+                    gs://de-zoomcamp-384821-taxi-data/code/09_pyspark_local_cluster_v3.py \
+                    -- \
+                        --input_green=gs://de-zoomcamp-384821-taxi-data/parquet/green/2020/*/ \
+                        --input_yellow=gs://de-zoomcamp-384821-taxi-data/parquet/yellow/2020/*/ \
+                        --output=gs://de-zoomcamp-384821-taxi-data/reports/report-2020        
+            ```
+        - You can then see in the CLI output if the job finished successfully 
+        - If so, in the GCS Bucket, you should see that the report is created successfully in the `reports/` directory
+
+### Connecting Spark to BigQuery
+- We can use Spark to connect directly to BigQuery/our data warehouse
