@@ -195,4 +195,71 @@
         - If so, in the GCS Bucket, you should see that the report is created successfully in the `reports/` directory
 
 ### Connecting Spark to BigQuery
-- We can use Spark to connect directly to BigQuery/our data warehouse
+- We can use Spark to connect *directly* to BigQuery/our data warehouse instead of going through GCS Buckets
+    - https://cloud.google.com/dataproc/docs/tutorials/bigquery-connector-spark-example#pyspark
+    - The above link provides this template code to connect Spark to BigQuery:
+        ```bash
+            #!/usr/bin/env python
+
+            """BigQuery I/O PySpark example."""
+
+            from pyspark.sql import SparkSession
+
+            spark = SparkSession \
+            .builder \
+            .master('yarn') \
+            .appName('spark-bigquery-demo') \
+            .getOrCreate()
+
+            # Use the Cloud Storage bucket for temporary BigQuery export data used
+            # by the connector.
+            bucket = "<Your Bucket>"
+            spark.conf.set('temporaryGcsBucket', bucket)
+
+            # Load data from BigQuery.
+            words = spark.read.format('bigquery') \
+            .option('table', 'bigquery-public-data:samples.shakespeare') \
+            .load()
+            words.createOrReplaceTempView('words')
+
+            # Perform word count.
+            word_count = spark.sql(
+                'SELECT word, SUM(word_count) AS word_count FROM words GROUP BY word')
+            word_count.show()
+            word_count.printSchema()
+
+            # Saving the data to BigQuery
+            word_count.write.format('bigquery') \
+            .option('table', 'wordcount_dataset.wordcount_output') \
+            .save()
+        ```
+- We will use the above template code to modify `09_pyspark_local_cluster_v3.py` into `10_pyspark_sql_bigquery.py`
+    - First, we find the name of the Buckets created by Dataproc in out GCS home directory
+    - We should see a Temp Bucket and a Staging Bucket
+    - Copy the Temp Bucket's name and use that in `10_pyspark_sql_bigquery.py` in the `spark.conf.set('temporaryGcsBucket', '<Temp Bucket name>')` command
+    - Then, edit the final `df_result.write.format()` command to write to BigQuery via:
+        ```bash
+            df_result.write.format('bigquery') \
+                .option('table', output) \
+                .save()
+        ```
+- In the directory where `10_pyspark_sql_bigquery.py` is located, we upload this new script to GCS via `gsutil cp 10_pyspark_sql_bigquery.py gs://de-zoomcamp-384821-taxi-data/code/10_pyspark_sql_bigquery.py`
+    - It should be in your GCS Bucket under the `code/` directory
+- Then, note the BigQuery schema we want to write to (mine is `ny_trips`), which we will use with a new table name for out `--ouput` argument
+    - We also specify the connector `.jar` via `--jars=gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar`
+        - For non-production use, you can point to the latest jars, as follows:
+            - Dataproc image version 1.5+: `--jars=gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar`
+            - Dataproc image versions 1.4 and earlier: `--jars=gs://spark-lib/bigquery/spark-bigquery-latest.jar`
+    - ***In the VM instance***, we submit the job with:
+        ```bash
+            gcloud dataproc jobs submit pyspark \
+                --cluster=de-zoomcamp-cluster \
+                --region=northamerica-northeast2 \
+                --jars=gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar \
+                gs://de-zoomcamp-384821-taxi-data/code/10_pyspark_sql_bigquery.py \
+                -- \
+                    --input_green=gs://de-zoomcamp-384821-taxi-data/parquet/green/2020/*/ \
+                    --input_yellow=gs://de-zoomcamp-384821-taxi-data/parquet/yellow/2020/*/ \
+                    --output=ny_trips.reports-2020
+        ```
+- We should see the new table in the `ny_trips` schema, which we can query with ```SELECT * FROM `de-zoomcamp-384821.ny_trips.reports-2020` LIMIT 10;```
