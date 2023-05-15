@@ -76,7 +76,5 @@ def do_pyspark_sql():
     """).show()    
 
 
-
-
 if __name__ == '__main__':
     do_pyspark_sql()
