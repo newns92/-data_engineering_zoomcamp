@@ -21,7 +21,7 @@
     - Unpack it in some location `C:\spark` via `tar xzfv spark-3.3.2-bin-hadoop3.tgz`
     - Add it to `PATH` via `export SPARK_HOME="C:\spark` then `export PATH="${SPARK_HOME}/bin:${PATH}"`
 - Testing
-    - ***In an Anaconda command prompt***, `cd` to `C:\spark\bin`
+    - ***In an Anaconda command prompt***, `cd` to `C:/spark/bin`
     - Run spark-shell via `spark-shell.cmd`
         - At this point, you may get a message from Windows Firewall, just allow it
         - There could be some warnings, like this:
