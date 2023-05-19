@@ -83,3 +83,58 @@
     - https://www.confluent.io/learn/change-data-capture/
     - With a central database and microservices, sometimes it's required to have multiple data sources
     - The database will be able to write to Kafka topics, and any microservice interested can read from this topic
+
+## Confluent Cloud
+- https://docs.confluent.io/cloud/current/overview.html
+- https://docs.confluent.io/home/overview.html
+- Allows us to have Kafka Clusters
+- Free 30-day account, and easily connects to GCP
+    - Can also do so locally via a Dockerfile
+- Go to https://confluent.cloud/signup and create an account
+- Click "Add Cluster" to create a cluster.
+    - Click "Begin configuration" from the Basic tier on the far left
+    - Select Google Cloud and then select a Region near you (ideally offering low carbon intensity) and click "Continue"
+        - We can also click "Skip payment" for now
+- Under "Create Cluster", enter a Cluster name `kafka_tutorial_cluster`, then click "Lauch"
+- API Keys
+    - An **API key** consists of a **key** and a **secret**
+    - *Kafka* API keys are *required* to interact with Kafka clusters in Confluent Cloud
+        - Each Kafka API key is valid for a specific Kafka cluster
+    - Under "Cluster Overview" on the left, click "API Keys", and then click "Create key"
+    - Select "Global access" and click "Next"
+    - Enter a description like `kafka_cluster_tutorial_api_key`, then click "Download and Continue"
+    - The API key will download to the local, and we should also see the Endpoints Bootstrap server and the REST endpoint "in Cluster Settings" on the left
+- Topic:
+    - Remember, a **Topic** is a *category*/feed name to which records are stored and published
+        - *All Kafka records are organized into topics*
+        - **Producer** applications write data to topics and **consumer** applications read from topics
+        - Records published to the cluster stay in the cluster until a configurable retention period has passed by
+    - Select "Topics" on the left, and click "Create topic"
+    - Then, enter a Topic name like `tutorial_topic` and the number of partitions being **2**
+    - Click on "Show advanced settings" and set the retention time for our "Detete" cleanup policy to be "1 day"
+    - Click "Save and create"
+- Message:
+    - We can now produce a message
+    - On the topic's page, select the "Messages" tab, and click on "Produce a new message to this topic"
+    - On this page, keep the default message, and on the bottom-right, click "Produce"
+    - The message produced has a Value, an empty Header and a Key
+- Connector:
+    - We will now create a dummy Connector
+    - Confluent Cloud offers pre-built, fully managed Kafka **connectors** that make it easy to instantly connect clusters to popular data sources and sinks
+        - We can connect to external data systems effortlessly with simple configurations and no ongoing operational burden
+    - On the left, select "Connectors" and then click on "Datagen Source"
+    - For our topic, select `tutorial_topic` and click "Continue" on the bottom-right
+    - Select "Global Access" and click "Continue" on the bottom-right
+    - Under "Select output record value format", select "JSON", and then under "Select a template", select "Orders", then click "Continue" on the bottom-right
+    - Keep the default connector size and click "Continue" on the bottom-right
+    - Then, change our connector's name to something like `OrdersConnector_tutorial` and click "Continue" on the bottom-right, then we should see the created connector and is being **provisioned** (which can take a couple of minutes)
+    - Once done, click on the `OrderConnector_tutorial` connector and we should see that it's active and running
+    - Click "Explore metrics", and we should see that data is already being produced
+        - We can now take time to learn some of the available metrics
+- Go back to "Topics" on the left
+    - Open the `tutorial_topic` that we just configured our new connector to produce to in order to view more details
+    - Under the "Overview" tab, we see the production rate (Bytes per second) and consumption rate (Bytes per second)
+    - Under the "Messages" tab, we see that a number of messages have been created
+- Shut down:
+    - To shut down our connector as to not incur costs out of the $400 free credit dollars, select "Connectors" on the left
+    - Then, select connector `OrdersConnector_tutorial` and click on Pause button
