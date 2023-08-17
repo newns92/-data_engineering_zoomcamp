@@ -103,7 +103,7 @@
     - Under "Cluster Overview" on the left, click "API Keys", and then click "Create key"
     - Select "Global access" and click "Next"
     - Enter a description like `kafka_cluster_tutorial_api_key`, then click "Download and Continue"
-    - The API key will download to the local, and we should also see the Endpoints Bootstrap server and the REST endpoint "in Cluster Settings" on the left
+    - The API key will download to the local, and we should also see the Endpoints Bootstrap server and the REST endpoint in "Cluster Settings" on the left
 - Topic:
     - Remember, a **Topic** is a *category*/feed name to which records are stored and published
         - *All Kafka records are organized into topics*
@@ -111,14 +111,14 @@
         - Records published to the cluster stay in the cluster until a configurable retention period has passed by
     - Select "Topics" on the left, and click "Create topic"
     - Then, enter a Topic name like `tutorial_topic` and the number of partitions being **2**
-    - Click on "Show advanced settings" and set the retention time for our "Detete" cleanup policy to be "1 day"
+    - Click on "Show advanced settings" and set the retention time for our "Delete" cleanup policy to be "1 day"
     - Click "Save and create"
 - Message:
-    - We can now produce a message
+    - We can now produce a **message**
     - On the topic's page, select the "Messages" tab, and click on "Produce a new message to this topic"
     - On this page, keep the default message, and on the bottom-right, click "Produce"
     - The message produced has a Value, an empty Header and a Key
-- Connector:
+- **Connector**:
     - We will now create a dummy Connector
     - Confluent Cloud offers pre-built, fully managed Kafka **connectors** that make it easy to instantly connect clusters to popular data sources and sinks
         - We can connect to external data systems effortlessly with simple configurations and no ongoing operational burden
