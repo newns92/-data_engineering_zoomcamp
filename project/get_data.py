@@ -1,9 +1,11 @@
 import io
 import os
 import requests
+import json
+import csv
 import pandas as pd
 from google.cloud import storage
-from config import gcloud_creds, bucket_name
+from config import tmdb_api_key  # gcloud_creds, bucket_name
 from pathlib import Path
 import shutil
 
@@ -15,6 +17,67 @@ Pre-reqs:
 3. Set GCP_GCS_BUCKET as your bucket or change default value of BUCKET
 """
 
+# https://web.archive.org/web/20210112170836/https://towardsdatascience.com/this-tutorial-will-make-your-api-data-pull-so-much-easier-9ab4c35f9af
+# Use requests package to query API and get back JSON
+api_key = tmdb_api_key
+movie_id = '464052'
+
+def get_movie_data(api_key, movie_id):
+    query = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=en-US'
+    response = requests.get(query)
+    
+    if response.status_code == 200:  # if API request was successful
+        array = response.json()
+        text = json.dumps(array)
+        print(text)
+        return text
+    else:
+        return "API Error"
+
+# def write_movie_file(file_name, text):
+#     dataset = json.loads(text)
+#     csv_file = open(file_name, 'a')
+#     csv_writer = csv.writer(csv_file)
+    
+#     # unpack results to access "collection name" element
+#     try:
+#         collection_name = dataset['belongs_to_collection']
+
+
+# def download_data():
+#     for month in range(1, 13):
+#         # Get the URL for the specific month
+#         file_name = f'fhv_tripdata_2019-{month:02d}.csv.gz'
+#         df_file_name = f'fhv_tripdata_2019-{month:02d}'
+#         url = f'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv/fhv_tripdata_2019-{month:02d}.csv.gz'
+        
+#         # download it into a DataFrame directly from the URL
+#         print(f'Downloading file {file_name}...')
+#         df = pd.read_csv(url)
+
+#         # create the path of where to store the parquet file
+#         # Use .as_posix() for easier GCS and BigQuery access
+#         # https://stackoverflow.com/questions/68369551/how-can-i-output-paths-with-forward-slashes-with-pathlib-on-windows
+#         path = Path(f'data/{df_file_name}.parquet').as_posix()
+#         # print(f'PATH: {path.as_posix()}')
+
+#         # create the data directory if it does not exist
+#         # https://stackoverflow.com/questions/23793987/write-a-file-to-a-directory-that-doesnt-exist
+#         os.makedirs(os.path.dirname(path), exist_ok=True)
+
+#         df.pickup_datetime = pd.to_datetime(df.pickup_datetime)
+#         df.dropOff_datetime = pd.to_datetime(df.dropOff_datetime)
+#         # print(f"Unique dispatching_base_num values: {df.dispatching_base_num.unique()}")    
+#         # print(f"Unique PUlocationID values: {df.PUlocationID.unique()}")
+#         # print(f"Unique DOlocationID values: {df.DOlocationID.unique()}")
+#         # print(f"Unique SR_Flag values: {df.SR_Flag.unique()}")
+#         df.PUlocationID = df.PUlocationID.fillna(999).astype('int')
+#         df.DOlocationID = df.DOlocationID.fillna(999).astype('int')
+#         df.SR_Flag = df.SR_Flag.fillna(999).astype('int')
+        
+#         # convert the DataFrame to a zipped parquet file and save to specified location
+#         print(f'Converting fhv_tripdata_2019-{month:02d}.csv.gz to a parquet file')
+#         df.to_parquet(path, compression='gzip')
 
 
 
@@ -157,11 +220,13 @@ Pre-reqs:
 #         upload_to_gcs(gcs_bucket, f'data/{service}/{file_name}', f'data/{file_name}')
 
 
-# if __name__ == '__main__':
-#     web_to_gcs('2019', 'green', gcs_bucket)
-#     web_to_gcs('2020', 'green', gcs_bucket)
-#     web_to_gcs('2019', 'yellow', gcs_bucket)
-#     web_to_gcs('2020', 'yellow', gcs_bucket)
-#     web_to_gcs('2019', 'fhv', gcs_bucket)
-#     remove_files()
+if __name__ == '__main__':
+    # web_to_gcs('2019', 'green', gcs_bucket)
+    # web_to_gcs('2020', 'green', gcs_bucket)
+    # web_to_gcs('2019', 'yellow', gcs_bucket)
+    # web_to_gcs('2020', 'yellow', gcs_bucket)
+    # web_to_gcs('2019', 'fhv', gcs_bucket)
+    # remove_files()
 
+    # print(api_key, movie_id)
+    get_movie_data(api_key, movie_id)
