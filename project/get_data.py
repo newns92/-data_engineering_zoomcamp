@@ -178,8 +178,7 @@ def remove_files():
 
 
 
-# # services = ['fhv','green','yellow']
-# init_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/'
+
 # # switch out the bucketname
 # storage_client = storage.Client.from_service_account_json(gcloud_creds)
 # # BUCKET = os.environ.get("GCP_GCS_BUCKET", "dtc-data-lake-bucketname")
@@ -199,57 +198,6 @@ def remove_files():
 #     # bucket = client.bucket(bucket)
 #     blob = bucket.blob(object_name)
 #     blob.upload_from_filename(local_file)
-
-
-# def clean_data(df, service):
-#     '''Fix datatype issues'''
-
-#     if service == 'yellow':
-#         # fix datetimes
-#         df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-#         df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
-
-#         # this fixes fields for files that have NAN values and thus aren't INTs
-#         # when they should be INTs
-#         # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
-#         df.VendorID = pd.array(df.VendorID, dtype=pd.Int64Dtype())
-#         df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
-#         df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
-#         df.RatecodeID = pd.array(df.RatecodeID, dtype=pd.Int64Dtype())
-
-#     elif service == 'green':
-#         # fix datetimes
-#         df.lpep_pickup_datetime = pd.to_datetime(df.lpep_pickup_datetime)
-#         df.lpep_dropoff_datetime = pd.to_datetime(df.lpep_dropoff_datetime)
-
-#         # this fixes fields for files that have NAN values and thus aren't INTs
-#         # when they should be INTs
-#         # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
-#         df.VendorID = pd.array(df.VendorID, dtype=pd.Int64Dtype())
-#         df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
-#         df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
-#         df.trip_type = pd.array(df.trip_type, dtype=pd.Int64Dtype())
-#         df.RatecodeID = pd.array(df.RatecodeID, dtype=pd.Int64Dtype())
-
-#     # elif service == 'fhv':
-#     else:
-#         # Rename columns
-#         df.rename({'dropOff_datetime':'dropoff_datetime'}, axis='columns', inplace=True)
-#         df.rename({'PUlocationID':'PULocationID'}, axis='columns', inplace=True)
-#         df.rename({'DOlocationID':'DOLocationID'}, axis='columns', inplace=True)
-
-#         # fix datetimes
-#         df.pickup_datetime = pd.to_datetime(df.pickup_datetime)
-#         df.dropoff_datetime = pd.to_datetime(df.dropoff_datetime)
-
-#         # this fixes fields for files that have NAN values and thus aren't INTs
-#         # when they should be INTs
-#         # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
-#         df.PULocationID = pd.array(df.PULocationID, dtype=pd.Int64Dtype())
-#         df.DOLocationID = pd.array(df.DOLocationID, dtype=pd.Int64Dtype())           
-
-#     return df
-
 
 # def web_to_gcs(year, service, gcs_bucket):
 
