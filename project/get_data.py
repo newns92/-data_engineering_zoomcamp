@@ -108,6 +108,16 @@ def write_movie_file(file_name, dataset):
     df.to_parquet(path, compression='gzip')
 
 
+def remove_files():
+    # https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
+    dir_name = "./"
+    local_data = os.listdir(dir_name)
+
+    # Remove the local parquet files
+    # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
+    shutil.rmtree('./data/')
+
+
 # def download_data():
 #     for month in range(1, 13):
 #         # Get the URL for the specific month
@@ -180,21 +190,6 @@ def write_movie_file(file_name, dataset):
 #     # bucket = client.bucket(bucket)
 #     blob = bucket.blob(object_name)
 #     blob.upload_from_filename(local_file)
-
-
-# def remove_files():
-#     # https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
-#     dir_name = "./"
-#     local_data = os.listdir(dir_name)
-
-#     # remove the local CSV's
-#     for item in local_data:
-#         if item.endswith(".csv.gz"):
-#             os.remove(os.path.join(dir_name, item))
-
-#     # Remove the local parquet files
-#     # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
-#     shutil.rmtree('./data/')
 
 
 # def clean_data(df, service):
@@ -307,3 +302,5 @@ if __name__ == '__main__':
 
     write_movie_file('movies_test', popular_movies_list)
     # loop_through_movies(popular_movies_list)
+
+    remove_files()
