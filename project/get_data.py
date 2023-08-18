@@ -97,6 +97,8 @@ def write_movie_file(file_name, dataset):
     
     # print(df[:5])
     # print(df.dtypes)
+    # print(df.describe())
+    # print(df.isnull().sum())
 
     # create the path of where to store the parquet file
     # Use .as_posix() for easier GCS and BigQuery access
