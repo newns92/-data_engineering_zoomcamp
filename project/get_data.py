@@ -19,11 +19,12 @@ Pre-reqs:
 
 # https://web.archive.org/web/20210112170836/https://towardsdatascience.com/this-tutorial-will-make-your-api-data-pull-so-much-easier-9ab4c35f9af
 # Use requests package to query API and get back JSON
-api_key = tmdb_api_key
-movie_id = '464052'
+# api_key = tmdb_api_key
+# movie_id = '464052'
 
-def get_movie_data(api_key, movie_id):
-    query = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=en-US'
+
+def get_movie_data(tmdb_api_key, movie_id):
+    query = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={tmdb_api_key}&language=en-US'
     response = requests.get(query)
     
     if response.status_code == 200:  # if API request was successful
@@ -33,6 +34,7 @@ def get_movie_data(api_key, movie_id):
         return text
     else:
         return "API Error"
+
 
 def write_movie_file(file_name, text):
     dataset = json.loads(text)
@@ -53,24 +55,36 @@ def write_movie_file(file_name, text):
     print(result)
     csv_file.close()
 
+
 def get_popular_movies():
+    dataset = []
+
     # https://developer.themoviedb.org/reference/movie-lists
-    query = f'https://api.themoviedb.org/3/movie/popular?language=en-US&page=1'
-    headers = {
-        'accept': 'application/json',
-        'Authorization': f'Bearer {tmdb_api_read_access_token}'
-    }
-    response = requests.get(query, headers=headers)
-    # print(response)
+    for page in range(1, 6):
+        print('Page:', page)
 
-    if response.status_code == 200:  # if API request was successful
-        array = response.json()
-        text = json.dumps(array)
-        dataset = json.loads(text)
+        query = f'https://api.themoviedb.org/3/movie/popular?language=en-US&page={page}'
+        headers = {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {tmdb_api_read_access_token}'
+        }
+        response = requests.get(query, headers=headers)
+        # print(response)
 
-        return dataset
-    else:
-        return "API Error"    
+        if response.status_code == 200:  # if API request was successful
+            array = response.json()
+            text = json.dumps(array)
+            dataset_page = json.loads(text)
+
+            # Concatenate results lists
+            for item in dataset_page['results']:
+                dataset.append(item)
+            print(len(dataset))
+
+        else:
+            return "API Error"
+        
+    return dataset    
 
 def loop_through_movies(dataset):
     # print(len(popular_movies_dict['results']))
@@ -267,6 +281,8 @@ if __name__ == '__main__':
     # write_movie_file('movie_test.csv', movie_text)
     popular_movies_dict = get_popular_movies()
     # print(popular_movies_dict.keys())
+    # print(len(popular_movies_dict))
+    print(popular_movies_dict)
     # print(popular_movies_dict['results'][0]['title'])
 
-    loop_through_movies(popular_movies_dict)
+    # loop_through_movies(popular_movies_dict)
