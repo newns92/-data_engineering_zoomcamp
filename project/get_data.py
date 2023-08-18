@@ -21,40 +21,51 @@ Pre-reqs:
 # Use requests package to query API and get back JSON
 # api_key = tmdb_api_key
 # movie_id = '464052'
+# # switch out the bucketname
+# storage_client = storage.Client.from_service_account_json(gcloud_creds)
+# # BUCKET = os.environ.get("GCP_GCS_BUCKET", "dtc-data-lake-bucketname")
+# gcs_bucket = storage_client.get_bucket(bucket_name)
 
 
-def get_movie_data(tmdb_api_key, movie_id):
-    query = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={tmdb_api_key}&language=en-US'
-    response = requests.get(query)
+# def get_movie_data(tmdb_api_key, movie_id):
+#     query = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={tmdb_api_key}&language=en-US'
+#     response = requests.get(query)
     
-    if response.status_code == 200:  # if API request was successful
-        array = response.json()
-        text = json.dumps(array)
-        # print(text)
-        return text
+#     if response.status_code == 200:  # if API request was successful
+#         array = response.json()
+#         text = json.dumps(array)
+#         # print(text)
+#         return text
     
-    else:
-        return "API Error"
+#     else:
+#         return "API Error"
 
 
 def get_popular_movies():
     dataset = []
 
     # https://developer.themoviedb.org/reference/movie-lists
+    # Get 5 pages of data
     for page in range(1, 6):
         # print('Page:', page)
 
-        query = f'https://api.themoviedb.org/3/movie/popular?language=en-US&page={page}'
+        url = f'https://api.themoviedb.org/3/movie/popular?language=en-US&page={page}'
+        # headers = dictionary of HTTP headers to send to the specified url
         headers = {
             'accept': 'application/json',
             'Authorization': f'Bearer {tmdb_api_read_access_token}'
         }
-        response = requests.get(query, headers=headers)
+
+        response = requests.get(url, headers=headers)
         # print(response)
 
-        if response.status_code == 200:  # if API request was successful
+        # Check that request went through (i.e., if API request was successful)
+        if response.status_code == 200:
+            # Get JSON object of the request result
             array = response.json()
+            # Convert from Python to JSON
             text = json.dumps(array)
+            # Convert from JSON back to Python
             dataset_page = json.loads(text)
 
             # Concatenate results lists
@@ -67,24 +78,16 @@ def get_popular_movies():
         
     return dataset    
 
-def loop_through_movies(dataset):
-    for i in range(len(dataset)):
-        print(dataset[i]['title'])
 
-# def write_movie_file(file_name, text):
-#     dataset = json.loads(text)
-#     csv_file = open(file_name, 'a')
-#     csv_writer = csv.writer(csv_file)
-    
 def write_movie_file(file_name, dataset):
     # csv_file = open(file_name, 'a')
     # csv_writer = csv.writer(csv_file)
 
-    # create empty dataframe with headers
+    # Create empty dataframe with headers
     df = pd.DataFrame(columns=['title', 'original_language', 'popularity', 'release_date', 
                                'vote_average', 'vote_count'])
 
-    # for each movie in the dataset, add its info to the dataframe
+    # For each movie in the dataset, add its info to the dataframe
     # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
     for i in range(len(dataset)):
         # print(dataset[i]['title'])
@@ -100,90 +103,27 @@ def write_movie_file(file_name, dataset):
     # print(df.describe())
     # print(df.isnull().sum())
 
-    # create the path of where to store the parquet file
-    # Use .as_posix() for easier GCS and BigQuery access
+    # Create the path of where to store the parquet file
+    # - Use .as_posix() for easier GCS and BigQuery access
     # https://stackoverflow.com/questions/68369551/how-can-i-output-paths-with-forward-slashes-with-pathlib-on-windows
     path = Path(f'data/{file_name}.parquet').as_posix()
     # path_csv = Path(f'data/{file_name}.csv')  # .as_posix()
     # print(f'PATH: {path.as_posix()}')
 
-    # create the data directory if it does not exist
+    # Create the data directory if it does not exist
     # https://stackoverflow.com/questions/23793987/write-a-file-to-a-directory-that-doesnt-exist
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
-    # convert the DataFrame to a zipped parquet file and save to specified location
+    # Convert the DataFrame to a zipped parquet file and save to specified location
     print(f'Converting dataframe to a parquet file')
     df.to_parquet(path, compression='gzip')
     # df.to_csv(path_csv)
 
 
 def remove_files():
-    # https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
-    dir_name = "./"
-    local_data = os.listdir(dir_name)
-
     # Remove the local parquet files
     # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
     shutil.rmtree('./data/')
-
-
-# def download_data():
-#     for month in range(1, 13):
-#         # Get the URL for the specific month
-#         file_name = f'fhv_tripdata_2019-{month:02d}.csv.gz'
-#         df_file_name = f'fhv_tripdata_2019-{month:02d}'
-#         url = f'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv/fhv_tripdata_2019-{month:02d}.csv.gz'
-        
-#         # download it into a DataFrame directly from the URL
-#         print(f'Downloading file {file_name}...')
-#         df = pd.read_csv(url)
-
-#         # create the path of where to store the parquet file
-#         # Use .as_posix() for easier GCS and BigQuery access
-#         # https://stackoverflow.com/questions/68369551/how-can-i-output-paths-with-forward-slashes-with-pathlib-on-windows
-#         path = Path(f'data/{df_file_name}.parquet').as_posix()
-#         # print(f'PATH: {path.as_posix()}')
-
-#         # create the data directory if it does not exist
-#         # https://stackoverflow.com/questions/23793987/write-a-file-to-a-directory-that-doesnt-exist
-#         os.makedirs(os.path.dirname(path), exist_ok=True)
-
-#         df.pickup_datetime = pd.to_datetime(df.pickup_datetime)
-#         df.dropOff_datetime = pd.to_datetime(df.dropOff_datetime)
-#         # print(f"Unique dispatching_base_num values: {df.dispatching_base_num.unique()}")    
-#         # print(f"Unique PUlocationID values: {df.PUlocationID.unique()}")
-#         # print(f"Unique DOlocationID values: {df.DOlocationID.unique()}")
-#         # print(f"Unique SR_Flag values: {df.SR_Flag.unique()}")
-#         df.PUlocationID = df.PUlocationID.fillna(999).astype('int')
-#         df.DOlocationID = df.DOlocationID.fillna(999).astype('int')
-#         df.SR_Flag = df.SR_Flag.fillna(999).astype('int')
-        
-#         # convert the DataFrame to a zipped parquet file and save to specified location
-#         print(f'Converting fhv_tripdata_2019-{month:02d}.csv.gz to a parquet file')
-#         df.to_parquet(path, compression='gzip')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # switch out the bucketname
-# storage_client = storage.Client.from_service_account_json(gcloud_creds)
-# # BUCKET = os.environ.get("GCP_GCS_BUCKET", "dtc-data-lake-bucketname")
-# gcs_bucket = storage_client.get_bucket(bucket_name)
-
 
 # def upload_to_gcs(bucket, object_name, local_file):
 #     """
