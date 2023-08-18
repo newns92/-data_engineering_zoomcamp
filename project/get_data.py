@@ -139,7 +139,8 @@ def remove_files():
 #     blob = bucket.blob(object_name)
 #     blob.upload_from_filename(local_file)
 
-# def web_to_gcs(year, service, gcs_bucket):
+
+# def web_to_gcs(gcs_bucket):
 
 #     # Loop through the months
 #     for i in range(12):
@@ -199,5 +200,7 @@ if __name__ == '__main__':
 
     write_movie_file('movies_test', popular_movies_list)
     # loop_through_movies(popular_movies_list)
+
+    # upload_to_gcs(gcs_bucket, object_name, 'data/movies_test.parquet')
 
     remove_files()
