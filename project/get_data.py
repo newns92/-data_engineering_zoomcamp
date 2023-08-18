@@ -67,11 +67,15 @@ def get_popular_movies():
         array = response.json()
         text = json.dumps(array)
         dataset = json.loads(text)
-        # print(text)
+
         return dataset
     else:
         return "API Error"    
 
+def loop_through_movies(dataset):
+    # print(len(popular_movies_dict['results']))
+    for i in range(len(popular_movies_dict['results'])):
+        print(popular_movies_dict['results'][i]['title'])
 
 
 # def download_data():
@@ -263,4 +267,6 @@ if __name__ == '__main__':
     # write_movie_file('movie_test.csv', movie_text)
     popular_movies_dict = get_popular_movies()
     # print(popular_movies_dict.keys())
-    print(popular_movies_dict['results'][0]['title'])
+    # print(popular_movies_dict['results'][0]['title'])
+
+    loop_through_movies(popular_movies_dict)
