@@ -5,7 +5,7 @@ import json
 import csv
 import pandas as pd
 from google.cloud import storage
-from config import tmdb_api_key  # gcloud_creds, bucket_name
+from config import tmdb_api_key, tmdb_api_read_access_token  # gcloud_creds, bucket_name
 from pathlib import Path
 import shutil
 
@@ -52,6 +52,26 @@ def write_movie_file(file_name, text):
     csv_writer.writerow(result)
     print(result)
     csv_file.close()
+
+def get_popular_movies():
+    # https://developer.themoviedb.org/reference/movie-lists
+    query = f'https://api.themoviedb.org/3/movie/popular?language=en-US&page=1'
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer {tmdb_api_read_access_token}'
+    }
+    response = requests.get(query, headers=headers)
+    # print(response)
+
+    if response.status_code == 200:  # if API request was successful
+        array = response.json()
+        text = json.dumps(array)
+        dataset = json.loads(text)
+        # print(text)
+        return dataset
+    else:
+        return "API Error"    
+
 
 
 # def download_data():
@@ -239,5 +259,8 @@ if __name__ == '__main__':
     # remove_files()
 
     # print(api_key, movie_id)
-    movie_text = get_movie_data(api_key, movie_id)
-    write_movie_file('movie_test.csv', movie_text)
+    # movie_text = get_movie_data(api_key, movie_id)
+    # write_movie_file('movie_test.csv', movie_text)
+    popular_movies_dict = get_popular_movies()
+    # print(popular_movies_dict.keys())
+    print(popular_movies_dict['results'][0]['title'])
