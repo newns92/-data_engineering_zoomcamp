@@ -88,8 +88,8 @@ def get_popular_movies():
 
 def loop_through_movies(dataset):
     # print(len(popular_movies_dict['results']))
-    for i in range(len(popular_movies_dict['results'])):
-        print(popular_movies_dict['results'][i]['title'])
+    for i in range(len(dataset)):
+        print(dataset[i]['title'])
 
 
 # def download_data():
@@ -282,7 +282,7 @@ if __name__ == '__main__':
     popular_movies_dict = get_popular_movies()
     # print(popular_movies_dict.keys())
     # print(len(popular_movies_dict))
-    print(popular_movies_dict)
+    # print(popular_movies_dict)
     # print(popular_movies_dict['results'][0]['title'])
 
-    # loop_through_movies(popular_movies_dict)
+    loop_through_movies(popular_movies_dict)
