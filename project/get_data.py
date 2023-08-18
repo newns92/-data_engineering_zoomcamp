@@ -32,28 +32,9 @@ def get_movie_data(tmdb_api_key, movie_id):
         text = json.dumps(array)
         # print(text)
         return text
+    
     else:
         return "API Error"
-
-
-def write_movie_file(file_name, text):
-    dataset = json.loads(text)
-    csv_file = open(file_name, 'a')
-    csv_writer = csv.writer(csv_file)
-    
-    # Try to unpack results to access "collection name" element
-    try:
-        collection_name = dataset['belongs_to_collection']['name']
-    # If no assigned collection, assign NULL
-    except:
-        collection_name = None
-    
-    result = [dataset['original_title'], collection_name]
-
-    # write data
-    csv_writer.writerow(result)
-    print(result)
-    csv_file.close()
 
 
 def get_popular_movies():
@@ -61,7 +42,7 @@ def get_popular_movies():
 
     # https://developer.themoviedb.org/reference/movie-lists
     for page in range(1, 6):
-        print('Page:', page)
+        # print('Page:', page)
 
         query = f'https://api.themoviedb.org/3/movie/popular?language=en-US&page={page}'
         headers = {
@@ -79,7 +60,7 @@ def get_popular_movies():
             # Concatenate results lists
             for item in dataset_page['results']:
                 dataset.append(item)
-            print(len(dataset))
+            # print(len(dataset))
 
         else:
             return "API Error"
@@ -87,9 +68,44 @@ def get_popular_movies():
     return dataset    
 
 def loop_through_movies(dataset):
-    # print(len(popular_movies_dict['results']))
     for i in range(len(dataset)):
         print(dataset[i]['title'])
+
+# def write_movie_file(file_name, text):
+#     dataset = json.loads(text)
+#     csv_file = open(file_name, 'a')
+#     csv_writer = csv.writer(csv_file)
+    
+def write_movie_file(file_name, dataset):
+    # csv_file = open(file_name, 'a')
+    # csv_writer = csv.writer(csv_file)
+
+    # create empty dataframe with headers
+    df = pd.DataFrame(columns=['title', 'original_language', 'popularity', 'release_date', 
+                               'vote_average', 'vote_count'])
+
+    # for each movie in the dataset, add its info to the dataframe
+    for i in range(len(dataset)):
+        # print(dataset[i]['title'])
+        df.loc[i] = [dataset[i]['title'], dataset[i]['original_language'], 
+                     dataset[i]['popularity'], dataset[i]['release_date'], 
+                     dataset[i]['vote_average'], dataset[i]['vote_count']]
+    
+    # print(df[:5])
+
+    # create the path of where to store the parquet file
+    # Use .as_posix() for easier GCS and BigQuery access
+    # https://stackoverflow.com/questions/68369551/how-can-i-output-paths-with-forward-slashes-with-pathlib-on-windows
+    path = Path(f'data/{file_name}.parquet').as_posix()
+    # print(f'PATH: {path.as_posix()}')
+
+    # create the data directory if it does not exist
+    # https://stackoverflow.com/questions/23793987/write-a-file-to-a-directory-that-doesnt-exist
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    # convert the DataFrame to a zipped parquet file and save to specified location
+    print(f'Converting dataframe to a parquet file')
+    df.to_parquet(path, compression='gzip')
 
 
 # def download_data():
@@ -279,10 +295,15 @@ if __name__ == '__main__':
     # print(api_key, movie_id)
     # movie_text = get_movie_data(api_key, movie_id)
     # write_movie_file('movie_test.csv', movie_text)
-    popular_movies_dict = get_popular_movies()
+    popular_movies_list = get_popular_movies()
     # print(popular_movies_dict.keys())
     # print(len(popular_movies_dict))
     # print(popular_movies_dict)
     # print(popular_movies_dict['results'][0]['title'])
 
-    loop_through_movies(popular_movies_dict)
+    # keys
+    print(popular_movies_list[0].keys())
+    print(popular_movies_list[0])
+
+    write_movie_file('movies_test', popular_movies_list)
+    # loop_through_movies(popular_movies_list)
