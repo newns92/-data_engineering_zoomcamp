@@ -29,19 +29,29 @@ def get_movie_data(api_key, movie_id):
     if response.status_code == 200:  # if API request was successful
         array = response.json()
         text = json.dumps(array)
-        print(text)
+        # print(text)
         return text
     else:
         return "API Error"
 
-# def write_movie_file(file_name, text):
-#     dataset = json.loads(text)
-#     csv_file = open(file_name, 'a')
-#     csv_writer = csv.writer(csv_file)
+def write_movie_file(file_name, text):
+    dataset = json.loads(text)
+    csv_file = open(file_name, 'a')
+    csv_writer = csv.writer(csv_file)
     
-#     # unpack results to access "collection name" element
-#     try:
-#         collection_name = dataset['belongs_to_collection']
+    # Try to unpack results to access "collection name" element
+    try:
+        collection_name = dataset['belongs_to_collection']['name']
+    # If no assigned collection, assign NULL
+    except:
+        collection_name = None
+    
+    result = [dataset['original_title'], collection_name]
+
+    # write data
+    csv_writer.writerow(result)
+    print(result)
+    csv_file.close()
 
 
 # def download_data():
@@ -229,4 +239,5 @@ if __name__ == '__main__':
     # remove_files()
 
     # print(api_key, movie_id)
-    get_movie_data(api_key, movie_id)
+    movie_text = get_movie_data(api_key, movie_id)
+    write_movie_file('movie_test.csv', movie_text)
