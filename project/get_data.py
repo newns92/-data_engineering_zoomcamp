@@ -97,6 +97,7 @@ def write_movie_file(file_name, dataset):
     # Use .as_posix() for easier GCS and BigQuery access
     # https://stackoverflow.com/questions/68369551/how-can-i-output-paths-with-forward-slashes-with-pathlib-on-windows
     path = Path(f'data/{file_name}.parquet').as_posix()
+    # path_csv = Path(f'data/{file_name}.csv')  # .as_posix()
     # print(f'PATH: {path.as_posix()}')
 
     # create the data directory if it does not exist
@@ -106,6 +107,7 @@ def write_movie_file(file_name, dataset):
     # convert the DataFrame to a zipped parquet file and save to specified location
     print(f'Converting dataframe to a parquet file')
     df.to_parquet(path, compression='gzip')
+    # df.to_csv(path_csv)
 
 
 def remove_files():
