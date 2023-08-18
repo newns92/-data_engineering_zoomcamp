@@ -85,13 +85,18 @@ def write_movie_file(file_name, dataset):
                                'vote_average', 'vote_count'])
 
     # for each movie in the dataset, add its info to the dataframe
+    # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
     for i in range(len(dataset)):
         # print(dataset[i]['title'])
         df.loc[i] = [dataset[i]['title'], dataset[i]['original_language'], 
                      dataset[i]['popularity'], dataset[i]['release_date'], 
                      dataset[i]['vote_average'], dataset[i]['vote_count']]
+        
+    # convert release_date to datetime
+    df.release_date = pd.to_datetime(df.release_date)
     
     # print(df[:5])
+    # print(df.dtypes)
 
     # create the path of where to store the parquet file
     # Use .as_posix() for easier GCS and BigQuery access
@@ -298,9 +303,9 @@ if __name__ == '__main__':
     # print(popular_movies_dict)
     # print(popular_movies_dict['results'][0]['title'])
 
-    # keys
-    print(popular_movies_list[0].keys())
-    print(popular_movies_list[0])
+    # # keys
+    # print(popular_movies_list[0].keys())
+    # print(popular_movies_list[0])
 
     write_movie_file('movies_test', popular_movies_list)
     # loop_through_movies(popular_movies_list)
