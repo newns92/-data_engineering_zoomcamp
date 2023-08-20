@@ -104,7 +104,7 @@ def write_movie_file(file_name, dataset):
                      dataset[i]['popularity'], dataset[i]['release_date'], 
                      dataset[i]['vote_average'], dataset[i]['vote_count']]
         
-    # convert release_date to datetime
+    # Convert release_date to datetime
     df.release_date = pd.to_datetime(df.release_date)
     
     # print(df[:5])
@@ -135,8 +135,8 @@ def write_movie_file_to_postgres(file_name, dataset):
     
     # print('Starting...')
     # print("Creating the engine...")
-    # # need to convert this DDL statement into something Postgres will understand
-    # #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+    # # Need to convert this DDL statement into something Postgres will understand
+    # #   - Via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
     # engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')
 
 
@@ -152,7 +152,7 @@ def write_movie_file_to_postgres(file_name, dataset):
                      dataset[i]['popularity'], dataset[i]['release_date'], 
                      dataset[i]['vote_average'], dataset[i]['vote_count']]
         
-    # convert release_date to datetime
+    # Convert release_date to datetime
     df.release_date = pd.to_datetime(df.release_date)
     
     # print(df[:5])

@@ -8,6 +8,14 @@
 - Install the package requirements found in `requirements.txt` via `pip install -r requirements.txt`
 - Check packages again if desired (recommended)
 
+
+## Setup Postgres Database
+- If needed:
+    - Install a client for Postgres via `conda install -c conda-forge pgcli`
+    - Add to the system path: `C:\ProgramData\Miniconda3\Scripts`
+- Test that Postgres is there with `pgcli --help`
+
+
 ## Setup GCP Account
 - Create account and get the GCP free trial if needed
 - Create a new project and note the Project ID
