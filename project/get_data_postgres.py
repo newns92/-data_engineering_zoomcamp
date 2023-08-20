@@ -5,8 +5,8 @@ import json
 import csv
 import pandas as pd
 from google.cloud import storage
-from config import tmdb_api_key, tmdb_api_read_access_token, \
-    user, password, host, port, database, movies_table_name
+from config import tmdb_api_key, tmdb_api_read_access_token, postgres_user, postgres_password, \
+    postgres_host, postgres_port, postgres_database, postgres_movies_table_name
 from pathlib import Path
 import shutil
 from sqlalchemy import create_engine
@@ -24,17 +24,13 @@ Pre-reqs:
 # api_key = tmdb_api_key
 # movie_id = '464052'
 
-# # Postgres args
-# user = params.user
-# password = params.password
-# host = params.host
-# port = params.port
-# database = params.database
-# green_taxi_table_name = params.green_taxi_table_name
-# green_taxi_url = params.green_taxi_url
-# zones_table_name = params.zones_table_name
-# zones_url = params.zones_url    
-
+# Postgres args
+user = postgres_user
+password = postgres_password
+host = postgres_host
+port = postgres_port
+database = postgres_database
+movie_info_table_name = postgres_movies_table_name
 
 # def get_movie_data(tmdb_api_key, movie_id):
 #     query = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={tmdb_api_key}&language=en-US'
@@ -133,11 +129,11 @@ def write_movie_file_to_postgres(file_name, dataset):
     # csv_file = open(file_name, 'a')
     # csv_writer = csv.writer(csv_file)
     
-    # print('Starting...')
-    # print("Creating the engine...")
-    # # Need to convert this DDL statement into something Postgres will understand
-    # #   - Via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
-    # engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')
+    print('Starting...')
+    print("Creating the engine...")
+    # Need to convert this DDL statement into something Postgres will understand
+    #   - Via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+    engine = create_engine(f'postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_database}')
 
 
     # Create empty dataframe with headers

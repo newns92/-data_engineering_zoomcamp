@@ -10,3 +10,4 @@ pandas-gbq==0.18.1
 # Others
 requests
 docker
+psycopg2
