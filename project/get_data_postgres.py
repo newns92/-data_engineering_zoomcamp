@@ -8,6 +8,7 @@ from google.cloud import storage
 from config import tmdb_api_key, tmdb_api_read_access_token  # gcloud_creds, bucket_name
 from pathlib import Path
 import shutil
+from sqlalchemy import create_engine
 
 
 """
@@ -22,10 +23,16 @@ Pre-reqs:
 # api_key = tmdb_api_key
 # movie_id = '464052'
 
-# # switch out the bucket name
-# storage_client = storage.Client.from_service_account_json(gcloud_creds)
-# # BUCKET = os.environ.get("GCP_GCS_BUCKET", "dtc-data-lake-bucketname")
-# gcs_bucket = storage_client.get_bucket(bucket_name)
+# # Postgres args
+# user = params.user
+# password = params.password
+# host = params.host
+# port = params.port
+# database = params.database
+# green_taxi_table_name = params.green_taxi_table_name
+# green_taxi_url = params.green_taxi_url
+# zones_table_name = params.zones_table_name
+# zones_url = params.zones_url    
 
 
 # def get_movie_data(tmdb_api_key, movie_id):
@@ -121,9 +128,16 @@ def write_movie_file(file_name, dataset):
     # df.to_csv(path_csv)
 
 
-def write_movie_file_to_gcs(file_name, dataset, bucket):
+def write_movie_file_to_posgres(file_name, dataset):
     # csv_file = open(file_name, 'a')
     # csv_writer = csv.writer(csv_file)
+    
+    # print('Starting...')
+    # print("Creating the engine...")
+    # # need to convert this DDL statement into something Postgres will understand
+    # #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+    # engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')
+
 
     # Create empty dataframe with headers
     df = pd.DataFrame(columns=['title', 'original_language', 'popularity', 'release_date', 
@@ -161,18 +175,12 @@ def write_movie_file_to_gcs(file_name, dataset, bucket):
     df.to_parquet(path, compression='gzip')
     # df.to_csv(path_csv)
 
-    """
-    Ref: https://cloud.google.com/storage/docs/uploading-objects#storage-upload-object-python
-    """
-    # # WORKAROUND to prevent timeout for files > 6 MB on 800 kbps upload speed.
-    # # (Ref: https://github.com/googleapis/python-storage/issues/74)
-    # storage.blob._MAX_MULTIPART_SIZE = 5 * 1024 * 1024  # 5 MB
-    # storage.blob._DEFAULT_CHUNKSIZE = 5 * 1024 * 1024  # 5 MB
+    # get the header/column names
+    header = df.head(n=0)
+    print(header)
 
-    # client = storage.Client()
-    # bucket = client.bucket(bucket)
-    blob = bucket.blob(f'data/{file_name}.parquet')
-    blob.upload_from_filename(f'data/{file_name}.parquet')
+    # # add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
+    # header.to_sql(name='green_taxi_data', con=engine, if_exists='replace')
 
 
 def remove_files():
@@ -216,8 +224,8 @@ if __name__ == '__main__':
     # print(popular_movies_list[0].keys())
     # print(popular_movies_list[0])
 
-    write_movie_file('movies_test', popular_movies_list)
-    # write_movie_file_to_gcs('movies_test', popular_movies_list, gcs_bucket)
+    # write_movie_file('movies_test', popular_movies_list)
+    write_movie_file_to_posgres('movies_test', popular_movies_list)
     # loop_through_movies(popular_movies_list)
 
     # upload_to_gcs(gcs_bucket)
