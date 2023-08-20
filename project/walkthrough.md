@@ -11,9 +11,24 @@
 
 ## Setup Postgres Database
 - If needed:
-    - Install a client for Postgres via `conda install -c conda-forge pgcli`
+    - Install a client for Postgres via `pip install pgcli` or `conda install -c conda-forge pgcli`
     - Add to the system path: `C:\ProgramData\Miniconda3\Scripts`
 - Test that Postgres is there with `pgcli --help`
+
+### Docker
+- Start Docker Desktop
+    - If needed, log in
+- In the Anaconda prompt for the `zoom_project` environment, check that Docker is installed and working with `docker run hello-world`
+- Check if any containers are running with `docker ps`
+    - If needed, kill any containers with `docker kill [containter_id]`
+- Build an image from the `Dockerfile` via `docker build`
+    - We first build the Postgres image as a test via `docker build -t test:postgres .`
+        - `-t` argument is a tag to name the image
+        - `.` means we want to build the image in the current directory
+- Then run the image via `docker run -it test:postgres`
+    - `-it` instructs Docker to allocate a pseudo-TTY connected to the container’s stdin; creating an interactive `bash` shell in the container.
+        - https://docs.docker.com/engine/reference/commandline/run/
+- Exit a Docker container via `CTRL + d`
 
 
 ## Setup GCP Account
