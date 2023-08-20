@@ -15,7 +15,7 @@
     - Add to the system path: `C:\ProgramData\Miniconda3\Scripts`
 - Test that Postgres is there with `pgcli --help`
 
-### Docker
+### Docker and Dockerfile
 - Start Docker Desktop
     - If needed, log in
 - In the Anaconda prompt for the `zoom_project` environment, check that Docker is installed and working with `docker run hello-world`
@@ -28,8 +28,10 @@
 - Then run the image via `docker run -it test:postgres`
     - `-it` instructs Docker to allocate a pseudo-TTY connected to the container’s stdin; creating an interactive `bash` shell in the container.
         - https://docs.docker.com/engine/reference/commandline/run/
-- Exit a Docker container via `CTRL + d`
+- Exit the Docker container via `CTRL + d`
 
+### Docker and `docker compose`
+- 
 
 ## Setup GCP Account
 - Create account and get the GCP free trial if needed

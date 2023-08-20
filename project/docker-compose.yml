@@ -1,0 +1,54 @@
+services:
+  # Define the first service as 'postgres'
+  pgdatabase:
+    # Specify the image to pull
+    image: postgres:13
+    # restart: always    
+    # Specify the environment variables to pass to Postgres
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=movie_data
+    # Volumes = way of mapping a dir from our host machine file system to a dir in the container (Mounting)
+    # - This is making sure our data is still there if we stop running Docker
+    # - Because Docker does NOT keep the state
+    # - We are mapping/mounting "./movie_postgres_data" to "/var/lib/postgresql/data"
+    # - needs the full path      
+    volumes:
+      - "./movie_postgres_data:/var/lib/postgresql/data:rw"
+    # Need to specify the port we are mapping from the host machine to one on the container
+    ports:
+      - "5432:5432"
+    # Define the network the container will be a part of
+    networks:
+      - pg-network
+
+  # Define the second service as 'pgadmin'
+  # - This is the standard web-based GUI for Postgres data exploration and querying (both local and remote servers)
+  pgadmin:
+    # Specify the image to pull
+    image: dpage/pgadmin4
+    # restart: always    
+    # Specify the environment variables to pass to pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    # Specify the port we are mapping
+    ports:
+      - "8080:80" 
+    # Define the network the container will be a part of      
+    networks:
+      - pg-network
+
+# Specify our network to link the above two containers   
+networks:
+  pg-network:
+    name: pg-network      
+
+
+# [winpty] docker-compose up
+# Shut it down with `winpty docker-compose down`
+# Don't need to write the full path for the volumes
+# Docker provides `restart` policies to control whether your containers start automatically when they exit, or when Docker restarts
+#   - These that linked containers are started in the correct order
+# The containers automatically become part of a network, so we don't have to specify it here

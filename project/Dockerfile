@@ -4,9 +4,11 @@ FROM python:3.9
 # Copy requirements file for packages to install
 COPY requirements.txt .
 
-# Command(s) to run (Install wget and Python packages in Docker image)
+# Command(s) to run (Install wget and Python packages into the Docker image)
 # RUN apt-get install wget
 # RUN pip install pandas sqlalchemy psycopg2 requests
+
+# Command to install specified packages from a requirements text file via pypi
 RUN pip install -r requirements.txt --trusted-host pypi.python.org --no-cache-dir
 
 # Specify the working directory of where in the image we work with the file below
