@@ -31,7 +31,17 @@
 - Exit the Docker container via `CTRL + d`
 
 ### Docker and `docker compose`
-- 
+- Run `docker-compose up -d` to run Docker Compose in detached mode and get control of the terminal back once the command is executed
+- Once everything is running, open a browser and go to `http://localhost:8080/` to see the landing page for pgAdmin
+- Sign in with the `pgadmin` credentials from the `docker-compose.yml` file
+- Create a new server named `Local Docker` by right-clicking on "Servers" and hit "Register" --> "Server"
+- Need to specify the host address in the "Connection" tab, which should be `pgdatabase` (from `docker-compose.yml`), port is `5432`, and both username and password are `root`
+- Should see our new server with our `movies_data` database up and running
+- **To make pgAdmin configuration persistent**, create a folder `data_pgadmin`
+    - Change its permission potentially (on Linux, `sudo chown 5050:5050 data_pgadmin`)
+    - Mount it to the `/var/lib/pgadmin` folder under `volumes` in the `pgadmin1` service in `docker-compose.yml`
+- Kill all Docker containers once done via `docker-compose down`
+
 
 ## Setup GCP Account
 - Create account and get the GCP free trial if needed

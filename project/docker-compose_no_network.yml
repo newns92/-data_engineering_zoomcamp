@@ -19,7 +19,7 @@ services:
     # Need to specify the port we are mapping from the host machine to one on the container
     ports:
       - "5432:5432"
-      
+
   # Define the second service as 'pgadmin'
   # - This is the standard web-based GUI for Postgres data exploration and querying (both local and remote servers)
   pgadmin:
@@ -34,15 +34,17 @@ services:
     ports:
       - "8080:80" 
 
-# check for running containers with `docker ps`
+# Check for running containers with `docker ps`
 
-# run with `winpty docker run -it [imagename]` => `winpty docker run -it postgres:13`
+# Run with `winpty docker run -it [imagename]` => `winpty docker run -it postgres:13`
 
-# -it instructs Docker to allocate a pseudo-TTY connected to the container’s stdin; creating an interactive bash shell in the container
-# set environment variables with `-e` flag
-# set volumes with `-v` flag
-# set port with `-p` flag
+# The flag -it instructs Docker to allocate a pseudo-TTY connected to the container’s stdin
+#   - Creating an interactive bash shell in the container
+# Set environment variables with `-e` flag
+# Set volumes with `-v` flag
+# Set port with `-p` flag
 
+# INSTRUCTIONS:
 # winpty docker run -it \
 #  -e POSTGRES_USER="root" \
 #  -e POSTGRES_PASSWORD="root" \

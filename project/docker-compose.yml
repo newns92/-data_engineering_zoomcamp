@@ -33,6 +33,9 @@ services:
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
       - PGADMIN_DEFAULT_PASSWORD=root
+    # Make pgAdmin configuration persistent
+    volumes:
+      - ./data_pgadmin:/var/lib/pgadmin      
     # Specify the port we are mapping
     ports:
       - "8080:80" 
@@ -45,8 +48,9 @@ networks:
   pg-network:
     name: pg-network      
 
-
+# INSTRUCTIONS:
 # [winpty] docker-compose up
+# - Or run in detached mode with `docker-compose up -d` to get control of the terminal back once things are spun up
 # Shut it down with `winpty docker-compose down`
 # Don't need to write the full path for the volumes
 # Docker provides `restart` policies to control whether your containers start automatically when they exit, or when Docker restarts

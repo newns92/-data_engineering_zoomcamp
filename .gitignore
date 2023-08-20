@@ -12,3 +12,4 @@ week5_batch_processing/zones
 week5_batch_processing/*.csv*
 .ipynb_checkpoints/
 tmp/
+movie_postgres_data
