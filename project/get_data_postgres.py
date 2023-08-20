@@ -5,7 +5,8 @@ import json
 import csv
 import pandas as pd
 from google.cloud import storage
-from config import tmdb_api_key, tmdb_api_read_access_token  # gcloud_creds, bucket_name
+from config import tmdb_api_key, tmdb_api_read_access_token, \
+    user, password, host, port, database, movies_table_name
 from pathlib import Path
 import shutil
 from sqlalchemy import create_engine
@@ -128,7 +129,7 @@ def write_movie_file(file_name, dataset):
     # df.to_csv(path_csv)
 
 
-def write_movie_file_to_posgres(file_name, dataset):
+def write_movie_file_to_postgres(file_name, dataset):
     # csv_file = open(file_name, 'a')
     # csv_writer = csv.writer(csv_file)
     
@@ -175,32 +176,21 @@ def write_movie_file_to_posgres(file_name, dataset):
     df.to_parquet(path, compression='gzip')
     # df.to_csv(path_csv)
 
-    # get the header/column names
+    # Get the header/column names
     header = df.head(n=0)
     print(header)
 
-    # # add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
+    # # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
     # header.to_sql(name='green_taxi_data', con=engine, if_exists='replace')
+
+    # # Add first chunk of data
+    # df.to_sql(name='movie_data', con=engine, if_exists='append')
 
 
 def remove_files():
     # Remove the local parquet files
     # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
     shutil.rmtree('./data/')
-
-# def upload_to_gcs(bucket, object_name, local_file):
-#     """
-#     Ref: https://cloud.google.com/storage/docs/uploading-objects#storage-upload-object-python
-#     """
-#     # # WORKAROUND to prevent timeout for files > 6 MB on 800 kbps upload speed.
-#     # # (Ref: https://github.com/googleapis/python-storage/issues/74)
-#     # storage.blob._MAX_MULTIPART_SIZE = 5 * 1024 * 1024  # 5 MB
-#     # storage.blob._DEFAULT_CHUNKSIZE = 5 * 1024 * 1024  # 5 MB
-
-#     # client = storage.Client()
-#     # bucket = client.bucket(bucket)
-#     blob = bucket.blob(object_name)
-#     blob.upload_from_filename(local_file)
 
 
 if __name__ == '__main__':
@@ -225,7 +215,7 @@ if __name__ == '__main__':
     # print(popular_movies_list[0])
 
     # write_movie_file('movies_test', popular_movies_list)
-    write_movie_file_to_posgres('movies_test', popular_movies_list)
+    write_movie_file_to_postgres('movies_test', popular_movies_list)
     # loop_through_movies(popular_movies_list)
 
     # upload_to_gcs(gcs_bucket)
