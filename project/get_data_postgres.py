@@ -12,13 +12,6 @@ import shutil
 from sqlalchemy import create_engine
 
 
-"""
-Pre-reqs: 
-1. `pip install pandas pyarrow google-cloud-storage`
-2. Set GOOGLE_APPLICATION_CREDENTIALS to your project/service-account key
-3. Set GCP_GCS_BUCKET as your bucket or change default value of BUCKET
-"""
-
 # https://web.archive.org/web/20210112170836/https://towardsdatascience.com/this-tutorial-will-make-your-api-data-pull-so-much-easier-9ab4c35f9af
 # Use requests package to query API and get back JSON
 # api_key = tmdb_api_key
@@ -84,47 +77,6 @@ def get_popular_movies():
     return dataset    
 
 
-def write_movie_file(file_name, dataset):
-    # csv_file = open(file_name, 'a')
-    # csv_writer = csv.writer(csv_file)
-
-    # Create empty dataframe with headers
-    df = pd.DataFrame(columns=['title', 'original_language', 'popularity', 'release_date', 
-                               'vote_average', 'vote_count'])
-
-    # For each movie in the dataset, add its info to the dataframe
-    # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
-    for i in range(len(dataset)):
-        # print(dataset[i]['title'])
-        df.loc[i] = [dataset[i]['title'], dataset[i]['original_language'], 
-                     dataset[i]['popularity'], dataset[i]['release_date'], 
-                     dataset[i]['vote_average'], dataset[i]['vote_count']]
-        
-    # Convert release_date to datetime
-    df.release_date = pd.to_datetime(df.release_date)
-    
-    # print(df[:5])
-    # print(df.dtypes)
-    # print(df.describe())
-    # print(df.isnull().sum())
-
-    # Create the path of where to store the parquet file
-    # - Use .as_posix() for easier GCS and BigQuery access
-    # https://stackoverflow.com/questions/68369551/how-can-i-output-paths-with-forward-slashes-with-pathlib-on-windows
-    path = Path(f'data/{file_name}.parquet').as_posix()
-    # path_csv = Path(f'data/{file_name}.csv')  # .as_posix()
-    # print(f'PATH: {path.as_posix()}')
-
-    # Create the data directory if it does not exist
-    # https://stackoverflow.com/questions/23793987/write-a-file-to-a-directory-that-doesnt-exist
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    # Convert the DataFrame to a zipped parquet file and save to specified location
-    print(f'Converting dataframe to a parquet file')
-    df.to_parquet(path, compression='gzip')
-    # df.to_csv(path_csv)
-
-
 def write_movie_file_to_postgres(file_name, dataset):
     # csv_file = open(file_name, 'a')
     # csv_writer = csv.writer(csv_file)
@@ -158,21 +110,21 @@ def write_movie_file_to_postgres(file_name, dataset):
     # print(df.describe())
     # print(df.isnull().sum())
 
-    # Create the path of where to store the parquet file
-    # - Use .as_posix() for easier GCS and BigQuery access
-    # https://stackoverflow.com/questions/68369551/how-can-i-output-paths-with-forward-slashes-with-pathlib-on-windows
-    path = Path(f'data/{file_name}.parquet').as_posix()
-    # path_csv = Path(f'data/{file_name}.csv')  # .as_posix()
-    # print(f'PATH: {path.as_posix()}')
+    # # Create the path of where to store the parquet file
+    # # - Use .as_posix() for easier GCS and BigQuery access
+    # # https://stackoverflow.com/questions/68369551/how-can-i-output-paths-with-forward-slashes-with-pathlib-on-windows
+    # path = Path(f'data/{file_name}.parquet').as_posix()
+    # # path_csv = Path(f'data/{file_name}.csv')  # .as_posix()
+    # # print(f'PATH: {path.as_posix()}')
 
-    # Create the data directory if it does not exist
-    # https://stackoverflow.com/questions/23793987/write-a-file-to-a-directory-that-doesnt-exist
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    # # Create the data directory if it does not exist
+    # # https://stackoverflow.com/questions/23793987/write-a-file-to-a-directory-that-doesnt-exist
+    # os.makedirs(os.path.dirname(path), exist_ok=True)
 
-    # Convert the DataFrame to a zipped parquet file and save to specified location
-    print('Converting DataFrame to a parquet file...')
-    df.to_parquet(path, compression='gzip')
-    # df.to_csv(path_csv)
+    # # Convert the DataFrame to a zipped parquet file and save to specified location
+    # print('Converting DataFrame to a parquet file...')
+    # df.to_parquet(path, compression='gzip')
+    # # df.to_csv(path_csv)
 
     # Get the header/column names
     header = df.head(n=0)
@@ -187,11 +139,11 @@ def write_movie_file_to_postgres(file_name, dataset):
     df.to_sql(name=postgres_movies_table_name, con=engine, if_exists='append')
 
 
-def remove_files():
-    print('Removing local files...')
-    # Remove the local parquet files
-    # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
-    shutil.rmtree('./data/')
+# def remove_files():
+#     print('Removing local files...')
+#     # Remove the local parquet files
+#     # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
+#     shutil.rmtree('./data/')
 
 
 if __name__ == '__main__':
@@ -212,4 +164,4 @@ if __name__ == '__main__':
     write_movie_file_to_postgres('movies_test', popular_movies_list)
     # loop_through_movies(popular_movies_list)
     
-    remove_files()
+    # remove_files()
