@@ -48,6 +48,8 @@
     - You should see the data loaded into the Postgres database in pgAdmin
 
 ### Prefect
+- Next, we add **parameterization** to our flows and create deployments by expanding upon `get_data_postgres.py`
+- 
 
 
 
