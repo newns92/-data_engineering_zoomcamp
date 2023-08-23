@@ -42,10 +42,12 @@
         - On Windows, make sure under "Properties" that it is NOT "read-only"
     - Mount it to the `/var/lib/pgadmin` folder under `volumes` in the `pgadmin1` service in `docker-compose.yml`
 - Kill all Docker containers once done via `docker-compose down`
-- Then, run `docker build -t movie_ingest:v001 .`
-- Once complete, run the same command as manually running the Python script to ingest data, but via Docker starting with `docker run -it --network=pg-network movie_ingest:v001`
+- **To run and load the data into Postgres via the CLI and Docker:**
+    - Run `docker build -t movie_ingest:v001 .`
+    - Once complete, run the same command as manually running the Python script to ingest data, but via Docker starting with `docker run -it --network=pg-network movie_ingest:v001`
+    - You should see the data loaded into the Postgres database in pgAdmin
 
-
+### Prefect
 
 
 
