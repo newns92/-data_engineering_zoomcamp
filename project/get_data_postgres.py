@@ -69,6 +69,10 @@ def get_popular_movies():
             # Concatenate results lists
             for item in dataset_page['results']:
                 dataset.append(item)
+                # KEYS USED
+                # dict_keys(['adult', 'backdrop_path', 'genre_ids', 'id', 'original_language', 
+                # 'original_title', 'overview', 'popularity', 'poster_path', 'release_date', 
+                # 'title', 'video', 'vote_average', 'vote_count'])
             # print(len(dataset))
 
         else:
@@ -91,14 +95,14 @@ def write_movie_file_to_postgres(file_name, dataset):
 
     print('Creating the DataFrame...')
     # Create empty dataframe with headers
-    df = pd.DataFrame(columns=['title', 'original_language', 'popularity', 'release_date', 
-                               'vote_average', 'vote_count'])
+    df = pd.DataFrame(columns=['id', 'title', 'original_language', 'popularity', 
+                               'release_date', 'vote_average', 'vote_count'])
 
     # For each movie in the dataset, add its info to the dataframe
     # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
     for i in range(len(dataset)):
         # print(dataset[i]['title'])
-        df.loc[i] = [dataset[i]['title'], dataset[i]['original_language'], 
+        df.loc[i] = [dataset[i]['id'], dataset[i]['title'], dataset[i]['original_language'], 
                      dataset[i]['popularity'], dataset[i]['release_date'], 
                      dataset[i]['vote_average'], dataset[i]['vote_count']]
         
