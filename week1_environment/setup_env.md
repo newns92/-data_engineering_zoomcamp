@@ -75,7 +75,7 @@
 - Add `sqlalchemy` and `psycopg2` to the `pip install pandas` line in `Dockerfile` file
 - Add `RUN apt-get install wget` to the `Dockerfile` file
 - Change all instances of `pipeline.py` to `load_data.py`
-- In `docker-compose.yml`, add the `networks` to each service, then add the `network`
+- In `docker-compose.yml`, add the `networks` to each service, then add the `network` itself
 - Run `docker build -t taxi_ingest:v001 .`
 - Once complete, run the same command as manually running the Python script to ingest data, but via Docker starting with `docker run -it --network=pg-network taxi_ingest:v001`
 # SQL Refresher

@@ -39,8 +39,17 @@
 - Should see our new server with our `movies_data` database up and running
 - **To make pgAdmin configuration persistent**, create a folder `data_pgadmin`
     - Change its permission potentially (on Linux, `sudo chown 5050:5050 data_pgadmin`)
+        - On Windows, make sure under "Properties" that it is NOT "read-only"
     - Mount it to the `/var/lib/pgadmin` folder under `volumes` in the `pgadmin1` service in `docker-compose.yml`
 - Kill all Docker containers once done via `docker-compose down`
+- Then, run `docker build -t movie_ingest:v001 .`
+- Once complete, run the same command as manually running the Python script to ingest data, but via Docker starting with `docker run -it --network=pg-network movie_ingest:v001`
+
+
+
+
+
+
 
 
 ## Setup GCP Account

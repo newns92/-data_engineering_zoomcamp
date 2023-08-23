@@ -24,13 +24,13 @@ Pre-reqs:
 # api_key = tmdb_api_key
 # movie_id = '464052'
 
-# Postgres args
-user = postgres_user
-password = postgres_password
-host = postgres_host
-port = postgres_port
-database = postgres_database
-movie_info_table_name = postgres_movies_table_name
+# # Postgres args
+# user = postgres_user
+# password = postgres_password
+# host = postgres_host
+# port = postgres_port
+# database = postgres_database
+# movie_info_table_name = postgres_movies_table_name
 
 # def get_movie_data(tmdb_api_key, movie_id):
 #     query = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={tmdb_api_key}&language=en-US'
@@ -130,12 +130,14 @@ def write_movie_file_to_postgres(file_name, dataset):
     # csv_writer = csv.writer(csv_file)
     
     print('Starting...')
-    print("Creating the engine...")
+    print('Creating the Postgres engine...')
     # Need to convert this DDL statement into something Postgres will understand
     #   - Via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
     engine = create_engine(f'postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_database}')
+    print(engine)
+    print(engine.connect())
 
-
+    print('Creating the DataFrame...')
     # Create empty dataframe with headers
     df = pd.DataFrame(columns=['title', 'original_language', 'popularity', 'release_date', 
                                'vote_average', 'vote_count'])
@@ -168,35 +170,31 @@ def write_movie_file_to_postgres(file_name, dataset):
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
     # Convert the DataFrame to a zipped parquet file and save to specified location
-    print(f'Converting dataframe to a parquet file')
+    print('Converting DataFrame to a parquet file...')
     df.to_parquet(path, compression='gzip')
     # df.to_csv(path_csv)
 
     # Get the header/column names
     header = df.head(n=0)
-    print(header)
+    # print(header)
 
-    # # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
-    # header.to_sql(name='green_taxi_data', con=engine, if_exists='replace')
+    # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
+    print('Adding table column headers...')
+    header.to_sql(name=postgres_movies_table_name, con=engine, if_exists='replace')
 
-    # # Add first chunk of data
-    # df.to_sql(name='movie_data', con=engine, if_exists='append')
+    # Add the movie info data
+    print('Loading in data...')
+    df.to_sql(name=postgres_movies_table_name, con=engine, if_exists='append')
 
 
 def remove_files():
+    print('Removing local files...')
     # Remove the local parquet files
     # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
     shutil.rmtree('./data/')
 
 
 if __name__ == '__main__':
-    # web_to_gcs('2019', 'green', gcs_bucket)
-    # web_to_gcs('2020', 'green', gcs_bucket)
-    # web_to_gcs('2019', 'yellow', gcs_bucket)
-    # web_to_gcs('2020', 'yellow', gcs_bucket)
-    # web_to_gcs('2019', 'fhv', gcs_bucket)
-    # remove_files()
-
     # print(api_key, movie_id)
     # movie_text = get_movie_data(api_key, movie_id)
     # write_movie_file('movie_test.csv', movie_text)
@@ -213,8 +211,5 @@ if __name__ == '__main__':
     # write_movie_file('movies_test', popular_movies_list)
     write_movie_file_to_postgres('movies_test', popular_movies_list)
     # loop_through_movies(popular_movies_list)
-
-    # upload_to_gcs(gcs_bucket)
-    # upload_to_gcs(gcs_bucket, f'data/{file_name}', f'data/{file_name}') 
-
+    
     remove_files()
