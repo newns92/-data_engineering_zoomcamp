@@ -11,3 +11,6 @@ pandas-gbq==0.18.1
 requests
 docker
 psycopg2
+
+# try to force install
+pydantic==1.10.0

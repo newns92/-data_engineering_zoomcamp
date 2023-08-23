@@ -1,14 +1,13 @@
-import io
-import os
+# import io
+# import os
 import requests
 import json
-import csv
 import pandas as pd
 from google.cloud import storage
 from config import tmdb_api_key, tmdb_api_read_access_token, postgres_user, postgres_password, \
     postgres_host, postgres_port, postgres_database, postgres_movies_table_name
 from pathlib import Path
-import shutil
+# import shutil
 from sqlalchemy import create_engine
 from prefect import flow, task
 
