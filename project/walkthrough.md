@@ -63,11 +63,14 @@
     - This will find the `profiles.yml` file in the parent directory of the dbt project (parent of `movie_data/`) and check the database connection and display any errors or warnings that it finds
     - *If getting connection test error message, make sure host is `localhost` in the `profiles.yml`, even though in pgAdmin we specified host name of `pgdatabase`*    
 - Copy in the green staging SQL file, the `schema.yml` file, the macros file
-- Create the `packages.yml` file
-- Then run `dbt deps --profiles-dir=../`
-- Then attempt `dbt run -m stg_green_trip_data --profiles-dir=../`
+- Create the `packages.yml` file with the correct version of `dbt-utils`
+- Then run `dbt deps --profiles-dir=../` to install all packages in `packages.yml`
+- Then attempt `dbt run -m stg_movie_data_info --profiles-dir=../`
+
+
 - This *should* work, and you should see the View in the `public` schema of Postgres
     - ***If needed, create `staging` and `prod` schemas now***
+    - We're create Views so that we don't have the need to refresh constantly but still have the latest data loaded
 - Then create the yellow staging SQL file
 - Then attempt `dbt run -m stg_yellow_trip_data --profiles-dir=../`
 - You should see the second View in the `public` schema of Postgres
