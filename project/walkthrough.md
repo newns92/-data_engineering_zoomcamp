@@ -61,6 +61,7 @@
     - Update these outputs to be the correct root username, password, host, port, etc. for the Postgres database
 - Run `dbt debug --profiles-dir ../` from within the `movie_data/` directory
     - This will find the `profiles.yml` file in the parent directory of the dbt project (parent of `movie_data/`) and check the database connection and display any errors or warnings that it finds
+    - *If getting connection test error message, make sure host is `localhost` in the `profiles.yml`, even though in pgAdmin we specified host name of `pgdatabase`*    
 - Copy in the green staging SQL file, the `schema.yml` file, the macros file
 - Create the `packages.yml` file
 - Then run `dbt deps --profiles-dir=../`
