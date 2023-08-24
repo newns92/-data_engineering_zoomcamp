@@ -66,14 +66,16 @@
 - Create the `packages.yml` file with the correct version of `dbt-utils`
 - Then run `dbt deps --profiles-dir=../` to install all packages in `packages.yml`
 - Then attempt `dbt run -m stg_movie_data_info --profiles-dir=../`
-
-
 - This *should* work, and you should see the View in the `public` schema of Postgres
     - ***If needed, create `staging` and `prod` schemas now***
-    - We're create Views so that we don't have the need to refresh constantly but still have the latest data loaded
-- Then create the yellow staging SQL file
-- Then attempt `dbt run -m stg_yellow_trip_data --profiles-dir=../`
-- You should see the second View in the `public` schema of Postgres
+    - We're creating Views so that we don't have the need to refresh constantly but still have the latest data loaded
+    - Once `fact_movies.sql` is completed, to run *just that final model*, run `dbt build --select fact_movies --profiles-dir=../`
+        - But to run everything that `fact_trips.sql` depends on first, we can run `dbt build --select +fact_trips.sql --profiles-dir=../`
+    
+     is done, we can run `dbt run --profiles-dir=../` which will run all of our models, *but not the seed*
+        - To run the seed as well, run `dbt build --profiles-dir=../` to build everything that we have, along with running some tests
+    - Say we just want to run `fact_trips.sql`, we'd 
+
 #### Cloud (GCP)
 - In the `zoom_project` Conda environment, run `pip install dbt-bigquery`
 

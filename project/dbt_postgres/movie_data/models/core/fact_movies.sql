@@ -7,8 +7,8 @@ with movie_data as (
         movie_id,
         title,
         release_date,
-        title,
-        popularity,
+        original_language,
+        popularity_score,
         average_rating,
         rating_count
 
@@ -21,8 +21,8 @@ select
     movie_data.movie_id,
     movie_data.title,
     movie_data.release_date,
-    movie_data.title,
-    movie_data.popularity,
+    movie_data.original_language,
+    movie_data.popularity_score,
     movie_data.average_rating,
     movie_data.rating_count
 
