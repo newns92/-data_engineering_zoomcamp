@@ -52,6 +52,27 @@
 - 
 
 
+### dbt
+#### Local
+- In the `zoom_project` Conda environment, run `pip install dbt-postgres` to will install `dbt-core` and any other dependencies
+- Create a `dbt_postgres/` directory, `cd` into it, and run `dbt init`
+- Name the project `movie_data` and select the Postgres option of a database
+- `profiles.yml` should be updated with stock **outputs**.
+- Update these outputs to be the correct root username, password, host, port, etc. for the Postgres database
+- Run `dbt debug --profiles-dir ../`
+    - This will find the `profiles.yml` file in the parent directory of the dbt project and check the database connection and display any errors or warnings that it finds
+- Copy in the green staging SQL file, the `schema.yml` file, the macros file
+- Create the `packages.yml` file
+- Then run `dbt deps --profiles-dir=../`
+- Then attempt `dbt run -m stg_green_trip_data --profiles-dir=../`
+- This *should* work, and you should see the View in the `public` schema of Postgres
+    - ***If needed, create `staging` and `prod` schemas now***
+- Then create the yellow staging SQL file
+- Then attempt `dbt run -m stg_yellow_trip_data --profiles-dir=../`
+- You should see the second View in the `public` schema of Postgres
+#### Cloud (GCP)
+- In the `zoom_project` Conda environment, run `pip install dbt-bigquery`
+
 
 
 
