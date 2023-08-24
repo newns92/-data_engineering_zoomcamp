@@ -69,12 +69,11 @@
 - This *should* work, and you should see the View in the `public` schema of Postgres
     - ***If needed, create `staging` and `prod` schemas now***
     - We're creating Views so that we don't have the need to refresh constantly but still have the latest data loaded
-    - Once `fact_movies.sql` is completed, to run *just that final model*, run `dbt build --select fact_movies --profiles-dir=../`
-        - But to run everything that `fact_trips.sql` depends on first, we can run `dbt build --select +fact_trips.sql --profiles-dir=../`
-    
-     is done, we can run `dbt run --profiles-dir=../` which will run all of our models, *but not the seed*
-        - To run the seed as well, run `dbt build --profiles-dir=../` to build everything that we have, along with running some tests
-    - Say we just want to run `fact_trips.sql`, we'd 
+- Once `fact_movies.sql` is completed, to run *just that final model*, run `dbt build --select fact_movies --profiles-dir=../`
+    - But to run everything that `fact_trips.sql` depends on first, we can run `dbt build --select +fact_movies --profiles-dir=../`
+- To run all models in order of dependencies, we can run `dbt run --profiles-dir=../` which will run all of our models, *but not the seed*
+    - To run a seed as well, run `dbt build --profiles-dir=../` to build everything that we have, along with running some tests
+- **NOTE**: `dbt run` will run specified models, `dbt build` builds *and tests* selected resources such as models, seeds, snapshots, and tests
 
 #### Cloud (GCP)
 - In the `zoom_project` Conda environment, run `pip install dbt-bigquery`
