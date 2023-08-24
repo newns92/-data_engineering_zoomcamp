@@ -74,7 +74,11 @@
 - To run all models in order of dependencies, we can run `dbt run --profiles-dir=../` which will run all of our models, *but not the seed*
     - To run a seed as well, run `dbt build --profiles-dir=../` to build everything that we have, along with running some tests
 - **NOTE**: `dbt run` will run specified models, `dbt build` builds *and tests* selected resources such as models, seeds, snapshots, and tests
+- **TODO: how to run models in different targets (dev vs. prod)**:
+    - Add *ALL* data via `dbt build --vars "is_test_run: false" --profiles-dir=../` in the CLI for DEV
+    - Add *ALL* data via `dbt build -t prod --vars "is_test_run: false" --profiles-dir=../` in the CLI for PROD
 
+    
 #### Cloud (GCP)
 - In the `zoom_project` Conda environment, run `pip install dbt-bigquery`
 
