@@ -1,8 +1,8 @@
 version: 2
 
 models:
-    # - name: dim_genres
-    #   description: List of unique movie genres from TMDB identified by genre_id
+    - name: dim_languages
+      description: List of unique movie release languages from ISO 639-1
 
     - name: fact_movies
       description: All movie data from TMDB, uniquely identified by record_id

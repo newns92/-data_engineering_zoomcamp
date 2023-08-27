@@ -78,7 +78,16 @@
 - **TODO: how to run models in different targets (dev vs. prod)**:
     - Add *ALL* data via `dbt build --vars "is_test_run: false" --profiles-dir=../` in the CLI for DEV
     - Add *ALL* data via `dbt build -t prod --vars "is_test_run: false" --profiles-dir=../` in the CLI for PROD
-
+    - Add genre table?
+- Example SQL:
+    ```bash
+        SELECT
+        fact_movies.*,
+        dim_languages.full_language_name AS original_release_language
+        FROM public.fact_movies
+        LEFT JOIN dim_languages
+            ON fact_movies.language_key = dim_languages.language_key
+    ```
 
 #### Cloud (GCP)
 - In the `zoom_project` Conda environment, run `pip install dbt-bigquery`

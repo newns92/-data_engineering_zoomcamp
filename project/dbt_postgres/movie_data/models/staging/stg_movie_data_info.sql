@@ -17,7 +17,7 @@ select
     cast(release_date as timestamp) as release_date,
     
     -- MOVIE INFORMATION
-    cast(original_language as text) as original_language,
+    cast(original_language as text) as language_key,
     
     -- MOVIE METRICS
     cast(popularity as double precision) as popularity_score,

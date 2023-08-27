@@ -30,7 +30,7 @@ models:
             tests:
               - relationships:
                   to: ref('stg_movie_languages')
-                  field: 'language_abbrev'
+                  field: 'language_key'
                   severity: warn
           - name: popularity_score 
             description: A popularity score depending on several factors as calculated by TMDB (https://developer.themoviedb.org/docs/popularity-and-trending)
@@ -74,5 +74,5 @@ models:
                     severity: warn
           - name: full_language_name
             description: The full language name, in English
-          - name: language_abbrev 
+          - name: language_key 
             description: The language's abbreviation, according to ISO 639-1

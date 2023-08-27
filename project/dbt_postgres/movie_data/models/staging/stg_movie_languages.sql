@@ -10,7 +10,7 @@ select
 
     cast(index as integer) as language_record_id,
     cast(full_language_name as text) as full_language_name,
-    cast(language_abbrev as text) as language_abbrev
+    cast(language_abbrev as text) as language_key
 
 from {{ source('staging', 'movie_language_info') }}
 
