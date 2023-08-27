@@ -11,6 +11,8 @@ pandas-gbq==0.18.1
 requests
 docker
 psycopg2
+bs4
+lxml  # for bs4 Wikipedia HTML table reading
 
 # try to force install
 pydantic==1.10.0

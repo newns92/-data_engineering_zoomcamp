@@ -9,7 +9,8 @@ from config import tmdb_api_key, tmdb_api_read_access_token, postgres_user, post
     postgres_host, postgres_port, postgres_database, postgres_movies_table_name
 from pathlib import Path
 import shutil
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from bs4 import BeautifulSoup  # library to parse HTML documents
 
 
 # https://web.archive.org/web/20210112170836/https://towardsdatascience.com/this-tutorial-will-make-your-api-data-pull-so-much-easier-9ab4c35f9af
@@ -82,16 +83,21 @@ def get_popular_movies():
 
 
 def write_movie_file_to_postgres(file_name, dataset):
+    '''
+    Function to read a JSON object returned from an API request from TMDB to get 
+    information about the most popular movies on the website
+    '''
+
     # csv_file = open(file_name, 'a')
     # csv_writer = csv.writer(csv_file)
     
-    print('Starting...')
+    print('Starting movie information extraction...')
     print('Creating the Postgres engine...')
     # Need to convert this DDL statement into something Postgres will understand
     #   - Via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
     engine = create_engine(f'postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_database}')
-    print(engine)
-    print(engine.connect())
+    # print(engine)
+    # print(engine.connect())
 
     print('Creating the DataFrame...')
     # Create empty dataframe with headers
@@ -100,6 +106,7 @@ def write_movie_file_to_postgres(file_name, dataset):
 
     # For each movie in the dataset, add its info to the dataframe
     # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
+    print("Adding movie information to the DataFrame...")
     for i in range(len(dataset)):
         # print(dataset[i]['title'])
         df.loc[i] = [dataset[i]['id'], dataset[i]['title'], dataset[i]['original_language'], 
@@ -134,6 +141,11 @@ def write_movie_file_to_postgres(file_name, dataset):
     header = df.head(n=0)
     # print(header)
 
+    # Drop dependent tables
+    # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_sql.html
+    with engine.connect() as conn:
+        conn.execute(text(f'DROP TABLE if exists {postgres_movies_table_name} cascade'))
+
     # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
     print('Adding table column headers...')
     header.to_sql(name=postgres_movies_table_name, con=engine, if_exists='replace')
@@ -141,6 +153,78 @@ def write_movie_file_to_postgres(file_name, dataset):
     # Add the movie info data
     print('Loading in data...')
     df.to_sql(name=postgres_movies_table_name, con=engine, if_exists='append')
+
+
+def write_languages_file_to_postgres():
+    '''
+    Function to read Wikipedia table of the list of ISO 639-1 language codes 
+    and their abbreviations
+    '''
+
+    print('Starting languages extraction...')
+
+    # https://medium.com/analytics-vidhya/web-scraping-a-wikipedia-table-into-a-dataframe-c52617e1f451
+    print("Getting data...")
+    wikiurl = "https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes"
+    # table_class="wikitable sortable jquery-tablesorter"
+    response = requests.get(wikiurl)
+    # print(response.status_code)
+
+    # Parse data from the HTML into a BeautifulSoup object
+    soup = BeautifulSoup(response.text, 'html.parser')
+    language_table = soup.find('table', {'class':"wikitable"})    
+    # print(language_table)
+
+    print("Creating the languages DataFrame...")
+    df = pd.read_html(str(language_table))
+    
+    # Convert list to dataframe
+    df = pd.DataFrame(df[0])
+    # print(df.head())
+
+    # Get only required columns
+    df = df[['ISO language name', '639-1']]
+    # print(df.head())
+
+    # Rename columns
+    # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rename.html
+    df.rename(columns={'ISO language name': 'full_language_name', '639-1': 'language_abbrev'},
+              inplace=True)
+    print(df.head())
+
+    # print('Creating the Postgres engine...')
+    # # Need to convert this DDL statement into something Postgres will understand
+    # #   - Via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+    # engine = create_engine(f'postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_database}')
+    # print(engine)
+    # print(engine.connect())
+
+    # print('Creating the DataFrame...')
+    # # Create empty dataframe with headers
+    # df = pd.DataFrame(columns=['639_1_code', 'language_name'])
+
+    # # For each movie in the dataset, add its info to the dataframe
+    # # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
+    # for i in range(len(dataset)):
+    #     # print(dataset[i]['title'])
+    #     df.loc[i] = [dataset[i]['id'], dataset[i]['title'], dataset[i]['original_language'], 
+    #                  dataset[i]['popularity'], dataset[i]['release_date'], 
+    #                  dataset[i]['vote_average'], dataset[i]['vote_count']]
+        
+    # # Convert release_date to datetime
+    # df.release_date = pd.to_datetime(df.release_date)
+    
+    # # Get the header/column names
+    # header = df.head(n=0)
+    # # print(header)
+
+    # # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
+    # print('Adding table column headers...')
+    # header.to_sql(name=postgres_movies_table_name, con=engine, if_exists='replace')
+
+    # # Add the movie info data
+    # print('Loading in data...')
+    # df.to_sql(name=postgres_movies_table_name, con=engine, if_exists='append')    
 
 
 # def remove_files():
@@ -168,4 +252,6 @@ if __name__ == '__main__':
     write_movie_file_to_postgres('movies_test', popular_movies_list)
     # loop_through_movies(popular_movies_list)
     
+    write_languages_file_to_postgres()
+
     # remove_files()

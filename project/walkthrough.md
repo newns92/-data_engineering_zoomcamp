@@ -44,6 +44,7 @@
 - Kill all Docker containers once done via `docker-compose down`
 - **To run and load the data into Postgres via the CLI and Docker:**
     - Run `docker build -t movie_ingest:v001 .`
+    - Then run `docker-compose up -d`
     - Once complete, run the same command as manually running the Python script to ingest data, but via Docker starting with `docker run -it --network=pg-network movie_ingest:v001`
     - You should see the data loaded into the Postgres database in pgAdmin
 
@@ -78,11 +79,12 @@
     - Add *ALL* data via `dbt build --vars "is_test_run: false" --profiles-dir=../` in the CLI for DEV
     - Add *ALL* data via `dbt build -t prod --vars "is_test_run: false" --profiles-dir=../` in the CLI for PROD
 
-    
+
 #### Cloud (GCP)
 - In the `zoom_project` Conda environment, run `pip install dbt-bigquery`
 
-
+## Data Viz (Google Looker)
+- 
 
 
 
