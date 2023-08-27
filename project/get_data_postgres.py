@@ -6,7 +6,8 @@ import csv
 import pandas as pd
 from google.cloud import storage
 from config import tmdb_api_key, tmdb_api_read_access_token, postgres_user, postgres_password, \
-    postgres_host, postgres_port, postgres_database, postgres_movies_table_name
+    postgres_host, postgres_port, postgres_database, postgres_movies_table_name, \
+        postgres_movies_language_table_name
 from pathlib import Path
 import shutil
 from sqlalchemy import create_engine, text
@@ -37,7 +38,7 @@ from bs4 import BeautifulSoup  # library to parse HTML documents
 #         return text
     
 #     else:
-#         return "API Error"
+#         return 'API Error'
 
 
 def get_popular_movies():
@@ -77,7 +78,7 @@ def get_popular_movies():
             # print(len(dataset))
 
         else:
-            return "API Error"
+            return 'API Error'
         
     return dataset    
 
@@ -106,7 +107,7 @@ def write_movie_file_to_postgres(file_name, dataset):
 
     # For each movie in the dataset, add its info to the dataframe
     # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
-    print("Adding movie information to the DataFrame...")
+    print('Adding movie information to the DataFrame...')
     for i in range(len(dataset)):
         # print(dataset[i]['title'])
         df.loc[i] = [dataset[i]['id'], dataset[i]['title'], dataset[i]['original_language'], 
@@ -147,11 +148,11 @@ def write_movie_file_to_postgres(file_name, dataset):
         conn.execute(text(f'DROP TABLE if exists {postgres_movies_table_name} cascade'))
 
     # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
-    print('Adding table column headers...')
+    print('Adding move information table column headers...')
     header.to_sql(name=postgres_movies_table_name, con=engine, if_exists='replace')
 
     # Add the movie info data
-    print('Loading in data...')
+    print('Loading in movie information data...')
     df.to_sql(name=postgres_movies_table_name, con=engine, if_exists='append')
 
 
@@ -161,21 +162,21 @@ def write_languages_file_to_postgres():
     and their abbreviations
     '''
 
-    print('Starting languages extraction...')
+    print('\nStarting languages extraction...')
 
     # https://medium.com/analytics-vidhya/web-scraping-a-wikipedia-table-into-a-dataframe-c52617e1f451
-    print("Getting data...")
-    wikiurl = "https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes"
-    # table_class="wikitable sortable jquery-tablesorter"
+    print('Getting data...')
+    wikiurl = 'https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes'
+    # table_class='wikitable sortable jquery-tablesorter'
     response = requests.get(wikiurl)
     # print(response.status_code)
 
     # Parse data from the HTML into a BeautifulSoup object
     soup = BeautifulSoup(response.text, 'html.parser')
-    language_table = soup.find('table', {'class':"wikitable"})    
+    language_table = soup.find('table', {'class':'wikitable'})
     # print(language_table)
 
-    print("Creating the languages DataFrame...")
+    print('Creating the languages DataFrame...')
     df = pd.read_html(str(language_table))
     
     # Convert list to dataframe
@@ -190,41 +191,24 @@ def write_languages_file_to_postgres():
     # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rename.html
     df.rename(columns={'ISO language name': 'full_language_name', '639-1': 'language_abbrev'},
               inplace=True)
-    print(df.head())
+    # print(df.head())
 
-    # print('Creating the Postgres engine...')
-    # # Need to convert this DDL statement into something Postgres will understand
-    # #   - Via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
-    # engine = create_engine(f'postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_database}')
-    # print(engine)
-    # print(engine.connect())
-
-    # print('Creating the DataFrame...')
-    # # Create empty dataframe with headers
-    # df = pd.DataFrame(columns=['639_1_code', 'language_name'])
-
-    # # For each movie in the dataset, add its info to the dataframe
-    # # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
-    # for i in range(len(dataset)):
-    #     # print(dataset[i]['title'])
-    #     df.loc[i] = [dataset[i]['id'], dataset[i]['title'], dataset[i]['original_language'], 
-    #                  dataset[i]['popularity'], dataset[i]['release_date'], 
-    #                  dataset[i]['vote_average'], dataset[i]['vote_count']]
-        
-    # # Convert release_date to datetime
-    # df.release_date = pd.to_datetime(df.release_date)
+    print('Creating the Postgres engine...')
+    # Need to convert this DDL statement into something Postgres will understand
+    #   - Via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+    engine = create_engine(f'postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_database}')
     
-    # # Get the header/column names
-    # header = df.head(n=0)
-    # # print(header)
+    # Get the header/column names
+    header = df.head(n=0)
+    # print(header)
 
-    # # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
-    # print('Adding table column headers...')
-    # header.to_sql(name=postgres_movies_table_name, con=engine, if_exists='replace')
+    # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
+    print('Adding language table column headers...')
+    header.to_sql(name=postgres_movies_language_table_name, con=engine, if_exists='replace')
 
-    # # Add the movie info data
-    # print('Loading in data...')
-    # df.to_sql(name=postgres_movies_table_name, con=engine, if_exists='append')    
+    # Add the movie language info data
+    print('Loading in language data...')
+    df.to_sql(name=postgres_movies_language_table_name, con=engine, if_exists='append')    
 
 
 # def remove_files():
