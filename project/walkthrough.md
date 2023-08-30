@@ -95,9 +95,23 @@
 
 # INSTRUCTIONS
 - Start the database and pgAdmin via `docker-compose up -d` to run in detached mode to get control of the terminal back
-- Build the image via `docker build -t movie_ingest:v001 .`
-- Run the image (or container?) via `docker run -it --network=pg-network movie_ingest:v001`
+- Build the image from our `Dockerfile` via `docker build -t movie_ingest:v001 .`
+    - We build in the current directory via `.`
+    - `movie_ingest:v001` is the container **name** and optionally **tag** in a `name:tag` format
+- Run the commands in a new container via `docker run -it --network=pg-network movie_ingest:v001`
+    - `movie_ingest:v001` is our Docker Image
 - To run all dbt models in order of dependencies, `cd` into the `dbt_postgres\movie_data` directory and run `dbt run --profiles-dir=../`
+- Can enter the container with Postgres running via `docker exec -it project-pgdatabase-1 bash`
+- Can enter the Postgres server via `pgcli -h localhost -p 5432 -U root -W root -d movie_data` and then entering the password for username `root`
+- Once ready to visualize in Metabase:
+    - Get the Dockerfile from DockerHub via `docker pull metabase/metabase:latest` in the `dbt_postgres/` directory
+    - Then run `docker run -d -p 3000:3000 --network=pg-network --name metabase metabase/metabase` *while the Postgres instance is running/available*, since that's what we're connecting to (*we specify the network*)
+        - OR you can use the `.jar` file locally in order to run Metabase
+    - Once you run the `docker run` command above, check that it's running with `docker ps`
+    - Once you have everything running, open `localhost:3000` in a browser
+    - Set everything up by choosing a language, creating a profile, then creating the database connection to `pgdatabase` with the Display name "Movie Data", port `5432`, database name `movie_data`, username and password `root`, and "All" schemas.
+    - You should then be able to see your schemas (`public`, `staging`, `prod`) and each table within the schema
+- Can see the dashboard ***if Metabase is running on port 3000*** at http://localhost:3000/public/dashboard/3e04db84-860b-4053-bce5-5c67793faf5e
 
 
 
