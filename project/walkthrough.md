@@ -88,12 +88,23 @@
         LEFT JOIN dim_languages
             ON fact_movies.language_key = dim_languages.language_key
     ```
+## Data Viz (Google Looker)
+- Use **PostgreSQL By SyncWith Inc** connector
+- 
+
+
+# INSTRUCTIONS
+- Start the database and pgAdmin via `docker-compose up -d` to run in detached mode to get control of the terminal back
+- Build the image via `docker build -t movie_ingest:v001 .`
+- Run the image (or container?) via `docker run -it --network=pg-network movie_ingest:v001`
+- To run all dbt models in order of dependencies, `cd` into the `dbt_postgres\movie_data` directory and run `dbt run --profiles-dir=../`
+
+
 
 #### Cloud (GCP)
 - In the `zoom_project` Conda environment, run `pip install dbt-bigquery`
 
-## Data Viz (Google Looker)
-- 
+
 
 
 
