@@ -144,7 +144,9 @@ def write_movie_file_to_postgres(file_name, dataset):
 
     # Drop dependent tables
     # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_sql.html
-    with engine.connect() as conn:
+    # Use engine.begin(), NOT engine.connect(), which is deprecated
+    # https://stackoverflow.com/questions/75252652/python-sqlalchemy-postgresql-deprecated-api-features
+    with engine.begin() as conn:
         conn.execute(text(f'DROP TABLE if exists {postgres_movies_table_name} cascade'))
 
     # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
@@ -201,6 +203,13 @@ def write_languages_file_to_postgres():
     # Get the header/column names
     header = df.head(n=0)
     # print(header)
+
+    # Drop dependent tables
+    # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_sql.html
+    # Use engine.begin(), NOT engine.connect(), which is deprecated
+    # https://stackoverflow.com/questions/75252652/python-sqlalchemy-postgresql-deprecated-api-features    
+    with engine.begin() as conn:
+        conn.execute(text(f'DROP TABLE if exists {postgres_movies_language_table_name} cascade'))    
 
     # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
     print('Adding language table column headers...')
