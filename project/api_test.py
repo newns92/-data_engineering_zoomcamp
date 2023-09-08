@@ -181,20 +181,20 @@ def get_genres(movie_id: int):
     #     print(i['id'])
     #     print(i['name'])
 
-    print('Creating the DataFrame...')
+    # print('Creating the DataFrame...')
     # Create empty dataframe with headers
     df = pd.DataFrame(columns=['genre_id', 'genre_name'])
 
-    print('Adding genre information to the DataFrame...')
+    # print('Adding genre information to the DataFrame...')
     for i in range(len(dataset_page['genres'])):
         # print(dataset_page['genres'][i]['id'])
         # print(dataset_page['genres'][i]['name'])
         # print(dataset[i]['title'])
         df.loc[i] = [dataset_page['genres'][i]['id'], dataset_page['genres'][i]['name']]
     
-    print(df.head())
+    # print(df.head())
 
-    # return df
+    return df
 
 
 def get_popular_movies_genres(dataset: list):
@@ -204,10 +204,17 @@ def get_popular_movies_genres(dataset: list):
 
     # For each movie in the dataset, add its info to the dataframe
     # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
-    print('Adding movie information to the DataFrame...')
+    print('Adding genre information to the DataFrame...')
     for i in range(len(dataset)):
         # print(dataset[i]['title'])
-        get_genres(dataset[i]['id'])
+        mini_df = get_genres(dataset[i]['id'])
+        # print(mini_df.head())
+
+        # Append DataFrame for the current movie to the overall DataFrame of genres and id's
+        # Also drop the duplicates
+        df = pd.concat([df, mini_df]).drop_duplicates(subset=['genre_id'], keep='first')
+    
+    print(df.head(25))
 
 
 if __name__ == '__main__':
