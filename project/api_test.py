@@ -71,7 +71,7 @@ def get_popular_movies():
             # Concatenate results lists
             for item in dataset_page['results']:
                 dataset.append(item)
-                print(f'Dataset:\n {dataset}')
+                # print(f'Dataset:\n {dataset}')
                 # KEYS USED
                 # dict_keys(['adult', 'backdrop_path', 'genre_ids', 'id', 'original_language', 
                 # 'original_title', 'overview', 'popularity', 'poster_path', 'release_date', 
@@ -175,11 +175,7 @@ def get_genres(movie_id: int):
     else:
         return 'API Error'        
 
-    # print(dataset_page.keys())
-    # print(dataset_page['rating'])
-    print(dataset_page['genres'])
-    # print(dataset_page['runtime'])
-    # print(dataset_page['revenue'] / dataset_page['budget']) # earned back" (?)
+    # print(dataset_page['genres'])
     # print(dataset_page)
     # for i in dataset_page['genres']:
     #     print(i['id'])
@@ -191,16 +187,33 @@ def get_genres(movie_id: int):
 
     print('Adding genre information to the DataFrame...')
     for i in range(len(dataset_page['genres'])):
-        print(dataset_page['genres'][i]['id'])
-        print(dataset_page['genres'][i]['name'])
+        # print(dataset_page['genres'][i]['id'])
+        # print(dataset_page['genres'][i]['name'])
         # print(dataset[i]['title'])
         df.loc[i] = [dataset_page['genres'][i]['id'], dataset_page['genres'][i]['name']]
     
     print(df.head())
 
+    # return df
+
+
+def get_popular_movies_genres(dataset: list):
+    print('Creating the DataFrame...')
+    # Create empty dataframe with headers
+    df = pd.DataFrame(columns=['genre_id', 'genre_name'])
+
+    # For each movie in the dataset, add its info to the dataframe
+    # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
+    print('Adding movie information to the DataFrame...')
+    for i in range(len(dataset)):
+        # print(dataset[i]['title'])
+        get_genres(dataset[i]['id'])
+
 
 if __name__ == '__main__':
     # get_popular_movies()
+    popular_movies_list = get_popular_movies()
+    get_popular_movies_genres(popular_movies_list)
 
     # The Meg 2
     # get_movie_info(615656)

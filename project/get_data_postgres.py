@@ -217,7 +217,7 @@ def write_languages_file_to_postgres():
 
     # Add the movie language info data
     print('Loading in language data...')
-    df.to_sql(name=postgres_movies_language_table_name, con=engine, if_exists='append')    
+    df.to_sql(name=postgres_movies_language_table_name, con=engine, if_exists='append')
 
 
 # def remove_files():
