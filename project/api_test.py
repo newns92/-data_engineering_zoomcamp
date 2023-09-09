@@ -216,6 +216,10 @@ def get_popular_movies_genres(dataset: list):
     
     print(df.head(25))
 
+    df.reset_index(names=['id'])
+
+    print('\n', df.head(25))
+
 
 if __name__ == '__main__':
     # get_popular_movies()

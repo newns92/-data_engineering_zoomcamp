@@ -7,7 +7,7 @@ import pandas as pd
 from google.cloud import storage
 from config import tmdb_api_key, tmdb_api_read_access_token, postgres_user, postgres_password, \
     postgres_host, postgres_port, postgres_database, postgres_movies_table_name, \
-        postgres_movies_language_table_name
+        postgres_movies_language_table_name, postgres_movies_genre_table_name
 from pathlib import Path
 import shutil
 from sqlalchemy import create_engine, text
@@ -220,6 +220,105 @@ def write_languages_file_to_postgres():
     df.to_sql(name=postgres_movies_language_table_name, con=engine, if_exists='append')
 
 
+def get_genres(movie_id: int):
+        
+    # url = f'https://api.themoviedb.org/3/movie/{movie_id}/rating'
+    url = f'https://api.themoviedb.org/3/movie/{movie_id}?append_to_response=rating'
+    
+    # headers = dictionary of HTTP headers to send to the specified url
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer {tmdb_api_read_access_token}'
+    }
+
+    response = requests.get(url, headers=headers)
+    # print(response)
+
+    # Check that request went through (i.e., if API request was successful)
+    if response.status_code == 200:
+        # Get JSON object of the request result
+        array = response.json()
+        # Convert from Python to JSON
+        text = json.dumps(array)
+        # Convert from JSON back to Python
+        dataset_page = json.loads(text)
+
+    else:
+        return 'API Error'        
+
+    # print(dataset_page['genres'])
+    # print(dataset_page)
+    # for i in dataset_page['genres']:
+    #     print(i['id'])
+    #     print(i['name'])
+
+    # print('Creating the DataFrame...')
+    # Create empty dataframe with headers
+    df = pd.DataFrame(columns=['genre_id', 'genre_name'])
+
+    # print('Adding genre information to the DataFrame...')
+    for i in range(len(dataset_page['genres'])):
+        # print(dataset_page['genres'][i]['id'])
+        # print(dataset_page['genres'][i]['name'])
+        # print(dataset[i]['title'])
+        df.loc[i] = [dataset_page['genres'][i]['id'], dataset_page['genres'][i]['name']]
+    
+    # print(df.head())
+
+    return df
+
+
+def write_genres_to_postgres(dataset: list):
+    print('\nStarting genre information extraction...')
+    print('Creating the Postgres engine...')
+    # Need to convert this DDL statement into something Postgres will understand
+    #   - Via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+    engine = create_engine(f'postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_database}')
+    # print(engine)
+    # print(engine.connect())
+    
+    print('Creating the genre DataFrame...')
+    # Create empty dataframe with headers
+    df = pd.DataFrame(columns=['genre_id', 'genre_name'])
+
+    # For each movie in the dataset, add its info to the dataframe
+    # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
+    print('Adding genre information to the DataFrame...')
+    for i in range(len(dataset)):
+        # print(dataset[i]['title'])
+        mini_df = get_genres(dataset[i]['id'])
+        # print(mini_df.head())
+
+        # Append DataFrame for the current movie to the overall DataFrame of genres and id's
+        # Also drop the duplicates
+        df = pd.concat([df, mini_df]).drop_duplicates(subset=['genre_id'], keep='first')
+    
+    print(df.head(25))
+
+    # df.reset_index(names=['id'])
+
+    # print('\n', df.head(25))
+
+    # Get the header/column names
+    header = df.head(n=0)
+    # print(header)
+
+    # Drop dependent tables
+    # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_sql.html
+    # Use engine.begin(), NOT engine.connect(), which is deprecated
+    # https://stackoverflow.com/questions/75252652/python-sqlalchemy-postgresql-deprecated-api-features
+    with engine.begin() as conn:
+        conn.execute(text(f'DROP TABLE if exists {postgres_movies_genre_table_name} cascade'))
+
+    # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
+    print('Adding genre information table column headers...')
+    header.to_sql(name=postgres_movies_genre_table_name, con=engine, if_exists='replace')
+
+    # Add the movie info data
+    print('Loading in movie genre information data...')
+    df.to_sql(name=postgres_movies_genre_table_name, con=engine, if_exists='append')
+
+
 # def remove_files():
 #     print('Removing local files...')
 #     # Remove the local parquet files
@@ -244,7 +343,7 @@ if __name__ == '__main__':
     # write_movie_file('movies_test', popular_movies_list)
     write_movie_file_to_postgres('movies_test', popular_movies_list)
     # loop_through_movies(popular_movies_list)
-    
+    write_genres_to_postgres(popular_movies_list)
     write_languages_file_to_postgres()
 
     # remove_files()
