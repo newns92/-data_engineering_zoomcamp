@@ -103,7 +103,8 @@ def write_movie_file_to_postgres(file_name, dataset):
     print('Creating the DataFrame...')
     # Create empty dataframe with headers
     df = pd.DataFrame(columns=['id', 'title', 'original_language', 'popularity', 
-                               'release_date', 'vote_average', 'vote_count'])
+                               'release_date', 'genre_ids', 'vote_average', 'vote_count'])
+    print(df.head())
 
     # For each movie in the dataset, add its info to the dataframe
     # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#setting-with-enlargement
@@ -111,7 +112,7 @@ def write_movie_file_to_postgres(file_name, dataset):
     for i in range(len(dataset)):
         # print(dataset[i]['title'])
         df.loc[i] = [dataset[i]['id'], dataset[i]['title'], dataset[i]['original_language'], 
-                     dataset[i]['popularity'], dataset[i]['release_date'], 
+                     dataset[i]['popularity'], dataset[i]['release_date'], dataset[i]['genre_ids'],
                      dataset[i]['vote_average'], dataset[i]['vote_count']]
         
     # Convert release_date to datetime
