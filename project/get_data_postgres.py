@@ -293,7 +293,7 @@ def write_genres_to_postgres(dataset: list):
         # Also drop the duplicates
         df = pd.concat([df, mini_df]).drop_duplicates(subset=['genre_id'], keep='first')
     
-    print(df.head(25))
+    # print(df.head(25))
 
     # df.reset_index(names=['id'])
 
