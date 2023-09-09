@@ -1,7 +1,8 @@
 {{ config(materialized='table') }}
 
 -- select everything from movie staging data
-with movie_languages as (
+with movie_genres as (
+
     select 
         genre_id,
         genre_name
@@ -12,8 +13,8 @@ with movie_languages as (
 -- select only specific fields
 select 
 
-    movie_languages.genre_id,
-    movie_languages.genre_name
+    movie_genres.genre_id,
+    movie_genres.genre_name
 
-from movie_languages
+from movie_genres
 -- JOINs to genre dimension bridge table?
