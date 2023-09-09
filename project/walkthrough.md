@@ -111,6 +111,8 @@
     - Once you have everything running, open `localhost:3000` in a browser
     - Set everything up by choosing a language, creating a profile, then creating the database connection to `pgdatabase` with the Display name "Movie Data", port `5432`, database name `movie_data`, username and password `root`, and "All" schemas.
     - You should then be able to see your schemas (`public`, `staging`, `prod`) and each table within the schema
+    - Kill the Metabase docker container via `docker kill <container ID>`
+    - Restart *the same one* by doing `docker start <contanier ID>`
 - Can see the dashboard ***if Metabase is running on port 3000*** at http://localhost:3000/public/dashboard/3e04db84-860b-4053-bce5-5c67793faf5e
 
 
