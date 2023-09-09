@@ -43,6 +43,30 @@ services:
     networks:
       - pg-network
 
+  # # Add Metabase as a service
+  # # https://gist.github.com/eliashussary/379e44a99e2389bd6a8ea6a23c2d5af8
+  # metabase-app:
+  #   # Specify the image to pull
+  #   image: metabase/metabase
+  #   # restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     # Declare your mount volume /host/dir:/container/dir
+  #     # In order to not lose your config on restart, you need to mount a volume to store it
+  #     - ./metabase_queries:/var/lib/metabase_queries
+  #   environment:
+  #     MB_DB_TYPE: postgres
+  #     MB_DB_DBNAME: movie_data
+  #     MB_DB_PORT: 5432
+  #     MB_DB_USER: root
+  #     MB_DB_PASS: root
+  #     MB_DB_HOST: pgdatabase
+  #   depends_on:
+  #     - pgdatabase
+  #   links:
+  #     - pgdatabase
+
 # Specify our network to link the above two containers   
 networks:
   pg-network:
