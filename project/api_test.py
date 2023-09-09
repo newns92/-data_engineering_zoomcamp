@@ -143,6 +143,7 @@ def get_movie_info2(movie_id: int):
 
     print(dataset_page.keys())
     # print(dataset_page['rating'])
+    print(dataset_page['revenue'])
     print(dataset_page['budget'])
     print(dataset_page['runtime'])
     print(dataset_page['revenue'] / dataset_page['budget']) # earned back" (?)
@@ -221,12 +222,66 @@ def get_popular_movies_genres(dataset: list):
     print('\n', df.head(25))
 
 
+
+def get_financials(movie_id: int):
+        
+    # url = f'https://api.themoviedb.org/3/movie/{movie_id}/rating'
+    url = f'https://api.themoviedb.org/3/movie/{movie_id}?append_to_response=rating'
+    
+    # headers = dictionary of HTTP headers to send to the specified url
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer {tmdb_api_read_access_token}'
+    }
+
+    response = requests.get(url, headers=headers)
+    # print(response)
+
+    # Check that request went through (i.e., if API request was successful)
+    if response.status_code == 200:
+        # Get JSON object of the request result
+        array = response.json()
+        # Convert from Python to JSON
+        text = json.dumps(array)
+        # Convert from JSON back to Python
+        dataset_page = json.loads(text)
+
+    else:
+        return 'API Error'        
+
+    # print(dataset_page['genres'])
+    # print(dataset_page)
+    # for i in dataset_page['genres']:
+    #     print(i['id'])
+    #     print(i['name'])
+
+    # print('Creating the DataFrame...')
+    # Create empty dataframe with headers
+    df = pd.DataFrame(columns=['id', 'revenue', 'budget', 'runtime'])
+
+    print(dataset_page)
+    
+    df.loc[0] = [dataset_page['id'], dataset_page['revenue'],
+                 dataset_page['budget'], dataset_page['runtime']]
+    
+    # # print('Adding genre information to the DataFrame...')
+    # for i in range(len(dataset_page)):
+    #     # print(dataset_page['genres'][i]['id'])
+    #     # print(dataset_page['genres'][i]['name'])
+    #     # print(dataset[i]['title'])
+    #     df.loc[i] = [dataset_page[i]['id'], dataset_page[i]['revenue'],
+    #                  dataset_page[i]['budget'], dataset_page[i]['runtime']]
+    
+    print(df.head())  
+
+
 if __name__ == '__main__':
     # get_popular_movies()
     popular_movies_list = get_popular_movies()
-    get_popular_movies_genres(popular_movies_list)
+    # get_popular_movies_genres(popular_movies_list)
 
     # The Meg 2
     # get_movie_info(615656)
-    get_movie_info2(615656)
+    # get_movie_info2(615656)
     get_genres(615656)
+    get_financials(615656)
