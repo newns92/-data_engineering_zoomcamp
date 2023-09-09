@@ -112,7 +112,10 @@
     - Set everything up by choosing a language, creating a profile, then creating the database connection to `pgdatabase` with the Display name "Movie Data", port `5432`, database name `movie_data`, username and password `root`, and "All" schemas.
     - You should then be able to see your schemas (`public`, `staging`, `prod`) and each table within the schema
     - Kill the Metabase docker container via `docker kill <container ID>`
-    - Restart *the same one* by doing `docker start <contanier ID>`
+    - RESTARTING THE CONTAINER: https://www.metabase.com/docs/latest/installation-and-operation/running-metabase-on-docker#getting-your-config-back-if-you-stopped-your-container
+        - 1. Find the stopped container ID using `docker ps -a`
+        - 2. Use `docker commit <container ID> metabase/metabase` to create a new custom docker image from the stopped container containing your configuration
+        - 3. Run your new image using `docker run -d -p 3000:3000 --network=pg-network --name <NEW NAME> metabase/metabase` to get up and running again.
 - Can see the dashboard ***if Metabase is running on port 3000*** at http://localhost:3000/public/dashboard/3e04db84-860b-4053-bce5-5c67793faf5e
 
 
