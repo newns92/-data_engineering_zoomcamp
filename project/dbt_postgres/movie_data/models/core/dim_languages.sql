@@ -17,4 +17,3 @@ select
     movie_languages.language_key
 
 from movie_languages
--- JOINs to genre dimension table?

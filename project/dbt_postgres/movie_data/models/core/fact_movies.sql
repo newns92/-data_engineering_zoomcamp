@@ -27,4 +27,4 @@ select
     movie_data.rating_count
 
 from movie_data
--- JOINs to genre dimension table?
+-- JOINs to genre dimension bridge table?
