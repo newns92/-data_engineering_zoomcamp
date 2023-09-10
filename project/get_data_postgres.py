@@ -83,6 +83,45 @@ def get_popular_movies():
     return dataset    
 
 
+def get_financials(movie_id: int):
+    
+    # url = f'https://api.themoviedb.org/3/movie/{movie_id}/rating'
+    url = f'https://api.themoviedb.org/3/movie/{movie_id}?append_to_response=rating'
+    
+    # headers = dictionary of HTTP headers to send to the specified url
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer {tmdb_api_read_access_token}'
+    }
+
+    response = requests.get(url, headers=headers)
+    # print(response)
+
+    # Check that request went through (i.e., if API request was successful)
+    if response.status_code == 200:
+        # Get JSON object of the request result
+        array = response.json()
+        # Convert from Python to JSON
+        text = json.dumps(array)
+        # Convert from JSON back to Python
+        dataset_page = json.loads(text)
+
+    else:
+        return 'API Error'        
+
+    # print('Creating the DataFrame...')
+    # Create empty dataframe with headers
+    df = pd.DataFrame(columns=['id', 'revenue', 'budget', 'runtime'])
+    
+    # print('Grabbing the financial information...')
+    df.loc[0] = [dataset_page['id'], dataset_page['revenue'],
+                 dataset_page['budget'], dataset_page['runtime']]
+       
+    # print(df.head())
+
+    return df
+
+
 def write_movie_file_to_postgres(file_name, dataset):
     '''
     Function to read a JSON object returned from an API request from TMDB to get 
@@ -117,6 +156,28 @@ def write_movie_file_to_postgres(file_name, dataset):
         
     # Convert release_date to datetime
     df.release_date = pd.to_datetime(df.release_date)
+
+    # Get financial data per movie id
+    print('Creating the financial and runtime DataFrame...')
+    # Create empty dataframe with headers
+    financial_df = pd.DataFrame(columns=['id', 'revenue', 'budget', 'runtime'])
+
+    print('Getting the financial and runtime information...')
+    for i in range(len(df['id'])):
+        # print(df.iloc[i]['id'])
+        financial_df_row = get_financials(df.iloc[i]['id'])
+        # print(financial_df_row)
+
+        # Append DataFrame for the current movie to the overall DataFrame of financials and runtime
+        # Also drop the duplicates by ID
+        financial_df = pd.concat([financial_df, financial_df_row]).drop_duplicates(subset=['id'], keep='first')        
+
+    # print(financial_df.head())
+
+    # JOIN in the financials and runtime information by the movie ID
+    # https://stackoverflow.com/questions/26645515/pandas-join-issue-columns-overlap-but-no-suffix-specified
+    df = df.merge(financial_df, on='id', how='left')
+    # print(df.head())
     
     # print(df[:5])
     # print(df.dtypes)
@@ -151,7 +212,7 @@ def write_movie_file_to_postgres(file_name, dataset):
         conn.execute(text(f'DROP TABLE if exists {postgres_movies_table_name} cascade'))
 
     # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
-    print('Adding move information table column headers...')
+    print('Adding movie information table column headers...')
     header.to_sql(name=postgres_movies_table_name, con=engine, if_exists='replace')
 
     # Add the movie info data
