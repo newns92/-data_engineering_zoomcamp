@@ -12,8 +12,20 @@ select
     -- cast(index as integer) as record_id,
 	-- Remove {} from string and replace commas, all with blanks
 	-- https://stackoverflow.com/questions/17691579/removing-a-set-of-letters-from-a-string
-    cast(translate(genre_ids, '{},', '') as bigint) as genre_key,
-    cast(translate(unnest(string_to_array(genre_ids, ',')), '{},', '') as integer) as genre_id
+    case
+		when translate(genre_ids, '{},', '') = ''
+		then null
+		else cast(translate(genre_ids, '{},', '') as bigint)
+	end as genre_key,
+    cast(translate(
+		unnest(
+			case
+				when translate(genre_ids, '{},', '') = ''
+				then null
+				else string_to_array(genre_ids, ',')
+			end
+		), 
+	'{},', '') as integer) as genre_id
     
 from {{ source('staging', 'movie_data_info') }}
 

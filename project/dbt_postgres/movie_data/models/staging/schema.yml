@@ -33,6 +33,14 @@ models:
                   to: ref('stg_movie_languages')
                   field: 'language_key'
                   severity: warn
+          - name: revenue
+            description: The movie's total current revenue, in US Dollars
+          - name: budget
+            description: The movie's budget, in US Dollars
+          - name: earned_back
+            description: The multiplier of how much revenue the movie earned over the movie's budget
+          - name: runtime
+            description: The movie's runtime, in minutes
           - name: popularity_score 
             description: A popularity score depending on several factors as calculated by TMDB (https://developer.themoviedb.org/docs/popularity-and-trending)
           - name: release_date 
