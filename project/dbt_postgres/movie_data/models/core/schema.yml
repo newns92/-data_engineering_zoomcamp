@@ -79,6 +79,14 @@ models:
                   to: ref('dim_languages')
                   field: 'language_key'
                   severity: warn
+          - name: genre_key 
+            description: (Potential) concatenation of all genre ID's of a given movie
+            # check if this field is located in the staging language table            
+            tests:
+              - relationships:
+                  to: ref('dim_genres_bridge')
+                  field: 'genre_key'
+                  severity: warn
           - name: revenue
             description: The movie's total current revenue, in US Dollars
           - name: budget
