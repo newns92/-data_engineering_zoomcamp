@@ -17,10 +17,16 @@ select
     
     -- MOVIE INFORMATION
     cast(original_language as text) as language_key,
+    case
+		when translate(genre_ids, '{},', '') = ''
+		then null
+		else cast(translate(genre_ids, '{},', '') as bigint)
+	end as genre_key,
     
     -- MOVIE METRICS
     cast(revenue as bigint) as revenue,
     cast(budget as bigint) as budget,
+    -- Do the transformation here rather than pulling in the Postgres field
     case
         when budget::integer <> 0
         then cast(revenue::float / budget::float as double precision)
