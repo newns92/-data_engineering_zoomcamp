@@ -27,4 +27,4 @@
 - You can then exit the database connection via `CTRL + D`
 
 ## Ingesting the data
-- Install pandas via `pip install pandas` and then run `load_data.py` in an Anaconda prompt via `python load_data.py`
+- Install pandas via `pip install pandas` and `sqlalchem` via `pip install sqlalchemy` and then run `load_data.py` in an Anaconda prompt via `python load_data.py`

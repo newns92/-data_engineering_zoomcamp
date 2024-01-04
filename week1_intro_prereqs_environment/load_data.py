@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import shutil
+from sqlalchemy import create_engine
 
 def main():
 
@@ -27,8 +28,13 @@ def main():
 
     # Convert the dataframe into a Data Definition Language (DDL) statement to CREATE the SQL table schema
     ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data')
-    print(ddl) 
+    print(ddl)
 
+    print("Creating the engine...")
+    # need to convert this DDL statement into something Postgres will understand
+    #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+    engine = create_engine(f'postgresql://root:root@localhost:5432/ny_taxi')
+    print(engine.connect())
 
 def remove_files():
     # https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
