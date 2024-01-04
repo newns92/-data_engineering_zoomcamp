@@ -26,15 +26,20 @@ def main():
     df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
     df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
 
-    # Convert the dataframe into a Data Definition Language (DDL) statement to CREATE the SQL table schema
-    ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data')
-    print(ddl)
+    # # Convert the dataframe into a Data Definition Language (DDL) statement to CREATE the SQL table schema
+    # ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data')
+    # print(ddl)
 
     print("Creating the engine...")
     # need to convert this DDL statement into something Postgres will understand
     #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
     engine = create_engine(f'postgresql://root:root@localhost:5432/ny_taxi')
-    print(engine.connect())
+    # print(engine.connect())
+
+    # add in the connection to the DDL statement
+    ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data', con=engine)
+    print(ddl)
+
 
 def remove_files():
     # https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
