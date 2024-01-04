@@ -25,3 +25,6 @@
     - If there *were* tables in the database, we could see them by running `\dt`
     - You can also test by running `SELECT 1`
 - You can then exit the database connection via `CTRL + D`
+
+## Ingesting the data
+- Install pandas via `pip install pandas` and then run `load_data.py` in an Anaconda prompt via `python load_data.py`
