@@ -19,7 +19,11 @@ def main():
 
     # read in 1st 100 rows of dataset
     df = pd.read_csv('./data/yellow_tripdata_2021-01.csv', compression='gzip', nrows=100)
-    print(df.head())
+    # print(df.head())
+
+    # Convert the dataframe into a Data Definition Language (DDL) statement to CREATE the SQL table
+    ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data')
+    # print(ddl) 
 
 
 def remove_files():
