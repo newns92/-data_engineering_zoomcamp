@@ -21,9 +21,13 @@ def main():
     df = pd.read_csv('./data/yellow_tripdata_2021-01.csv', compression='gzip', nrows=100)
     # print(df.head())
 
-    # Convert the dataframe into a Data Definition Language (DDL) statement to CREATE the SQL table
+    # Convert meter engaged and meter disengaged columns from text to dates
+    df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+    df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+
+    # Convert the dataframe into a Data Definition Language (DDL) statement to CREATE the SQL table schema
     ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data')
-    # print(ddl) 
+    print(ddl) 
 
 
 def remove_files():
