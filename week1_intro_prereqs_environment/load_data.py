@@ -4,6 +4,22 @@ import shutil
 from sqlalchemy import create_engine
 import time
 
+def remove_files():
+    print("Removing files")
+    # https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
+    dir_name = "./"
+    local_data = os.listdir(dir_name)
+
+    # remove the local CSV's
+    for item in local_data:
+        if item.endswith(".csv.gz"):
+            os.remove(os.path.join(dir_name, item))
+
+    # Remove the local files
+    # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
+    shutil.rmtree('./data/')
+
+
 def main():
 
     # Make the directory to hold the file if it doesn't exist
@@ -87,6 +103,7 @@ def main():
         except:
             # will come to this clause when we throw an error after running out of data chunks
             print('All data chunks loaded.')
+            remove_files()
             quit()
 
     # insert the rest of the chunks until loop breaks when all data is added
@@ -97,22 +114,5 @@ def main():
             continue
 
 
-def remove_files():
-    print("Removing files")
-    # https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
-    dir_name = "./"
-    local_data = os.listdir(dir_name)
-
-    # remove the local CSV's
-    for item in local_data:
-        if item.endswith(".csv.gz"):
-            os.remove(os.path.join(dir_name, item))
-
-    # Remove the local files
-    # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
-    shutil.rmtree('./data/')
-
-
 if __name__ == '__main__':
     main()
-    remove_files()
