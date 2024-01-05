@@ -27,4 +27,6 @@
 - You can then exit the database connection via `CTRL + D`
 
 ## Ingesting the data
-- Install pandas via `pip install pandas` and `sqlalchem` via `pip install sqlalchemy` and then run `load_data.py` in an Anaconda prompt via `python load_data.py`
+- Install pandas via `pip install pandas` and `sqlalchemy` via `pip install sqlalchemy` and then run `load_data.py` in an Anaconda prompt via `python load_data.py`
+- You can then check the schema in a Postgres-connected Anaconda prompt via `\d yellow_taxi_data`
+- You can test the row counts with `SELECT COUNT(*) FROM yellow_taxi_data` (should be 1369765)

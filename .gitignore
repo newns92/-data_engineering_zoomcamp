@@ -1,4 +1,5 @@
 data/
+ny_taxi_postgres_data/
 data_pgadmin/
 config.py
 profiles.yml
