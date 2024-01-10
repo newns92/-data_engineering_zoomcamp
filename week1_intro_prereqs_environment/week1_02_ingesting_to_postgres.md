@@ -5,7 +5,7 @@
     ```
     winpty docker run -it -e POSTGRES_USER="root" -e POSTGRES_PASSWORD="root" -e POSTGRES_DB="ny_taxi" -v .//ny_taxi_postgres_data:/var/lib/postgresql/data:rw -p 5432:5432 postgres:13`
     ```
-    - `winpty` 
+    - `winpty` = Windows software package providing an interface similar to a Unix pty-master for communicating with Windows console programs
 - To start up Postgres in Docker via an Anaconda prompt on Windows, run the following command:
     ```
     docker run -it -e POSTGRES_USER="root" -e POSTGRES_PASSWORD="root" -e POSTGRES_DB="ny_taxi" -v C://Users//[rest-of-path]//ny_taxi_postgres_data:/var/lib/postgresql/data:rw -p 5432:5432 postgres:13`
@@ -29,4 +29,4 @@
 ## Ingesting the data
 - Install pandas via `pip install pandas` and `sqlalchemy` via `pip install sqlalchemy` and then run `load_data.py` in an Anaconda prompt via `python load_data.py`
 - You can then check the schema in a Postgres-connected Anaconda prompt via `\d yellow_taxi_data`
-- You can test the row counts with `SELECT COUNT(*) FROM yellow_taxi_data` (should be 1369765)
+- You can test the row counts with `SELECT COUNT(*) FROM yellow_taxi_data` (should be 1,369,765)
