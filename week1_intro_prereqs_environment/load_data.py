@@ -3,6 +3,7 @@ import os
 import shutil
 from sqlalchemy import create_engine
 import time
+import argparse  # for named arguments like user, password, host, port, database, table, file locations, etc.
 
 
 def remove_files():
@@ -21,15 +22,25 @@ def remove_files():
     shutil.rmtree('./data/')
 
 
-def main():
+def main(args):
+    print('Starting...')
+    print("Gathering the arguments...")
+    # Gather the passed-in parameters/arguments
+    user = args.user
+    password = args.password
+    host = args.host
+    port = args.port
+    database = args.database
+    yellow_taxi_table_name = args.yellow_taxi_table_name
+    yellow_taxi_url = args.yellow_taxi_url
+    # zones_table_name = args.zones_table_name
+    # zones_url = args.zones_url
 
     # Make the directory to hold the file if it doesn't exist
     os.makedirs(os.path.dirname(f'./data/'), exist_ok=True)
 
-    print('Starting...')
-
-    # Specify the URL to download from
-    yellow_taxi_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz'
+    # # Specify the URL to download from
+    # yellow_taxi_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz'
 
     # Download the data
     print("Downloading the taxi data...")
@@ -51,7 +62,7 @@ def main():
     print("Creating the engine...")
     # Need to convert this DDL statement into something Postgres will understand
     #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
-    engine = create_engine(f'postgresql://root:root@localhost:5432/ny_taxi')
+    engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')
     # print(engine.connect())
 
     # # Add in the connection to the DDL statement
@@ -74,11 +85,11 @@ def main():
     # print(header)
 
     # Add the column headers to the yellow_taxi_data table in the database connection, and replace the table if it exists
-    header.to_sql(name='yellow_taxi_data', con=engine, if_exists='replace')
+    header.to_sql(name=yellow_taxi_table_name, con=engine, if_exists='replace')
 
     # Add first chunk of data
     start = time.time()
-    df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
+    df.to_sql(name=yellow_taxi_table_name, con=engine, if_exists='append')
     end = time.time()
     print('Time to insert first chunk: in %.3f seconds.' % (end - start))
 
@@ -95,7 +106,7 @@ def main():
             df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
             
             # Add chunk
-            df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
+            df.to_sql(name=yellow_taxi_table_name, con=engine, if_exists='append')
 
             end = time.time()
 
@@ -116,4 +127,36 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # Create a new ArgumentParser object to have text to display before the argument help (description)
+    parser = argparse.ArgumentParser(description="Ingest CSV Data to Postgres")
+    # Add all of our arguments
+    parser.add_argument('--user', help='Username for Postgres')
+    parser.add_argument('--password', help='Password for Postgres')
+    parser.add_argument('--host', help='Host for Postgres')
+    parser.add_argument('--port', help='Port for Postgres')
+    parser.add_argument('--database', help='Database name for Postgres')
+    parser.add_argument('--yellow_taxi_table_name', help='Name of table to write the taxi data to')
+    parser.add_argument('--yellow_taxi_url', help='URL of the Yellow Taxi CSV file')
+    # parser.add_argument('--zones_table_name', help='Name of table to write the taxi zones to')
+    # parser.add_argument('--zones_url', help='URL of the Taxi zones data')
+
+    # Gather all the args we just made
+    args = parser.parse_args()
+
+    main(args)
+
+    '''
+    Run in Bash with 
+    
+    URL1="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+    # URL2="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
+
+    python load_data.py \
+    --user=root \
+    --password=root \
+    --host=localhost \
+    --port=5432 \
+    --database=ny_taxi \
+    --yellow_taxi_table_name=yellow_taxi_data \
+    --yellow_taxi_url=${URL1}
+    '''    
