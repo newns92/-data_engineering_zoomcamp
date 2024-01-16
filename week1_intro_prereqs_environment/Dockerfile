@@ -2,14 +2,14 @@
 FROM python:3.9
 
 # command to run
-RUN pip install pandas
+RUN pip install pandas sqlalchemy psycopg2
 
 # specify the working directory of where in the Image we work with the file below
 WORKDIR /app
 
 # copy pipeline file from current working directory to docker image
-COPY pipeline.py pipeline.py
+COPY load_data.py load_data.py
 
 # override the entry point
 # ENTRYPOINT [ "bash" ]
-ENTRYPOINT [ "python", "pipeline.py" ]
+ENTRYPOINT [ "python", "load_data.py" ]
