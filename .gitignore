@@ -9,3 +9,4 @@ tmp/
 movie_postgres_data/
 project/dbt_postgres/.user.yml
 project/dbt_postgres/logs/
+module1_homework.md
