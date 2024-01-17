@@ -1,7 +1,7 @@
 services:
   pgdatabase:
     image: postgres:13
-    # restart: always
+    restart: always
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
