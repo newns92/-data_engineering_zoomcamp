@@ -33,8 +33,8 @@ def main(args):
     database = args.database
     yellow_taxi_table_name = args.yellow_taxi_table_name
     yellow_taxi_url = args.yellow_taxi_url
-    # zones_table_name = args.zones_table_name
-    # zones_url = args.zones_url
+    zones_table_name = args.zones_table_name
+    zones_url = args.zones_url
 
     # Make the directory to hold the file if it doesn't exist
     os.makedirs(os.path.dirname(f'./data/'), exist_ok=True)
@@ -46,6 +46,10 @@ def main(args):
     print("Downloading the taxi data...")
     taxi_csv_name = './data/yellow_tripdata_2021-01.csv'
     os.system(f'wget {yellow_taxi_url} -O {taxi_csv_name}')  # -O = output to the given file name
+
+    print("Downloading the taxi zone data...")
+    zones_csv_name = 'taxi+_zone_lookup.csv'
+    os.system(f'wget {zones_url} -O {zones_csv_name}')  # -O = output to the given file name  
 
     # # Read in 1st 100 rows of dataset
     # df = pd.read_csv('./data/yellow_tripdata_2021-01.csv', compression='gzip', nrows=100)
@@ -68,6 +72,12 @@ def main(args):
     # # Add in the connection to the DDL statement
     # ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data', con=engine)
     # # print(ddl)
+
+    # Add in the timezones first before the long loop
+    print('Loading in zone data...')
+    df_zones = pd.read_csv(zones_csv_name)
+    df_zones.to_sql(name=zones_table_name, con=engine, if_exists='replace')
+    print('Loaded in time zone data')
 
     print('Loading in taxi data in chunks...')
     # Chunk dataset into smaller sizes to load into the database
@@ -137,8 +147,8 @@ if __name__ == '__main__':
     parser.add_argument('--database', help='Database name for Postgres')
     parser.add_argument('--yellow_taxi_table_name', help='Name of table to write the taxi data to')
     parser.add_argument('--yellow_taxi_url', help='URL of the Yellow Taxi CSV file')
-    # parser.add_argument('--zones_table_name', help='Name of table to write the taxi zones to')
-    # parser.add_argument('--zones_url', help='URL of the Taxi zones data')
+    parser.add_argument('--zones_table_name', help='Name of table to write the taxi zones to')
+    parser.add_argument('--zones_url', help='URL of the Taxi zones data')
 
     # Gather all the args we just made
     args = parser.parse_args()
@@ -149,7 +159,7 @@ if __name__ == '__main__':
     Run in Bash with 
     
     URL1="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
-    # URL2="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
+    URL2="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
 
     python load_data.py \
     --user=root \
@@ -159,4 +169,6 @@ if __name__ == '__main__':
     --database=ny_taxi \
     --yellow_taxi_table_name=yellow_taxi_data \
     --yellow_taxi_url=${URL1}
+    --zones_table_name=zones \
+    --zones_url=${URL2}    
     '''    

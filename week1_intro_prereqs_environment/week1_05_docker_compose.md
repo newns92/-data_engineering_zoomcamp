@@ -51,4 +51,5 @@
 - We can now run `docker compose up` while in the directory containing the `docker-compose.yml` file
 - *We can also run in detached mode via `docker-compose up -d`*
 - You *will* have to re-register the server with the name `Docker Localhost`, host name `pgdatabase`, and username and password both being `root` before seeing the table again
+    - You can then run the `load_data.py` script if you have also added in the Zones table (after rebuilding the `taxi_ingest:v001` image)
 - We can then exit the CLI via `CTRL + C` if not in detached mode, and then run `docker compose down`
