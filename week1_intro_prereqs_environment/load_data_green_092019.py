@@ -17,11 +17,6 @@ def remove_files():
         if item.endswith(".csv.gz"):
             os.remove(os.path.join(dir_name, item))
 
-    # Remove the local CSV's
-    for item in local_data:
-        if item.endswith(".csv"):
-            os.remove(os.path.join(dir_name, item))            
-
     # Remove the local files
     # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
     shutil.rmtree('./data/')
@@ -36,8 +31,8 @@ def main(args):
     host = args.host
     port = args.port
     database = args.database
-    yellow_taxi_table_name = args.yellow_taxi_table_name
-    yellow_taxi_url = args.yellow_taxi_url
+    green_taxi_table_name = args.green_taxi_table_name
+    green_taxi_url = args.green_taxi_url
     zones_table_name = args.zones_table_name
     zones_url = args.zones_url
 
@@ -45,27 +40,27 @@ def main(args):
     os.makedirs(os.path.dirname(f'./data/'), exist_ok=True)
 
     # # Specify the URL to download from
-    # yellow_taxi_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz'
+    # green_taxi_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2021-01.csv.gz'
 
     # Download the data
     print("Downloading the taxi data...")
-    taxi_csv_name = './data/yellow_tripdata_2021-01.csv'
-    os.system(f'wget {yellow_taxi_url} -O {taxi_csv_name}')  # -O = output to the given file name
+    taxi_csv_name = './data/green_tripdata_2019-09.csv'
+    os.system(f'wget {green_taxi_url} -O {taxi_csv_name}')  # -O = output to the given file name
 
     print("Downloading the taxi zone data...")
-    zones_csv_name = './data/taxi+_zone_lookup.csv'
+    zones_csv_name = 'taxi+_zone_lookup.csv'
     os.system(f'wget {zones_url} -O {zones_csv_name}')  # -O = output to the given file name  
 
     # # Read in 1st 100 rows of dataset
-    # df = pd.read_csv('./data/yellow_tripdata_2021-01.csv', compression='gzip', nrows=100)
+    # df = pd.read_csv('./data/green_tripdata_2021-01.csv', compression='gzip', nrows=100)
     # # print(df.head())
 
     # # Convert meter engaged and meter disengaged columns from text to dates
-    # df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-    # df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+    # df.lpep_pickup_datetime = pd.to_datetime(df.lpep_pickup_datetime)
+    # df.lpep_dropoff_datetime = pd.to_datetime(df.lpep_dropoff_datetime)
 
     # # Convert the dataframe into a Data Definition Language (DDL) statement to CREATE the SQL table schema
-    # ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data')
+    # ddl = pd.io.sql.get_schema(df, name='green_taxi_data')
     # print(ddl)
 
     print("Creating the engine...")
@@ -75,7 +70,7 @@ def main(args):
     # print(engine.connect())
 
     # # Add in the connection to the DDL statement
-    # ddl = pd.io.sql.get_schema(df, name='yellow_taxi_data', con=engine)
+    # ddl = pd.io.sql.get_schema(df, name='green_taxi_data', con=engine)
     # # print(ddl)
 
     # Add in the timezones first before the long loop
@@ -92,19 +87,19 @@ def main(args):
     # print(len(df))
 
     # Convert meter engaged and meter disengaged columns from text to dates
-    df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-    df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)    
+    df.lpep_pickup_datetime = pd.to_datetime(df.lpep_pickup_datetime)
+    df.lpep_dropoff_datetime = pd.to_datetime(df.lpep_dropoff_datetime)    
 
     # Get the header/column names
     header = df.head(n=0)
     # print(header)
 
-    # Add the column headers to the yellow_taxi_data table in the database connection, and replace the table if it exists
-    header.to_sql(name=yellow_taxi_table_name, con=engine, if_exists='replace')
+    # Add the column headers to the green_taxi_data table in the database connection, and replace the table if it exists
+    header.to_sql(name=green_taxi_table_name, con=engine, if_exists='replace')
 
     # Add first chunk of data
     start = time.time()
-    df.to_sql(name=yellow_taxi_table_name, con=engine, if_exists='append')
+    df.to_sql(name=green_taxi_table_name, con=engine, if_exists='append')
     end = time.time()
     print('Time to insert first chunk: in %.3f seconds.' % (end - start))
 
@@ -117,11 +112,11 @@ def main(args):
             df = next(df_iter)
 
             # Fix datetimes
-            df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-            df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+            df.lpep_pickup_datetime = pd.to_datetime(df.lpep_pickup_datetime)
+            df.lpep_dropoff_datetime = pd.to_datetime(df.lpep_dropoff_datetime)
             
             # Add chunk
-            df.to_sql(name=yellow_taxi_table_name, con=engine, if_exists='append')
+            df.to_sql(name=green_taxi_table_name, con=engine, if_exists='append')
 
             end = time.time()
 
@@ -150,8 +145,8 @@ if __name__ == '__main__':
     parser.add_argument('--host', help='Host for Postgres')
     parser.add_argument('--port', help='Port for Postgres')
     parser.add_argument('--database', help='Database name for Postgres')
-    parser.add_argument('--yellow_taxi_table_name', help='Name of table to write the taxi data to')
-    parser.add_argument('--yellow_taxi_url', help='URL of the Yellow Taxi CSV file')
+    parser.add_argument('--green_taxi_table_name', help='Name of table to write the taxi data to')
+    parser.add_argument('--green_taxi_url', help='URL of the green Taxi CSV file')
     parser.add_argument('--zones_table_name', help='Name of table to write the taxi zones to')
     parser.add_argument('--zones_url', help='URL of the Taxi zones data')
 
@@ -163,7 +158,7 @@ if __name__ == '__main__':
     '''
     Run in Bash with 
     
-    URL1="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+    URL1="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-09.csv.gz"
     URL2="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
 
     python load_data.py \
@@ -172,8 +167,8 @@ if __name__ == '__main__':
     --host=localhost \
     --port=5432 \
     --database=ny_taxi \
-    --yellow_taxi_table_name=yellow_taxi_data \
-    --yellow_taxi_url=${URL1}
+    --green_taxi_table_name=green_taxi_data \
+    --green_taxi_url=${URL1}
     --zones_table_name=zones \
     --zones_url=${URL2}    
     '''    
