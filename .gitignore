@@ -12,4 +12,4 @@ project/dbt_postgres/logs/
 module1_homework.md
 keys/
 variables.tf
-.terraform\
+.terraform/
