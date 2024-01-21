@@ -11,3 +11,4 @@ project/dbt_postgres/.user.yml
 project/dbt_postgres/logs/
 module1_homework.md
 keys/
+variables.tf
