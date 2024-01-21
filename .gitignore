@@ -13,3 +13,4 @@ module1_homework.md
 keys/
 variables.tf
 .terraform/
+.terraform.lock.hcl
