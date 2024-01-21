@@ -55,7 +55,7 @@
     - The Terraform client can be installed via https://developer.hashicorp.com/terraform/install
     - ***For the GCP provider account:*** 
         - Create a Google account and get the GCP free trial if needed
-        - Create a new project named `de-zoomcamp-2024` and note the Project ID
+        - Create a new project named `de-zoomcamp-2024` and *note the Project ID*
 
 
 
@@ -131,3 +131,126 @@
     - This downloads a *private* key JSON file full of credentials
     - ***Do NOT save it in a repository***
 
+
+## Terraform Basics Demo Part 1
+- Create a directory `terraform_demo`, and add a subdirectory `keys\`, and ***be sure to not upload this subdirectory to a repository***
+- Copy the JSON key file into this `terraform_demo\keys\` directory
+- Create a `main.tf` file, which will define the resources needed
+- Navigate to the GCP Provider page in the Terraform docs: https://registry.terraform.io/providers/hashicorp/google/latest/docs
+- In the top right, click "Use Provider", and copy the provided code
+- Paste this code into your `main.tf` file:
+    ```
+    terraform {
+        required_providers {
+            google = {
+            source = "hashicorp/google"
+            version = "5.12.0"
+            }
+        }
+    }
+
+    provider "google" {
+        # Configuration options
+    }
+    ```
+- Then, edit the Configuration options to have your GCP project ID and region:
+    ```
+    project = "<Your Project ID>"
+    region  = "us-central1"
+    ```
+- You can store the values in a `variables.tf` file:
+    ```
+    # Variables are generally passed at runtime
+    # Those with 'default' values are optional at runtime, those without 'default' values are mandatory runtime args
+    variable "project" {
+        description = "Your GCP Project ID"
+        default = "<Your Project ID"
+        type = string  
+    }
+
+    variable "region" {
+        description = "Region for GCP resources. Choose as per your location: https://cloud.google.com/about/locations"
+        default = "us-central1"
+        type = string
+    }
+    ```
+- You can then access them as so:
+    ```
+    provider "google" {
+        # Terraform relies on plug-ins called "providers" to interact with cloud providers, SaaS providers, and other API's
+        #
+        project = var.project
+        region = var.region # all processes are pointing towards the same region
+        // credentials = file(var.credentials)  # Use this if you do not want to set env-var GOOGLE_APPLICATION_CREDENTIALS        
+    }
+    ```
+- Now, we need some way for Terraform to know to *use* this credential we just created
+- You can hard-code it in `variables.tf` and use it as above: `credentials = file(var.credentials)`
+- *Or* you can set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to your downloaded GCP keys 
+    - Install the Google Cloud CLI (https://cloud.google.com/sdk/docs/install-sdk) and ***do NOT uncheck "bundled Python"
+        - **If you uncheck bundled Python**:
+            - In Google Cloud SDK Shell, check `python -c "import os, sys; print(os.path.dirname(sys.executable))"` to see where Python is installed
+            - Check the environment variable in Git Bash via `printenv CLOUDSDK_PYTHON`
+            - Use a version of Python (such as Miniconda) that you have installed in a special location via `export CLOUDSDK_PYTHON=C:\ProgramData\Miniconda3\python.exe`
+            - Can also attempt to set it up via Environment Variables for User and System
+            - Then, re-run the SDK installer
+            - You can then test in Git Bash via `gcloud -h`
+    - Next, ***in a Linux CLI or Git Bash*** run `export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service-account-authkeys>.json"`
+        - This is how we authenticate our other resources (OAuth)
+    - Then test via `echo $GOOGLE_APPLICATION_CREDENTIALS`
+- Next, before creating a resource, we must run `terraform init` in the `terraform_demo` directory in Git Bash to get the provider (the piece of code that Terraform is going to use to talk to GCP)
+    - This command initializes and configures the backend, installs plugins/providers, and checks out an existing configuration from a version control
+- You should see a "Terraform has been successfully initialized!" message/output and a new `.terraform` directory in your current directory
+
+## Create a GCP Bucket
+- Navigate to the Terraform docs for GCP Cloud Storage buckets: https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket
+- Then, copy the provided code and add to your `main.tf` file:
+    ```
+    resource "google_storage_bucket" "data-lake-bucket" {
+    // name          = "<Your Unique Bucket Name>"
+    // location      = "US"
+    name          = "${local.data_lake_bucket}_${var.project}" # Concatenating DL bucket & Project name for unique naming
+    location      = var.region  
+
+    # Optional, but recommended settings:
+    // storage_class = "STANDARD"
+    storage_class = var.storage_class
+    uniform_bucket_level_access = true
+
+    versioning {
+        enabled     = true
+    }
+
+    lifecycle_rule {
+        action {
+        type = "Delete"
+        }
+        condition {
+        age = 30  // days
+        }
+    }
+
+    force_destroy = true
+    }
+    ```
+- Save `main.tf`, and next, in Git Bash, run `terraform plan`
+    - This command matches/previews local changes against a remote state, and proposes an **Execution Plan**
+    - It describes the actions Terraform will take to create an infrastructure that will to match with our configuration
+    - *It does not actually create the resources*
+- You should see a successful Terraform plan in the output
+- Next, to deploy the plan, in Git Bash, run `terraform apply`
+    - This asks for approval to the proposed plan from the previous `terraform plan` command, and applies changes to the cloud
+    - It actually *creates* the resources
+    - Notice that when we run this command, we get a **state file** called `terraform.tfstate`
+- Enter `yes` if you're ready to run and implement the plan, and you should see a success message in the output:
+    ```
+    google_storage_bucket.data-lake-bucket: Creating...
+    google_storage_bucket.data-lake-bucket: Creation complete after 0s
+    ```
+- `terraform.tfstate` will contain all Terraform state information
+- Then, go back to the GCP dashboard for your project
+- On the left-hand side of the page, navigate to "Cloud Storage" and then "Buckets"
+- You should see this newly-created bucket in the GCP Cloud Storage Buckets UI
+- To get rid of this bucket, run `terraform destroy` and then enter `yes`
+    - This takes down/destroys resources, and will remove our current Terraform stack from the cloud
+- You should no longer see that bucket in the GCP Cloud Storage Buckets UI
