@@ -8,6 +8,9 @@ provider "google" {
   // credentials = file(var.credentials)  # Use this if you do not want to set env-var GOOGLE_APPLICATION_CREDENTIALS
 }
 
+# Data Lake Bucket
+# Ref: https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket
+# var.[xxxxxxx] are coming from the variables.tf file
 resource "google_storage_bucket" "data-lake-bucket" {
   // name          = "<Your Unique Bucket Name>"
   // location      = "US"
@@ -33,4 +36,12 @@ resource "google_storage_bucket" "data-lake-bucket" {
   }
 
   force_destroy = true
+}
+
+# Data Warehouse
+# Ref: https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_dataset
+resource "google_bigquery_dataset" "dataset" {
+  dataset_id = var.bq_dataset
+  project    = var.project
+  location   = var.region
 }

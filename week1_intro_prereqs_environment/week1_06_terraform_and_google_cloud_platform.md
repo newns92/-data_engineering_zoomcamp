@@ -202,6 +202,7 @@
     - This command initializes and configures the backend, installs plugins/providers, and checks out an existing configuration from a version control
 - You should see a "Terraform has been successfully initialized!" message/output and a new `.terraform` directory in your current directory
 
+
 ## Create a GCP Bucket
 - Navigate to the Terraform docs for GCP Cloud Storage buckets: https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket
 - Then, copy the provided code and add to your `main.tf` file:
@@ -254,3 +255,80 @@
 - To get rid of this bucket, run `terraform destroy` and then enter `yes`
     - This takes down/destroys resources, and will remove our current Terraform stack from the cloud
 - You should no longer see that bucket in the GCP Cloud Storage Buckets UI
+
+
+## Create a BigQuery Dataset
+- Navigate to the Terraform docs for GCP BigQuery datasets: https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_dataset
+- The documentation gives quite a complicated "basic" example
+- The only *real* "required" fields are `dataset_id`, `project`, and `location`
+- Input the following code to your `main.tf` file:
+    ```
+    # Data Warehouse
+    # Ref: https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_dataset
+    resource "google_bigquery_dataset" "dataset" {
+    dataset_id = var.BQ_DATASET
+    project    = var.project
+    location   = var.region
+    }
+    ```
+- Save `main.tf`, and next, in Git Bash, run `terraform plan`
+- Again, you should see a successful Terraform plan in the output
+- Next, to deploy the plan, in Git Bash, run `terraform apply` and then enter `yes`
+- Navigate to BigQuery Studio in GCP and you should see the dataset under the project ID
+- To get rid of the bucket and the dataset, run `terraform destroy` and then enter `yes`
+
+
+## Terraform Variables
+- You can create terraform variables in a `variables.tf` file in the same directory as your `main.tf` and save the values for them in said file
+- Documentation: https://developer.hashicorp.com/terraform/language/values/variables
+
+
+## GCP Account Setup
+
+- Go to "IAM" (Identity and Access Management) --> Service Accounts
+    - **Service account** = an account with limited permissions that is assigned to a service (ex: a server or VM)
+        - Allows us to create a set of credentials that does not have full access to the owner/admin account
+- Create a service account: "de_zoomcamp_user"
+- Grant access as "Basic" --> "Viewer"
+    - We will fine tune the permissions in a later step
+- We do not need to "grant users access to this service account"
+    - But this is useful in a PROD environment where it may be useful for multiple users to share the same permissions
+- To create a key, click the three dots under "Actions" --> "Manage keys"
+- Click "Add key" --> "Create new key" --> "JSON"
+    - This downloads a *private* key JSON File
+    - Do NOT save it in git
+- Install the Google Cloud CL (https://cloud.google.com/sdk/docs/install-sdk)
+- **If you uncheck bundled Python**:
+    - In Google Cloud SDK Shell, check `python -c "import os, sys; print(os.path.dirname(sys.executable))"` to see where Python is installed
+    - Check the environment variable in Git Bash via `printenv CLOUDSDK_PYTHON`
+    - Use a python (Miniconda) you have installed in a special location via `export CLOUDSDK_PYTHON=C:\ProgramData\Miniconda3\python.exe`
+    - Also attempt to set it up via Environment Variables for User and System
+    - Re-run the SDK installer
+    - Test in Git Bash via `gcloud -h`
+- Set environment variable to point to your downloaded GCP keys via `export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service-account-authkeys>.json"`
+    - This is how we authenticate our other resources (OAuth)
+- Refresh token/session, and verify authentication via `gcloud auth application-default login`
+    - The browser will open up, so choose the right email and then click "Allow" to see the "You are now authenticated with the gcloud CLI!" webpage
+- Next we will set up 2 resources in the Google environment (Google Cloud Storage data lake and BigQuery data warehouse)
+    - Cloud storage is a bucket in our GCP environment where we can store data in flat files
+    - This data lake is where we will store data in a more organized fashion
+    - In our BigQuery data warehouse, our data will be in a more structured format (Fact and Dimension tables)
+- 1st, we will add more permissions to our service account
+    - Click on "IAM" on the left
+    - Click "edit principal" pencil on the right for the user account we just created
+    - Add "Storage Admin" to create and the GCP data lake
+        - Allows us to create and modify buckets and packets (Terraform) and files
+        - In PROD, we'd actually create *custom* roles to limit user access to a particular bucket/certain resources
+            - We'd create separate service accounts for Terraform, for the data pipeline, etc. (In this course we are only making *one* for simplicity's sake)
+    - Add "Storage Object Admin" to add/control things within our bucket/data lake
+    - Add "BigQuery Admin"
+    - Click "Save"
+- Next, we need to enable API's
+    - When the local environment interacts with the cloud enviroment, it does not interact *directly* with the resource
+    - These API's are the form of communication
+    - We have 2 API's for the IAM itself
+        - Click on the 3 bars to the left of "Google Cloud" in the upper-left
+        - Click "API's and Services" --> "Library" --> Search for "Identity and Access Management"
+        - Choose "Identity and Access Management (IAM) API" --> "Enable"
+        - Go back to the library and search for "IAM"
+        - Choose "IAM Service Account Credentials API" (which may already be enabled)        
