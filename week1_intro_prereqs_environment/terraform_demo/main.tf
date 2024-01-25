@@ -5,7 +5,7 @@ provider "google" {
   // Use variables from variables.tf file
   project = var.project
   region = var.region # all processes are pointing towards the same region
-  // credentials = file(var.credentials)  # Use this if you do not want to set env-var GOOGLE_APPLICATION_CREDENTIALS
+  // credentials = file(var.credentials)  # Use this if you do NOT want to set env-var GOOGLE_APPLICATION_CREDENTIALS
 }
 
 # Data Lake Bucket
