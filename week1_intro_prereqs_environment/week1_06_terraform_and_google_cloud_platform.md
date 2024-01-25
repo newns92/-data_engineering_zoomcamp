@@ -240,3 +240,9 @@
 - Navigate to BigQuery Studio in GCP and you should see the dataset under the project ID
 - To get rid of the bucket and the dataset, run `terraform destroy` and then enter `yes`
 
+
+## GCP Extra Infro
+- Above, we set up 2 resources in the Google environment (a GCP Cloud Storage **data lake** and GCP BigQuery **data warehouse**)
+    - Cloud storage is a bucket in our GCP environment where we can store data in flat files
+        - This data lake is where we will store data in a more organized fashion
+    - In our BigQuery data warehouse, our data will be in a more structured format (Fact and Dimension tables)
