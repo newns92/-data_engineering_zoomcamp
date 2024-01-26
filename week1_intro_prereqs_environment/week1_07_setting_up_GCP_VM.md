@@ -28,7 +28,7 @@
     - Under **"Boot Disk"**, choose **"Ubuntu"**, then the **"Ubuntu 20.04 LTS"** OS, and then **"30GB"** of **"balanced persistant disk"** storage
     - Click "Create", and the VM should spin up
 - Once the VM has spun up, copy the **external IP** from the VM instance page on GCP to the terminal and SSH into it with the `-i` flag to indicate the private key file
-    - Do this via `ssh -i ~/.ssh/gcp <ssh-username>@<external IP>`
+    - Do this via `ssh -i ~/.ssh/<ssh-private-key-file> <ssh-username>@<external IP>`
     - Click "yes" if prompted to continue connecting
     - Enter the passphrase (if you used one and are prompted)
     - Should see `Welcome to Ubuntu 20.04.5 LTS (GNU/Linux 5.15.0-1030-gcp x86_64)` to start off
@@ -38,12 +38,12 @@
 - We can **configure the SSH connection on the local machine for a better experience** by, inside of the `.ssh/` directory, creating a file called `config` via a `touch config` command in Git Bash
     - Open this file via a `code config` command in Git Bash and add the following contents:
         ```bash 
-        Host de-zoomcamp
+        Host de_zoomcamp
             HostName <external-IP>
             User <Username>
             IdentityFile C:\<rest-of-path>\.ssh\<private-key-file-name>
         ```
-    - Now, in order to connect to the host via SSH, just enter `ssh de-zoomcamp`, rather than use all the additional arguments above
+    - Now, in order to connect to the host via SSH, just enter `ssh de_zoomcamp`, rather than use all the additional arguments above
 
 
 ## Configuring the VM Instance
@@ -76,7 +76,8 @@
 - **To configure VSCode to access the VM**:
     - Install the remote extension for VSCode if needed
     - Connect to the remote host by clicking the little green (or blue) square in the bottom left corner of VSCode and select "Connect to host"
-    - Select "de-zoomcamp", which should be there due to the config
+    - Select "de_zoomcamp", which should be there due to the config
+    - Enter the passphrase when prompted
     - Now, VSCode should be connected to the GCP VM
 - Next, install **docker-compose**
     - First, create a directory for storing binary files called `~/bin` via `mkdir bin` and `cd bin/` in the VM
@@ -112,18 +113,18 @@
         - Click "Forward a Port"
         - Enter `5432` in the "Port" column
             - Now we will be able to access this port from our local machine
-        - In a *new* Git Bash terminal, *without SSH-ing into the VM*, run `pgcli -h localhost -u root -d ny_taxi`
+        - In a *new* Git Bash terminal, *without SSH-ing into the VM*, run `winpty pgcli -h localhost -u root -d ny_taxi`
         - Might see an *"only 3 protocol supported"* error, but just hit `ENTER`, and you should see the `pgcli`` command line
         - Test with `\dt`
         - Then add port 8080 in VSCode
         - Then open `localhost:8080/` in a browser window, and you should see pgAdmin like before locally
-            - ***GETTING TIMED OUT ERROR HERE 4/26/2023, CHECK LATER***
+            - ***GETTING TIMED OUT ERROR HERE 1/25/2024, CHECK LATER***
 - Install `jupyter` on the VM via `conda install -c conda-forge notebook`
     - Then add port 8888 in VSCode
     - Run `jupyter notebook` in the GCP VM Git Bash terminal window, copy the URL, and open it *locally* in a browser to see everything
 - ***Download the taxi data to the VM if needed***
     - Run the ingestion script via `python load_data.py` 
-        - **DON'T ACTUALLY DO THIS YET 4/26/2023**
+        - ***DON'T ACTUALLY DO THIS YET 1/25/2024***
 - Install **Terraform**
     - `cd` to the `~/bin/` directory
     - Run `wget https://releases.hashicorp.com/terraform/1.4.6/terraform_1.4.6_linux_amd64.zip`
@@ -135,15 +136,16 @@
     - Go to the directory with the JSON file in a Git Bash terminal on your local machine
     - Move it to the VM with **SFTP** via:
         ```bash
-        sftp de-zoomcamp
-        mkdr .gc
+        sftp de_zoomcamp
+        mkdir .gc
         cd .gc
         put <path/to/your/service-account-authkeys>.json
         ```        
-    - Check that the JSON file there via `ls`
+    - Check that the JSON file there via `ls` or `cd .gc` in the GCP VM
     - Then, in the VM, run `export GOOGLE_APPLICATION_CREDENTIALS=~/.gc/<credentials-file-name>.json`
     - Then run `gcloud auth activate-service-account --key-file $GOOGLE_APPLICATION_CREDENTIALS` to use this JSON file to authenticate our CLI
     - Then, `cd` to the `/terraform_demo/` directory in the cloned repo
+    - ***Create the `variables.tf` file in the VM as needed***
     - Then, run the 4 terraform commands: `terraform init`, `terraform plan`, `terraform apply`, `terraform destroy`, if desired
         - *Update the `variables.tf` file to automatically use the GCP Project ID if needed*
             ```bash
