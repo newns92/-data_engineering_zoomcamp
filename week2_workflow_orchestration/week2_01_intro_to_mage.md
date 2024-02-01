@@ -64,6 +64,8 @@
 
 
 ## Configuring Mage
+- See the instructions at https://github.com/mage-ai/mage-zoomcamp
+- 
 
 
 ## A Simple Pipeline
