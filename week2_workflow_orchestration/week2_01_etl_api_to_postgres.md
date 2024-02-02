@@ -29,3 +29,42 @@
 
 ## Writing an ETL Pipeline
 - We will be taking data from an API in the form of a compressed CSV file, doing some transforms, and loading it to our local Postgres database (in Docker)
+- In Mage, create a new `api_to_postgres` pipeline
+    - Then, in "Edit pipeline", create a new Python API data loader block called `load_api_data`
+    - Be sure to declare/map the data types via pandas in the Python file
+        - This drastically reduces the memory that pandas would incur in processing the dataset
+            - With very large datasets (like millions of rows like the Yellow Taxi dataset), it can make a huge difference in memory consumption
+            ```Python
+            taxi_dtypes = {
+                            'VendorID': pd.Int64Dtype(),
+                            'passenger_count': pd.Int64Dtype(),
+                            'trip_distance': float,
+                            'RatecodeID':pd.Int64Dtype(),
+                            'store_and_fwd_flag':str,
+                            'PULocationID':pd.Int64Dtype(),
+                            'DOLocationID':pd.Int64Dtype(),
+                            'payment_type': pd.Int64Dtype(),
+                            'fare_amount': float,
+                            'extra':float,
+                            'mta_tax':float,
+                            'tip_amount':float,
+                            'tolls_amount':float,
+                            'improvement_surcharge':float,
+                            'total_amount':float,
+                            'congestion_surcharge':float
+                        }          
+            ```
+        - This is helpful because we now have an implicit assertion that if the data types change, the pipeline will fail
+            - This is good because we want to be notified if something in the source system data changes
+- Then, create a Generic (no template) Python transformer block called `transform_taxi_data`
+- Then, create a PosgreSQL Python data exporter block named `taxi_data_to_postgres`
+    - Make sure to update the schema, table name, and configuration profile for the Postgres database
+        ```Python
+        schema_name = 'ny_taxi'  # Specify the name of the schema to export data to
+        table_name = 'yellow_taxi_data'  # Specify the name of the table to export data to
+        config_path = path.join(get_repo_path(), 'io_config.yaml')
+        config_profile = 'dev'
+        ```
+- To double-check that this pipeline worked, we can add in a SQL data loader block called `load_taxi_data` *after* this data exporter block
+    - Then, make sure you pick your PostgreSQL connection and dev profile, and check off "Use raw SQL"
+    - Then run `SELECT COUNT(*) FROM ny_taxi.yellow_taxi_data` or `SELECT * FROM ny_taxi.yellow_taxi_data LIMIT 10`
