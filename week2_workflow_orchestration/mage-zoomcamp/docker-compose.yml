@@ -1,6 +1,7 @@
 version: '3'
 services:
   magic:
+  # The Mage instance
     image: mageai/mageai:latest
     command: mage start ${PROJECT_NAME}
     env_file:
@@ -23,6 +24,7 @@ services:
       - ~/Documents/secrets/personal-gcp.json:/home/src/personal-gcp.json
     restart: on-failure:5
   postgres:
+  # The Postgres instance (spinning up a Postgres database in a local instance)
     image: postgres:14
     restart: on-failure
     container_name: ${PROJECT_NAME}-postgres
