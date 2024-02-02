@@ -28,7 +28,7 @@
         - *A Docker image executes code in a Docker container*, and an *instance* of an image is a container        
     - You store images for sharing and reuse, but you create and destroy containers over an application's lifecycle
     - **You can have many running containers of the same image**
-- We use Docker for **reproducibility**, **local experiments**, **integration tests (CI/CD, general best software engineering practices**, **running pipelines on the cloud (AWS Batch, K8's jobs, etc.)**, **Spark**, **server-less work (AWS Lambda, Google functions)**
+- We use Docker for **reproducibility**, **local experiments**, **integration tests (CI/CD, general best software engineering practices)**, **running pipelines on the cloud (AWS Batch, K8's jobs, etc.)**, **Spark**, **server-less work (AWS Lambda, Google functions)**
 
 
 ## Dockerfile

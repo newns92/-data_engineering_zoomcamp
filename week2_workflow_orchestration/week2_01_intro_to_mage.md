@@ -9,18 +9,18 @@
 - **Mage** is an open-source pipeline tool for orchestrating, transforming, and *integrating* data
     - By "integrating", we mean using a solution like Airbyte or Fivetran to take data from one source to another
 - Main Mage concepts:
-    - Projects
+    - **Projects**
         - Forms the basis for all the work you can do in (can think of it like a GitHub repo)
         - Your homebase/overall unit of an environment
         - Contains the code for all of pipelines, blocks, and other assets
         - Can have multiple projects within a single instance
-    - Pipelines
+    - **Pipelines**
         - Workflows that execute some data operation (maybe extracting, transforming, and loading data from an API)
         - Also called DAGs or data workflows
         - Each project can have as many pipelines as needed
         - In Mage, pipelines can contain Blocks (written in SQL, Python, or R) and charts
         - Each pipeline is represented by a YAML file in the “pipelines” folder of a project
-    - Blocks
+    - **Blocks**
         - These comprise pipelines
         - They are the resuable, atomic units that make up a Mage transformation and perform a variety of actions, from simple data transformations to complex ML models
         - They are files that can be executed independently or within a pipeline
@@ -65,7 +65,22 @@
 
 ## Configuring Mage
 - See the instructions at https://github.com/mage-ai/mage-zoomcamp
-- 
+- We are basically cloning this repo, making sure we ignore `.env` files to avoid committing secrets to GitHub, and then running `docker compose build` (*Make sure the Docker daemon (i.e., Docker Desktop) is running*) to build an **image** for our project
+    - To pull the most recent Mage image (say if you see "update" in the Mage UI), run `docker pull mageai/mageai:latest` to pull the latest image from the Mage repo
+- We start the container based on this image via `docker compose up` to kick off the services in `docker-compose.yml` and start running them locally
+- Then, we nagivate to http://localhost:6789 in a browser, we're ready to get started with this part of the course
 
 
 ## A Simple Pipeline
+- In the Mage UI, navigate to "Pipelines" on the left-hand side
+- Notice there is an example pipeline in our `magic-zoomcamp` project (see the top-left of the UI for the project name)
+- Open this pipeline and see that we are doing a simple read of some data from an API, filling in some missing values, then exporting to a local **dataframe**
+- Navigate to the "Edit pipeline" menu on the left-hand side to see all the projects in the file
+- Notice the `load_titanic.py` file (*our first Mage **block**) under the `data_loaders` directory in the project file tree
+    - Here, we're reading data from an API into a CSV and then check that the dataframe is not `None`
+    - Can run the file in the top-right of the UI, and notice we end up with 891 rows and 12 columns
+- The next block is a transformation step in the `transformers` directory called `fill_in_missing_values.py`
+    - Run this as well
+- Notice on the right-hand side of the UI, in the diagram, that these blocks are connected by a line/pipe
+    - This indicates that the output dataframe from the load block is the input dataframe to the transform block
+- Our final `export_titanic_clean.py` block in the `data_exporters` directory exports the output dataframe from the transform block into a CSV file
