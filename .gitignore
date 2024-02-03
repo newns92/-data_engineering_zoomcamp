@@ -18,3 +18,4 @@ variables.tf
 *.tfstate
 *.tfstate.backup
 .git
+*homework.md
