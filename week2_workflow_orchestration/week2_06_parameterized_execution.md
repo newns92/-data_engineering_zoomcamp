@@ -36,4 +36,20 @@
 - Parameterized execution can be a very useful pattern in data engineering work
 
 ## Backfills
-- 
+- Again, parameterized execution is running pipelines that are dependent on some variable value, say a date value
+- Imagine that somehow we lost some data, or ended up missing some data, and we had to re-run some pipelines for multiple days, weeks, months, etc.
+- In a typical/traditional system, you'd have to build some kind of backfill script/backfill pipeline that *simulates* executing the original DAG for each day/week/month.
+- In Mage, we can build backfill functionality easily and right out-of-the-box to replicate lost data or data for parameterized runs that we need to backfill
+- Within any pipeline, open to the "Backfills" UI on the left-hand side and "Create a new backfill"
+    - Note that we can currently only backfill by "Date and time window"
+    - Name the backfill (say, `magic-zoomcamp-backfill`)
+    - Then, pick the start date, say January 1, 2024 if trying to backfill the first week of January 2024
+    - Then choose the end date (in this case, January 7, 2024), *which is inclusive*
+    - Then choose the interval type of "day" and give it a unit of "1"
+- This backfill is going to create 8 runs and assign the `execution_date` variable to each day in this pipeline
+    - So, there will be a run for each day
+- Save the backfill and see in the UI that each row in the "Execution date" column is a different value in the range that we specified above   
+    - So, if we're referencing that `execution_date` variable in our pipelines, this is an easy way to create those 8 pipeline runs
+- And, if we're creating **idempotent** pipelines (a data engineering best practice), we don't have to worry about losing data
+    - "**Idempotency** in data pipelines refers to the ability to execute the same operation multiple times without changing the result beyond the initial application. This property ensures consistency and reliability, especially in distributed systems"
+        - https://airbyte.com/data-engineering-resources/idempotency-in-data-pipelines
