@@ -39,4 +39,16 @@
         - *NOTE:* If using the SQL exporter block, you may see a staging table (`dev_gcs_to_bigquery_transform_stage_data_v1`) in BigQuery as well
 
 
-## Advanced Mage Concepts
+## Scheduling
+- Mage is an **orchestrator**, so how do we **schedule** pipelines/workflows?
+- In the Mage UI, navigate to a specific pipeline, and then on the left-hand side, go to **Triggers**
+    - Clicking "Run@once" at the top will run the entire pipeline right then and there
+- We can trigger pipelines via a schedule, event, or an API webhook
+    - We can also set variables (advanced Mage concept)
+- Create a schedule trigger and name it `gcs_to_bigquery_schedule`
+- For the frequency, choose "daily" and set the start date from which afterwards, it will trigger automatically
+    - If you want to use **CRON**, choose "Custom"
+    - For "daily" frequency, can also choose a **landing time** to say "run this pipeline by a certain time"
+- Once the trigger is saved, we can *enable* it and see that it's status is "active" on the right-hand side
+- *This is the orchestration piece of our data engineering workflow*
+    - We build pipelines, schedule them, and potentially create dependencies to chain pipelines together to run certain ones only after others have completed
