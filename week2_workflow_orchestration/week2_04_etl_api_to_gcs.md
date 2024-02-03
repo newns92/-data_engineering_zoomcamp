@@ -55,7 +55,7 @@
     - Start by creating a new GCS Python data exporter block named `taxi_to_gcs_parquet`
         - *Note that we're writing to a Parquet file*
     - Make sure this exporter block is attached to the transformer block in the dependency graph
-    - Then, enter in your GCS Bucket name and object key (name it `nyx_taxi_data.parquet`) into the data exporter code where prompted
+    - Then, enter in your GCS Bucket name and object key (name it `nyc_taxi_data.parquet`) into the data exporter code where prompted
     - Mage will infer the Parquet file format here and then write directly to the `nyx_taxi_data.parquet` location (*not* in any folder or anything)
     - Run all the blocks to see if the pipeline is working
     - Once the pipeline is finished, check the Bucket in the GCS console to see that the Parquet file is indeed present
