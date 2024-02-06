@@ -106,3 +106,40 @@
         SELECT * FROM `<project-id>.ny_taxi.external_yellow_tripdata`;
     ```
 - We can see the partitioning details in the "Details" tab of the partitioned table
+- Then, to see the difference in processing, run the same query on both tables:
+    - First:
+        ```SQL
+            -- Impact of partition
+            -- Scanning 583MB of data for the 1st 3 months of Yellow 2019 data
+            SELECT DISTINCT(VendorID)
+            FROM <project-id>.ny_taxi.yellow_tripdata_non_partitioned
+            WHERE DATE(tpep_pickup_datetime) BETWEEN '2019-01-01' AND '2019-03-31';
+        ```
+    - And then:
+        ```SQL
+            -- Scanning ~106 MB of DATA
+            SELECT DISTINCT(VendorID)
+            FROM <project-id>.ny_taxi.yellow_taxi_data_partitioned
+            WHERE DATE(tpep_pickup_datetime) BETWEEN '2019-01-01' AND '2019-03-31';
+        ```
+- You will see 583 MB Bytes processed, 583 MB Bytes billed for the NON-partitioned table, and 344 MB Bytes processed, 344 MB Bytes billed for the partitioned table (*for the first 3 months of 2019*)
+    - *If you highlight the query in the editor, in the top right BigQuery will tell you this info before you run it*
+- We can even look *directly into* the partitons to see how many rows are in each partition via
+    ```SQL
+        -- Look into the partitons
+        SELECT table_name, partition_id, total_rows
+        FROM `ny_taxi.INFORMATION_SCHEMA.PARTITIONS`
+        WHERE table_name = 'yellow_taxi_data_partitioned'
+        ORDER BY total_rows DESC;
+    ```
+    - This is helpful in determining if we have a *bias* in our partition
+        - i.e., If we have some partitions getting more rows/data relative to others
+- In BigQuery, we can partition data by:
+    - A time-unit column: daily (default), hourly (if you have a *huge* amount of data coming in), monthly, or yearly options (if you have a smaller amount of data coming in)
+    - Ingestion time (`_PARTITIONTIME`): daily (default), hourly (if you have a *huge* amount of data coming in), monthly, or yearly options (if you have a smaller amount of data coming in)
+    - An integer range
+- **When partitioning data, to achieve its *full* potential, we'd prefer *evenly-distributed* partitions**
+- In addition, we **must take into account the number of partitions that we will need**, since **BigQuery limits the number of partitions to 4000**
+    - Might want to have an **expire partitioning strategy**
+- But, partitioning **typically doesn't show much improvement for tables with < 1 GB of data**, since it incurs metadata reads and metadata maintenance
+- Again, more info can be found at: https://cloud.google.com/bigquery/docs/partitioned-tables 
