@@ -63,20 +63,46 @@
         - To start off, make sure there is some data in your GCS bucket that you will be using
             - Do this via drag-and-drop of Parquet files or via **Mage**
                 - ***May run into an issue of various fields being FLOATs and INTs, due to a `nan` value and have to fix***
-        - Once the data is there, make sure you have a `ny_trips` dataset under your project ID in BigQuery, and *NO* `external_nyc_yellow_taxi_data` table (***If it's there, drop it***)
+        - Once the data is there, make sure you have a `ny_taxi` dataset under your project ID in BigQuery, and *NO* `external_nyc_yellow_taxi_data` table (***If it's there, drop it***)
         - Then, using the **gsutil URI's** of the data files, run
             ```SQL
-                CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_trips.external_nyc_yellow_taxi_data`
+                -- Creating external table referring to GCS path (gutil URI)
+                CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_nyc_yellow_taxi_data`
                     OPTIONS (
-                    format = 'PARQUET',
-                    uris = ['gs://<bucket-name>/data/yellow/yellow_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/yellow/yellow_tripdata_2020-*.parquet']
+                        format = 'PARQUET',
+                        uris = ['gs://<bucket-name>/data/yellow/yellow_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/yellow/yellow_tripdata_2020-*.parquet']
                     );
             ```    
         - Then run:
             ```SQL
-            SELECT * FROM `<project-id>.ny_trips.external_nyc_yellow_taxi_data` limit 10;
+            SELECT * FROM `<project-id>.ny_taxi.external_nyc_yellow_taxi_data` limit 10;
             ```
     - When loading in the data BigQuery *knows* what data type a field is and *makes* it that data type, as well as convert and figure out if the field is NULL-able or not
         - In this way, **we don't always have to define our schema (*but we could do that if we really wanted to*)**
     - Go to the "Details" tab of the table once you have it open, and notice "Table Size" and "Long-term storage size" are both 0 Bytes, and "Number of Rows" is blank
         - Unfortunately, with *external* tables, BigQuery is unable to not able to determine the number of rows or the table size cost, since the data itself is not *inside* BigQuery, but is instead in external data storage (such as a GCS Bucket)
+
+### Partitioning in BigQuery
+- Generally, when we create a dataset, we have one or more certain columns that many queries are based off of and that can be used as some type of *"filter"*
+- In such cases, we can **partition** a table based on such columns to improve BigQuery's performance
+    - https://cloud.google.com/bigquery/docs/partitioned-tables
+    - Example: A dataset containing StackOverflow questions partitioned by a `creation_date` field
+- **Partitioning** is a powerful feature of BigQuery
+    - Suppose we want to query the StackOverflow questions created on a specific date
+    - **Partitionining improves processing**, because *BigQuery will not read or process any data from other dates*, which improves efficiency and reduces querying costs by processing less data
+- To view the performance improvements, create a *non*-partitioned table from the external table via
+    ```SQL
+        -- Create a non-partitioned table from external table
+        CREATE OR REPLACE TABLE `<project-id>.ny_taxi.yellow_taxi_data_non_partitioned`
+        AS
+        SELECT * FROM `<project-id>.ny_taxi.external_yellow_tripdata`;
+    ```
+- Next, create a *partitioned* table from the *same* external table via
+    ```SQL
+        -- Create a partitioned table from external table
+        CREATE OR REPLACE TABLE `<project-id>.ny_taxi.yellow_taxi_data_partitioned`
+        PARTITION BY
+            DATE(tpep_pickup_datetime) AS
+        SELECT * FROM `<project-id>.ny_taxi.external_yellow_tripdata`;
+    ```
+- We can see the partitioning details in the "Details" tab of the partitioned table
