@@ -52,3 +52,31 @@
 - BigQuery provides a lot of **open source public data** (like a NYC Citibike stations dataset `citibike_stations`) that you can search for within BigQuery
     - i.e., You can query the `station_id` and `name` fields from the `citibike_stations` table via ```SELECT station_id, name FROM `bigquery-public-data.new_york_citibike.citibike_stations` LIMIT 100;```
     - Results of such queries can be saved or explored via Data Studio
+- As a practical example, we will create an **external table** (https://cloud.google.com/bigquery/docs/external-data-sources):
+     - **External tables** are similar to standard BigQuery tables, in that these tables store their metadata and schema in BigQuery storage 
+        - However, their **data resides in an *external* source**
+        - Even so, you **can directly query it** from within BigQuery
+        - "External tables are contained *inside a dataset*, and you manage them in the same way that you manage a standard BigQuery table"
+     - We will create the external table from one of our yellow taxi datasets as an **external source**
+        - BigQuery allows us to make tables based off of GCS Buckets via **gsutil Uniform Resource Identifiers (URI's)**
+            - These URI's are in the format `gs://<bucket-name>/<file-name>`
+        - To start off, make sure there is some data in your GCS bucket that you will be using
+            - Do this via drag-and-drop of Parquet files or via **Mage**
+                - ***May run into an issue of various fields being FLOATs and INTs, due to a `nan` value and have to fix***
+        - Once the data is there, make sure you have a `ny_trips` dataset under your project ID in BigQuery, and *NO* `external_nyc_yellow_taxi_data` table (***If it's there, drop it***)
+        - Then, using the **gsutil URI's** of the data files, run
+            ```SQL
+                CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_trips.external_nyc_yellow_taxi_data`
+                    OPTIONS (
+                    format = 'PARQUET',
+                    uris = ['gs://<bucket-name>/data/yellow/yellow_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/yellow/yellow_tripdata_2020-*.parquet']
+                    );
+            ```    
+        - Then run:
+            ```SQL
+            SELECT * FROM `<project-id>.ny_trips.external_nyc_yellow_taxi_data` limit 10;
+            ```
+    - When loading in the data BigQuery *knows* what data type a field is and *makes* it that data type, as well as convert and figure out if the field is NULL-able or not
+        - In this way, **we don't always have to define our schema (*but we could do that if we really wanted to*)**
+    - Go to the "Details" tab of the table once you have it open, and notice "Table Size" and "Long-term storage size" are both 0 Bytes, and "Number of Rows" is blank
+        - Unfortunately, with *external* tables, BigQuery is unable to not able to determine the number of rows or the table size cost, since the data itself is not *inside* BigQuery, but is instead in external data storage (such as a GCS Bucket)

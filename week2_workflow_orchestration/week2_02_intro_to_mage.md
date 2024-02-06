@@ -68,6 +68,7 @@
 - We are basically cloning this repo, making sure we ignore `.env` files to avoid committing secrets to GitHub, and then running `docker compose build` (*Make sure the Docker daemon (i.e., Docker Desktop) is running*) to build an **image** for our project
     - To pull the most recent Mage image (say if you see "update" in the Mage UI), run `docker pull mageai/mageai:latest` to pull the latest image from the Mage repo
 - We start the container based on this image via `docker compose up` to kick off the services in `docker-compose.yml` and start running them locally
+    - Or `docker compose up -d` to run in detached mode
 - Then, we nagivate to http://localhost:6789 in a browser, we're ready to get started with this part of the course
 
 
