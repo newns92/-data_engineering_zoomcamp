@@ -249,3 +249,30 @@
                 - See https://cloud.google.com/bigquery/docs/partitioned-tables#dt_partition_shard
         - Avoid JavaScript user-defined functions (UDFs)
         - Use appropriate aggregation functions (such as HyperLogLog++)
+
+
+### BigQuery Internals
+- One doesn't generally don't have to know this stuff, so long as you know best practices of BigQuery
+    - But knowing the internals of such a cloud data warehouse like BigQuery may help with building a data product in the future
+- **Colossus**: Google's distributed file storage that stores data in a **columnar format**
+    - BigQuery stores data in this *separate* storage file system
+    - Colossus is **separated from computation*, and thus, it is *generally cheap with significantly less cost*
+        - If your data size drastically increases, you're only paying for *storage* costs
+        - **The most amount of cost incurred comes from reading or doing/running queries, which involved the compute engine**
+        - This is why separating compute from storage is an advantage for BigQuery
+- However, if the network connection is bad, it would result in poor (high) query time, but BigQuery has a solution to this
+- **Jupiter**: Since compute and storage are in *different/separate* hardware, Google needs a very fast network for communication to avoid long query times
+    - Jupiter is the network implemented inside BigQuery's data center and has ~1 TB bandwidth/network speed
+- **Dremel**: The query execution engine for BigQuery
+    - Dremel generally divides each query into a tree structure, whose parts are executed *in parallel* across several **nodes** (each node can execute an individual subset of the query)
+- **Column-oriented storage**: A type of storage that is optimized for querying subsets of columns from tables (think parquet files vs. row-oriented storage like CSV's)
+    - It is also efficient for performing filtering or aggregation functions over columns
+    - When BigQuery recieves a query, it *understands* it and knows how to *divide it into smaller sub-modules*
+    - Then **mixers** recieve the modified query, which further divide sub-queries into even smaller sub-queries and send them to leaf nodes
+    - The **leaf nodes** are who actually talks to the Colossus database, fetch the data, perform operations on it, and return it back the mixers, who in turn return everything to the root server(s) where everything is aggregated and returned
+    - **This distribution of workers in here is why BigQuery is so fast**
+- References:
+    - https://cloud.google.com/bigquery/docs/how-to
+    - https://research.google/pubs/pub36632/
+    - https://panoply.io/data-warehouse-guide/bigquery-architecture/
+    - http://www.goldsborough.me/distributed-systems/2019/05/18/21-09-00-a_look_at_dremel/
