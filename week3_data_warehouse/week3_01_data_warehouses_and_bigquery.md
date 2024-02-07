@@ -141,5 +141,74 @@
 - **When partitioning data, to achieve its *full* potential, we'd prefer *evenly-distributed* partitions**
 - In addition, we **must take into account the number of partitions that we will need**, since **BigQuery limits the number of partitions to 4000**
     - Might want to have an **expire partitioning strategy**
+        - https://cloud.google.com/bigquery/docs/managing-partitioned-tables#partition-expiration
 - But, partitioning **typically doesn't show much improvement for tables with < 1 GB of data**, since it incurs metadata reads and metadata maintenance
 - Again, more info can be found at: https://cloud.google.com/bigquery/docs/partitioned-tables 
+
+
+### Clustering in BigQuery
+- We can also **cluster** tables based on some field
+    - In the StackOverflow example, *after* partitioning questions by date, we may want to additionally cluster them by `tag` *within each partition*
+- **Clustering also helps us to reduce costs and improve query performance**
+- *The field that we choose for clustering depends on how the data will be queried*
+- For our taxi data, do:
+    ```SQL
+        -- Creating a partition and cluster table
+        CREATE OR REPLACE TABLE <project-id>.ny_taxi.yellow_taxi_data_partitioned_clustered
+        PARTITION BY DATE(tpep_pickup_datetime)
+        CLUSTER BY VendorID
+        AS
+        SELECT * FROM <project-id>.ny_taxi.external_yellow_tripdata;
+    ```
+    - In this example, we're assuming we typically filter on date *and* `VendorID`
+- We can see the partitioning *and* clustering details in the "Details" tab of the table    
+- - You will see 584 MB Bytes processed billed for the partitioned table, and 449 MB Bytes processed for the partitioned *and* clustered table after running the following:
+    - Just partitioned:
+        ```SQL
+            SELECT COUNT(*) as trips
+            FROM <project-id>.ny_taxi.yellow_taxi_data_partitioned
+            WHERE 
+            DATE(tpep_pickup_datetime) BETWEEN '2019-01-01' AND '2020-03-31'
+            AND VendorID=1;
+        ```
+    - Partitioned and clustered:
+        ```SQL
+            SELECT COUNT(*) as trips
+            FROM <project-id>.ny_taxi.yellow_taxi_data_partitioned_clustered
+            WHERE 
+            DATE(tpep_pickup_datetime) BETWEEN '2019-01-01' AND '2020-03-31'
+            AND VendorID=1;        
+        ```
+- When clustering in BigQuery, columns we specify are used to **colocate** related data 
+- **A maximum of 4 clustering columns can be used**, and **the *order* the columns are specified is important as it determines the *sort order* of the data**
+    - Clustering columns *must* be **top-level, non-repeated columns**
+        - Such as `DATE`, `BOOL`, `GEOGRAPHY`, `INT64`, `NUMERIC`, `BIGNUMERIC`, `STRING`, `TIMESTAMP`, `DATETIME` types
+- Clustering **improves both filtering and aggregation queries**
+- *But*, clustering **typically doesn't show much improvement for tables with < 1 GB of data**, since it incurs metadata reads and metadata maintenance
+- **Automatic reclustering:**
+    - https://cloud.google.com/bigquery/docs/clustered-tables#automatic_reclustering
+    - As data is added to a clustered table:
+        - The newly inserted data can be written to **blocks** which contain key ranges that overlap with the key ranges in *previously* written blocks
+        - These overlapping keys *weaken* the sort property of the table and hinder/increase query times
+    - *To maintain the performance characteristics of a clustered table*:
+        - BigQuery performs automatic ***re*-clustering** in the background to restore the sort property of the table
+        - For partitioned tables, clustering is maintained for data within the scope of each partition
+        - This is also good because **it doesn't cost the end user anything**
+- Again, more info can be found at: https://cloud.google.com/bigquery/docs/clustered-tables
+
+
+### Partitioning vs Clustering
+- In *partitioning*, the *cost is **known** upfront*, while the **cost benefit is unknown for clustering**
+    - If it's *really* important for us to maintain our queries below some cost, then *clustering* becomes important
+        - In BigQuery, you can specify that a query not run if it exceeds some cost
+        - This would not be possible if *just* clustering a table
+            - You'd need partitioniong to know the upfront costs
+- Use partitioning when you need partition-level management (creating new or deleting or moving partitions, etc.), but **use clustering when you need more granularity than what partitioning alone allows**
+- Use **partitioning if you want to filter or aggregate on a *single column***, and use ***clustering* when your queries commonly use filters or aggregations against *multiple* particular columns**
+- Also, **use clustering when the *cardinality* of the number of values in a column or group of columns is large**
+    - This becomes a hindrance in partitioning due to the 4000 partition limit in BigQuery
+- ***Use clustering over partitioning when:***
+    - Partitioning results in a small amount of data per partition (approximately < 1 GB)
+        - So if partitions are really small or columns have a lot of granularity, use clustering instead
+    - Partitioning results in a large number of partitions, beyond the limits on partitioned tables (4000 partitions)
+    - Partitioning results in your mutation operations modifying the majority of partitions in the table frequently (for example, every few minutes)
