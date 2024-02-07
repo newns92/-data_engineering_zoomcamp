@@ -58,10 +58,12 @@ def clean_data(df, service):
 
     if service == 'yellow':           
         # Rename columns
-        df.rename({'VendorID':'vendor_id'}, axis='columns', inplace=True)
-        df.rename({'PUlocationID':'pu_location_id'}, axis='columns', inplace=True)
-        df.rename({'DOlocationID':'do_location_id'}, axis='columns', inplace=True)
-        df.rename({'RatecodeID':'rate_code_id'}, axis='columns', inplace=True)
+        df.rename({'VendorID':'vendor_id',
+                        'PULocationID':'pu_location_id',
+                        'DOLocationID':'do_location_id',
+                        'RatecodeID':'rate_code_id'}, 
+                    axis='columns', inplace=True
+                  )
         
         # Fix datetimes
         df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
@@ -77,10 +79,12 @@ def clean_data(df, service):
 
     elif service == 'green':
         # Rename columns
-        df.rename({'VendorID':'vendor_id'}, axis='columns', inplace=True)
-        df.rename({'PUlocationID':'pu_location_id'}, axis='columns', inplace=True)
-        df.rename({'DOlocationID':'do_location_id'}, axis='columns', inplace=True)
-        df.rename({'RatecodeID':'rate_code_id'}, axis='columns', inplace=True)
+        df.rename({'VendorID':'vendor_id',
+                        'PULocationID':'pu_location_id',
+                        'DOLocationID':'do_location_id',
+                        'RatecodeID':'rate_code_id'}, 
+                    axis='columns', inplace=True
+                  )
 
         # Fix datetimes
         df.lpep_pickup_datetime = pd.to_datetime(df.lpep_pickup_datetime)
@@ -89,7 +93,7 @@ def clean_data(df, service):
         # This fixes fields for files that have NAN values and thus aren't INTs
         #   when they should be INTs
         # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
-        df.vendor_id = pd.array(df.VendorID, dtype=pd.Int64Dtype())
+        df.vendor_id = pd.array(df.vendor_id, dtype=pd.Int64Dtype())
         df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
         df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
         df.trip_type = pd.array(df.trip_type, dtype=pd.Int64Dtype())
@@ -98,9 +102,11 @@ def clean_data(df, service):
     # elif service == 'fhv':
     else:
         # Rename columns
-        df.rename({'dropOff_datetime':'dropoff_datetime'}, axis='columns', inplace=True)
-        df.rename({'PUlocationID':'pu_location_id'}, axis='columns', inplace=True)
-        df.rename({'DOlocationID':'do_location_id'}, axis='columns', inplace=True)
+        df.rename({'dropOff_datetime':'dropoff_datetime',
+                        'PULocationID':'pu_location_id',
+                        'DOLocationID':'do_location_id'}, 
+                    axis='columns', inplace=True
+                  )
 
         # Fix datetimes
         df.pickup_datetime = pd.to_datetime(df.pickup_datetime)
@@ -110,7 +116,7 @@ def clean_data(df, service):
         #   when they should be INTs
         # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
         df.pu_location_id = pd.array(df.pu_location_id, dtype=pd.Int64Dtype())
-        df.do_location_id = pd.array(df.do_location_id, dtype=pd.Int64Dtype())           
+        df.do_location_id = pd.array(df.do_location_id, dtype=pd.Int64Dtype())
 
     return df
 
@@ -143,6 +149,7 @@ def web_to_gcs(year, service, gcs_bucket):
         df = pd.read_csv(file_name, compression='gzip')
 
         # Clean the data and fix the data types
+        print(f'Cleaning {path}...')
         df = clean_data(df, service)
 
         file_name = file_name.replace('.csv.gz', '.parquet')
