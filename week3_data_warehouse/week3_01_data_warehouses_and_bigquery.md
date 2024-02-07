@@ -95,7 +95,7 @@
         -- Create a non-partitioned table from external table
         CREATE OR REPLACE TABLE `<project-id>.ny_taxi.yellow_taxi_data_non_partitioned`
         AS
-        SELECT * FROM `<project-id>.ny_taxi.external_yellow_tripdata`;
+        SELECT * FROM `<project-id>.ny_taxi.external_nyc_yellow_taxi_data`;
     ```
 - Next, create a *partitioned* table from the *same* external table via
     ```SQL
@@ -103,7 +103,7 @@
         CREATE OR REPLACE TABLE `<project-id>.ny_taxi.yellow_taxi_data_partitioned`
         PARTITION BY
             DATE(tpep_pickup_datetime) AS
-        SELECT * FROM `<project-id>.ny_taxi.external_yellow_tripdata`;
+        SELECT * FROM `<project-id>.ny_taxi.external_nyc_yellow_taxi_data`;
     ```
 - We can see the partitioning details in the "Details" tab of the partitioned table
 - Then, to see the difference in processing, run the same query on both tables:
