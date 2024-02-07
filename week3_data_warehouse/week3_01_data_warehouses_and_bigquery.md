@@ -212,3 +212,40 @@
         - So if partitions are really small or columns have a lot of granularity, use clustering instead
     - Partitioning results in a large number of partitions, beyond the limits on partitioned tables (4000 partitions)
     - Partitioning results in your mutation operations modifying the majority of partitions in the table frequently (for example, every few minutes)
+
+
+### BigQuery Best Practices
+- Generally, most of our efforts will be based on cost reduction on improving query performance
+    - **Cost reduction**:
+        - **Avoid using `SELECT *`** 
+            - It is much better to specify a *particular subset* of columns to **reduce the amount of *scanned* data**, since **BigQuery stores data in a columnar-type storage**
+        - *Price* queries *before* running them
+            - Seen in the top right-hand side of a query window
+        - Use **clustered** or **partitioned** tables to optimize the number of scanned records
+        - Use **streaming inserts** *with caution*
+            - They could drastically increase the costs
+        - **Materialize** query results in *different **stages***
+            - Like materializing CTE's before using them later, in multiple locations
+        - Also note that **BigQuery *caches* query results**
+    - **Query performance**:
+        - **Always filter data using partitioned or clustered columns**
+        - Use **denormalized data** that facilitate *analytical* queries
+        - Use **nested** or **repeated columns** (in case you have a complicated structure, in order to help denormalize)
+        - *Excess* usage of *external* storage might incur in more costs, so use them appropriately
+        - Reduce data *before* performing a `JOIN` operation
+        - Optimize `JOIN` patterns
+        - *Don't* treat `WITH` clauses as *prepared* statements
+        - `ORDER` statements must be *last* part of the query to optimize performance
+            - See https://cloud.google.com/bigquery/docs/best-practices-performance-compute#optimize_the_order_by_clause
+        - In queries, as a best practice, **place the table with the largest number of rows first, followed by the table with the fewest rows, and *then* place the remaining tables by decreasing sizes**
+            - The first, largest table will be distributed equally, and the *next* table will be **broadcasted** to all nodes
+            - See: https://cloud.google.com/bigquery/docs/best-practices-performance-compute#optimize_your_join_patterns
+        - Avoid **oversharding** tables
+            - **Table sharding** = the practice of storing data in multiple tables, using a naming prefix such as [PREFIX]_YYYYMMDD
+                - **Partitioning is recommended over table sharding, because partitioned tables perform better**
+                - With sharded tables, BigQuery must maintain a copy of the schema and metadata for *each* table
+                - BigQuery might also need to verify permissions for each queried table
+                - This practice also adds to query overhead and affects query performance
+                - See https://cloud.google.com/bigquery/docs/partitioned-tables#dt_partition_shard
+        - Avoid JavaScript user-defined functions (UDFs)
+        - Use appropriate aggregation functions (such as HyperLogLog++)
