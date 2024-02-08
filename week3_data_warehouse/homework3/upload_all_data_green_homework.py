@@ -154,6 +154,7 @@ def web_to_gcs(year, service, gcs_bucket):
         open(file_name, 'wb').write(r.content)
 
         # # FOR CSV's, DEFINE THE DATA TYPE
+        # https://stackoverflow.com/questions/24251219/pandas-read-csv-low-memory-and-dtype-options
         # if service == 'yellow':
         #     # Map the data types
         #     taxi_dtypes = {
