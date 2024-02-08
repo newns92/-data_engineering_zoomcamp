@@ -259,7 +259,7 @@
 - Then, create a `<project-id>-taxi-data` GCS Bucket with default permissions
 - Then, in an Anaconda or Git command prompt, run `gcloud auth login`
     - If the the current project is not the right project for this use case, choose the correct project via `gcloud config set project <project-id>`
-- Then, *in a Google Cloud SDK shell*, run `bq --project_id <project-id> extract -m ny_taxi.taxi_tip_model_tuned gs://<project-id>-taxi-data/tip_model_tuned`
+- Then, *in a Google Cloud SDK shell*, run `bq --project_id <project-id> extract -m ny_taxi.taxi_tip_model_tuned gs://<project-id>-taxi-data/tip_model_tuned` to *export* our model to our GCS bucket
     - The `-m` argument is for model
     - The destination format is `gs://<bucket-name>/<model-name>`
     - This command will take 1-3 minutes to execute, but then you will see a `tip_model_tuned/` directory in the above bucket with various files within it
@@ -267,6 +267,7 @@
 - *In a Google Cloud SDK shell, bring down the model locally* via `gsutil cp -r gs://<project-id>-taxi-data/tip_model_tuned \tmp\model`
     - The `-r` argument means to copy an *entire* directory tree
 - *In Git bash*, in your local `week3/` sub-directory for the course, run `mkdir -p serving_dir/tip_model/1` to make a **serving directory**
+    - `-p` stands for the *parent* argument, meaning the command will create all the directories necessaries to fulfill your request, not returning any error in case that directory exists
 - *In Git Bash*, copy everything from `\tmp\model` to there via:
     - Git bash: `cp -r C:/tmp/model/tip_model_tuned/* serving_dir/tip_model/1`
     - Anaconda prompt: `copy -r \tmp\model\tip_model\* serving_dir\tip_model\1`
