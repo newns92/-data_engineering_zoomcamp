@@ -53,8 +53,8 @@
     - i.e., You can query the `station_id` and `name` fields from the `citibike_stations` table via ```SELECT station_id, name FROM `bigquery-public-data.new_york_citibike.citibike_stations` LIMIT 100;```
     - Results of such queries can be saved or explored via Data Studio
 - As a practical example, we will create an **external table** (https://cloud.google.com/bigquery/docs/external-data-sources):
-     - **External tables** are similar to standard BigQuery tables, in that these tables store their metadata and schema in BigQuery storage 
-        - However, their **data resides in an *external* source**
+     - **External tables** are similar to standard BigQuery tables, in that these tables store their *metadata and schema* in BigQuery storage 
+        - However, their ***data* resides in an *external* source**
         - Even so, you **can directly query it** from within BigQuery
         - "External tables are contained *inside a dataset*, and you manage them in the same way that you manage a standard BigQuery table"
      - We will create the external table from one of our yellow taxi datasets as an **external source**
