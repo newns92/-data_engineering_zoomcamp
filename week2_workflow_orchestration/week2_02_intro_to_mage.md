@@ -65,6 +65,7 @@
 
 ## Configuring Mage
 - See the instructions at https://github.com/mage-ai/mage-zoomcamp
+- *Make sure you are in the `week2/mage-zoomcamp` directory before running the following commands*
 - We are basically cloning this repo, making sure we ignore `.env` files to avoid committing secrets to GitHub, and then running `docker compose build` (*Make sure the Docker daemon (i.e., Docker Desktop) is running*) to build an **image** for our project
     - To pull the most recent Mage image (say if you see "update" in the Mage UI), run `docker pull mageai/mageai:latest` to pull the latest image from the Mage repo
 - We start the container based on this image via `docker compose up` to kick off the services in `docker-compose.yml` and start running them locally

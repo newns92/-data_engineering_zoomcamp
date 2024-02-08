@@ -246,10 +246,38 @@
                 WHERE tip_amount IS NOT NULL
             ;
         ```
-    - This will process *much* more data, so be aware of that
+    - This will process *much* more data, so be aware of that, and it will take much more time
 
 
 ## BigQuery Machine Learning Deployment
+- See:
+    - https://cloud.google.com/bigquery/docs/export-model-tutorial
+    - https://cloud.google.com/bigquery/docs/bq-command-line-tool
+    - https://cloud.google.com/bigquery/docs/exporting-data#bq
+- First, enable the **AI Platform Training and Prediction API** and **Compute Engine APIs**, if needed
+- Then, make sure you have a `ny_taxi.taxi_tip_model_tuned` model in BigQuery, and create one if not
+- Then, create a `<project-id>-taxi-data` GCS Bucket with default permissions
+- Then, in an Anaconda or Git command prompt, run `gcloud auth login`
+    - If the the current project is not the right project for this use case, choose the correct project via `gcloud config set project <project-id>`
+- Then, *in a Google Cloud SDK shell*, run `bq --project_id <project-id> extract -m ny_taxi.taxi_tip_model_tuned gs://<project-id>-taxi-data/tip_model_tuned`
+    - The `-m` argument is for model
+    - The destination format is `gs://<bucket-name>/<model-name>`
+    - This command will take 1-3 minutes to execute, but then you will see a `tip_model_tuned/` directory in the above bucket with various files within it
+- In some command prompt, make a *temporary* directory for the model in the *host* machine's `C:/` drive locally via `mkdir \tmp\model`
+- *In a Google Cloud SDK shell, bring down the model locally* via `gsutil cp -r gs://<project-id>-taxi-data/tip_model_tuned \tmp\model`
+    - The `-r` argument means to copy an *entire* directory tree
+- *In Git bash*, in your local `week3/` sub-directory for the course, run `mkdir -p serving_dir/tip_model/1` to make a **serving directory**
+- *In Git Bash*, copy everything from `\tmp\model` to there via:
+    - Git bash: `cp -r C:/tmp/model/tip_model_tuned/* serving_dir/tip_model/1`
+    - Anaconda prompt: `copy -r \tmp\model\tip_model\* serving_dir\tip_model\1`
+- *In Git Bash* in the local `week3/` sub-directory, run `docker pull tensorflow/serving` to get the specified Docker image
+- Then, *in Git bash and in the directory where we ran `docker pull`*, run that Docker image on port 8501 via ```docker run -p 8501:8501 --mount type=bind,source=`pwd`/serving_dir/tip_model,target=/models/tip_model -e MODEL_NAME=tip_model -t tensorflow/serving &```
+- Then go to http://localhost:8501/v1/models/tip_model, and note that we see something we can make HTTP requests to
+    - In this JSON, we see that we are in model version 1, and that there's no error
+- Then, in a *separate* Git Bash window, run `curl -d '{"instances": [{"passenger_count":1, "trip_distance":12.2, "pu_location_id":"193", "do_location_id":"264", "payment_type":"2", "fare_amount":20.4, "tolls_amount":0.0}]}' -X POST http://localhost:8501/v1/models/tip_model:predict` to make a request for a prediction for these specified field values/parameters
+    - We should recieve some JSON like `"predictions": [[-0.40399080437614221]]`
+    - We can play around with these parameters values
+- When done, stop the Docker image via `docker stop <container-id>`
 
 
 ## References

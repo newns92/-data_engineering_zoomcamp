@@ -19,3 +19,4 @@ variables.tf
 *.tfstate.backup
 .git
 *homework.md
+*bigquery_sql.sql
