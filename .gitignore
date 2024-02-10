@@ -21,3 +21,4 @@ variables.tf
 *homework.md
 *bigquery_sql.sql
 *.log
+.user.yml
