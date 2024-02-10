@@ -30,7 +30,7 @@
     - If needed, create a new server named `ny_taxi_data` by right-clicking on "Servers" and clic,ing "Register", then "Server"
     - You then need to specify the host address in the "Connection" tab, which should be `pgdatabase`, and the port is `5432` while username and password are both `root`
     - You will then see the `ny_taxi` database that was specified via the `docker-compose.yml` file
-    - Create two new schemas, `dev` and `prod`
+    - Create three new schemas: `dev`, `prod`, and `staging`
 - Next, to install our packages and dependencies, open an Anaconda command prompt, activate the `zoom` Conda environement, and run `pip install dbt-bigquery` and `pip install dbt-postgres`
     - Installing `dbt-bigquery` *or* `dbt-postgres` will install `dbt-core` and any other dependencies
 - Then, to initialize the project, `cd` into the `dbt_local` directory and run `dbt init`
