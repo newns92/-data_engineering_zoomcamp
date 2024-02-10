@@ -20,5 +20,10 @@ variables.tf
 .git
 *homework.md
 *bigquery_sql.sql
+
+# dbt
 *.log
 .user.yml
+target/
+dbt_packages/
+logs/
