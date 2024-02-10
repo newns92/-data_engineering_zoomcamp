@@ -27,3 +27,5 @@ variables.tf
 target/
 dbt_packages/
 logs/
+# has BigQuery project ID in it
+dbt_cloud/models/staging/schema.yml

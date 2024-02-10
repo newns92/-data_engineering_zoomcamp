@@ -79,8 +79,87 @@
 
 ## Defining a Source and Developing a First Model
 - First, load in all the data that we'll need into BigQuery:
-- In the Cloud IDE, in the `models/` directory, create a new directory called `staging/`
+    - Run the `upload_all_data_parquet.py` to get all the data into a GCS Bucket
+    - Then, in BigQuery, create the external tables via:
+        ```SQL
+            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_trips.external_yellow_trip_data`
+            OPTIONS (
+            format = 'PARQUET',
+            uris = ['gs://<bucket-name>/data/yellow/yellow_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/yellow/yellow_tripdata_2020-*.parquet']
+            );
+
+            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_trips.external_green_trip_data`
+            OPTIONS (
+            format = 'PARQUET',
+            uris = ['gs://<bucket-name>/data/green/green_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/green/green_tripdata_20209-*.parquet']
+            );
+
+            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_trips.external_fhv_trip_data`
+            OPTIONS (
+            format = 'PARQUET',
+            uris = ['gs://<bucket-name>/data/fhv/fhv_tripdata_2019-*.parquet']
+            );        
+        ```
+    - Then, in BigQuery, create *non*-external, materialized tables via
+        ```SQL
+            CREATE OR REPLACE TABLE `<project-id>.ny_trips.yellow_trip_data`
+            AS
+            SELECT * FROM `<project-id>.ny_trips.external_yellow_trip_data`;
+
+            CREATE OR REPLACE TABLE `<project-id>.ny_trips.green_trip_data`
+            AS
+            SELECT * FROM `<project-id>.ny_trips.external_green_trip_data`;
+
+            CREATE OR REPLACE TABLE `<project-id>.ny_trips.fhv_trip_data`
+            AS
+            SELECT * FROM `<project-id>.ny_trips.external_fhv_trip_data`;
+        ```
+    - Then, check the row counts via
+        ```SQL
+            SELECT COUNT(*) FROM `<project-id>.ny_trips.fhv_trip_data`;
+            --- 43,244,696
+
+            SELECT COUNT(*) FROM `<project-id>.ny_trips.yellow_trip_data`;
+            --- 109,047,518
+
+            SELECT COUNT(*) FROM `<project-id>.ny_trips.green_trip_data`;
+            --- 7,778,101
+        ```        
+- Now, back in the dbt Cloud IDE, in the `models/` directory, create a new directory called `staging/`
     - This is where we take in the raw data and apply some transforms if needed
-- Then, create a `core/` subdirectory under the `models` directory
+- Then, create a `core/` subdirectory under the `models/` directory
     - This is where we'll create models to expose to a BI tool, to stakeholders, etc.
-- In the 
+- In the `staging/` directory, create 2 files:
+    1. A staging model, `stg_green_trip_data.sql`
+        ```SQL
+            -- Create views so we don't have the need to refresh constantly but still have the latest data loaded
+            {{ config(materialized = 'view') }}
+
+            /* {# SELECT * FROM {{ source(<'source-name-from-schema.yml>', '<table-name-from-schema.yml>') }} #} */
+            select * from {{ source('staging', 'green_trip_data') }}
+            limit 100        
+        ```
+    2. A `schema.yml` file
+        ```YML
+            version: 2
+
+            sources:
+            - name: staging
+                database: <project-id>  # i.e., the dataset (Project ID) in BigQuery
+                schema: ny_trips  # the dataset itself
+
+                tables:
+                - name: green_trip_data
+                - name: yellow_trip_data            
+        ```
+- In the dbt Cloud IDE terminal (at the bottom of the page), run:
+    1. `dbt build`
+        - https://docs.getdbt.com/reference/commands/build
+        - This will grab *all* models *and* tests, seeds, and snapshots in a project and run them all
+    2. `dbt run -m stg_green_trip_data`
+        - https://docs.getdbt.com/reference/commands/run
+        - `dbt run` will executes compiled sql model files against the current `target` database defined in the `profiles.yml` file
+- Then, change the `SELECT` statement to run with the new column definitions to make all column names consistent
+    - You can also run `dbt run --select stg_green_trip_data`, which is equivalent to `dbt run -m stg_green_trip_data`
+- You should then see the new view under `ny_trips_dev` in BigQuery (since *that's what we named the dataset to be when we defined the project*)
+- You can also see compiled SQL code in the `target/compiled/` directory
