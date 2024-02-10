@@ -20,3 +20,4 @@ variables.tf
 .git
 *homework.md
 *bigquery_sql.sql
+*.log
