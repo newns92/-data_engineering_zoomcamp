@@ -61,3 +61,22 @@
     - **WARNING: User API Keys are being deprecated in dbt Cloud**
         - They highly recommend that API keys be replaced with the more secure account-scoped **Personal Access Tokens (PATs)** for improved account security
         - See documentation for help and please contact support if any issues arise: https://docs.getdbt.com/docs/dbt-cloud-apis/user-tokens
+    - Once the project is opened in the IDE, initialize the project
+    - Then, "commit and sync" the changes to the `master` branch
+    - Then, create a new branch `dbt` in git or in the dbt Cloud IDE for dbt development, and dbt Cloud will automatically switch to this new branch
+    - In the dbt Cloud IDE, open up `dbt_project.yml`
+        - Rename the project to something like `ny_taxi_data`
+        - Keep the profile as `default` and leave the defaults for where our different files are located (under the `# These configurations specify where dbt...` section/comment)
+        - Also update the `models` part of the code like so:
+            ```YML
+                models:
+                    ny_taxi_data:
+                        # # Applies to all files under models/example/
+                        # example:
+                        #   +materialized: table
+            ```
+            - Since we're not using this code *just yet*, we can comment it out
+        - We can also note that in the `models/` directory, we can see some sample models with basic DAGs already set up
+            - But don't worry about this, as we will create our own models later
+        - Finally, save the file and commit to GitHub via the dbt Cloud IDE
+        - Then, create a Pull Request and **merge** the changes to the `master` branch on GitHub
