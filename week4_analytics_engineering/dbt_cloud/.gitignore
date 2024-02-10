@@ -2,9 +2,5 @@
 # these are the default directory names, adjust/add to fit your needs
 target/
 dbt_packages/
-<<<<<<< HEAD
-logs/
-=======
 logs/
 schema.yml
->>>>>>> 814173047b5b8ca3362d53f027bddb02502c4997
