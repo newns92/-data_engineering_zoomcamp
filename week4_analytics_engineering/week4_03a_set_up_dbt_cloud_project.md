@@ -52,3 +52,12 @@
                 - Since BigQuery's default location may not match the one you used for your source data, it's recommended to create this schema manually to avoid multiregion errors
         - Then click "Test connection", and if passed, click "Next"
         - Then, select "git clone" as the option, and paste in the SSH key from your GitHub repo for the course
+            - You will be provided with a **deploy key**
+            - In a browser, head to your GitHub repo, and go to "Settings" 
+            - Under "Security" on the right-hand side, click see "Deploy keys"
+            - Then, click on "Add key", name it something like `dbt-zoom24-deploy`, and paste in the deploy key provided by dbt Cloud and *make sure to check off on "write access"*
+        - Back in on the dbt Cloud page, click "Next" to create the project
+    - ***NOTE: You may have to add a "Project subdirectory" in the project settings if your dbt project code will be hosted in a subdirectory of the GitHub repo***
+    - **WARNING: User API Keys are being deprecated in dbt Cloud**
+        - They highly recommend that API keys be replaced with the more secure account-scoped **Personal Access Tokens (PATs)** for improved account security
+        - See documentation for help and please contact support if any issues arise: https://docs.getdbt.com/docs/dbt-cloud-apis/user-tokens
