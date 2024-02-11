@@ -163,3 +163,91 @@
     - You can also run `dbt run --select stg_green_trip_data`, which is equivalent to `dbt run -m stg_green_trip_data`
 - You should then see the new view under `ny_trips_dev` in BigQuery (since *that's what we named the dataset to be when we defined the project*)
 - You can also see compiled SQL code in the `target/compiled/` directory
+
+ 
+## Macros
+- You can think of these as *functions* that are written in Jinja (a Pythonic templating language) and SQL
+- The goal is to turn abstract snippets of SQL into these *reusable* macros
+- dbt has many built-in macros (`config()`, `source()`), but we can also define our own
+- Macros return code, and are in the style 
+    ```Jinja
+        {% macro <macro-name>(<parameter(s)>) -%}   
+            # some code
+        {%- end macro %}
+    ```
+- They are helpful if we want to maintain (re-use) the same type of transformation in several different models
+- They can use **control structures** (e.g., IF statements and FOR loops in SQL)
+- They can use environment variables in a dbt project for production deployments
+- They operate on the results on one query to generate another query
+- See more at https://docs.getdbt.com/docs/build/jinja-macros
+- In our project:
+    - We create the `get_payment_type_description` macro under the `macros/` subdirectory of the project in a `get_payment_type_description.sql` file:
+        ```Jinja
+            {#
+                This macro returns the description of the payment_type 
+            #}
+
+            {% macro get_payment_type_description(payment_type) -%}
+
+                case {{ payment_type }}
+                    when 1 then 'Credit card'
+                    when 2 then 'Cash'
+                    when 3 then 'No charge'
+                    when 4 then 'Dispute'
+                    when 5 then 'Unknown'
+                    when 6 then 'Voided trip'
+                end
+
+            {%- endmacro %}
+        ```
+    - We then use it in our `stg_green_trip_data.sql` model file, which we can then run again via `dbt run --select stg_green_trip_data`
+        ```Jinja
+            {{ get_payment_type_description('payment_type') }} as payment_type_description,  {# macro #}
+        ```
+        - We can also click "Compile" at the bottom of the page in the dbt Cloud IDE to see the compiled result without running it
+    - We will then see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's `ny_trips_dev` schema
+
+
+## Packages
+- Think of these like libraries in other programming languages
+    - You can call them similar to library functions: `{{ <dbt-package>.<macro-name>(<parameter(s)>) }}`
+- Packages are "downloaded" via the `packages.yml` file, *which you create*, in the main directory of the project, and then imported via the `dbt deps` command
+- They are basically standalone dbt projects, with models and macros that tackle specific problems
+- By adding a package to your own project, such a package's models and macros become a part of *your* project
+- You can see a list of useful packages at https://hub.getdbt.com/
+- A good thing to note is that dbt will update and change the compiled code depending on your connection adapter (code might be different for BigQuery than for Postgres), as it abstracts away that complexity for the end user
+- We are importing the package `dbt_utils` from dbt labs
+    - First, we create the `packages.yml` file in the same directory level as `dbt_project.yml`:
+        ```YML
+            packages:
+            - package: dbt-labs/dbt_utils
+                version: 1.1.1
+        ```
+    - Then we run `dbt deps` in the terminal at the bottom of the dbt Cloud IDE to install the packages
+    - We can then view installed packages in the `dbt_packages/` subdirectory of the project, and see its *own* `macros/` subdirectory to see all of its macros
+    - We will then create a **surrogate key** via `{{ dbt_utils.surrogate_key(['vendor_id', 'lpep_pickup_datetime']) }} as trip_id,` in our staging table model
+    - Run the model again via `dbt run --select stg_green_trip_data`, and again see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's `ny_trips_dev` schema
+
+
+## Variables
+- These are the same as any other programming language: useful for defining values that should be used across a project
+- With a macro, dbt allows us to provide data *via* variables to models for translation during compilation
+- To use a variables, use the `{{ var('...')}}` function/macro
+    ```Jinja
+        {% if var('is_test_run', default=true) %}
+
+            limit 100
+            
+        {% endif %}    
+    ```
+- We can do this in the CLI (where we can change the value on-the-fly) via:
+    ```bash
+        dbt build -select <model-name> --vars '{'is_test_run': 'false'}'
+- We can also define variables in the `dbt_project.yml` file:
+    ```YML
+        vars:
+            payment_type_values = [1, 2, 3, 4, 5, 6]
+    ```
+- Add the above to the end of the `stg_green_trip_data.sql` model
+- We can run our model and change the value of `is_test_run` using the command `dbt run --select stg_green_trip_data.sql --var 'is_test_run: false'` and you should NOT see `limit 100` in the compiled code
+- Just running `dbt run --select stg_green_trip_data` should give the default value of `true` and you should see `limit 100` in the compiled code
