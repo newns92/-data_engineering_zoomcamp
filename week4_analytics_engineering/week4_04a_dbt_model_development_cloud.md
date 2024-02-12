@@ -120,7 +120,7 @@
             --- 43,244,696
 
             SELECT COUNT(*) FROM `<project-id>.ny_taxi.yellow_trip_data`;
-            --- 109,047,518
+            --- 84,598,444
 
             SELECT COUNT(*) FROM `<project-id>.ny_taxi.green_trip_data`;
             --- 6,300,985
@@ -252,6 +252,9 @@
 - We can run our model and change the value of `is_test_run` using the command `dbt run --select stg_green_trip_data.sql --var 'is_test_run: false'` and you should NOT see `limit 100` in the compiled code
 - Just running `dbt run --select stg_green_trip_data` should give the default value of `true` and you should see `limit 100` in the compiled code
 - ***We can then repeat everything above, with some small code changes, for a `stg_yellow_trip_data` model***
+    - Commands:
+        - `dbt run --select stg_green_trip_data --vars '{'is_test_run': 'false'}'`
+        - `dbt run --select stg_yellow_trip_data --vars '{'is_test_run': 'false'}'`
 
 
 ## Seeds
@@ -280,9 +283,16 @@
     - Under `models/core/`, create a file `dim_zones.sql`
     - Here, we will first define the configiguration as a materialized *table* rather than a view, like we have been doing thus far in our staging models
         - Ideally we want everything in `models/core` to be a *table*, since this is what's exposed to BI tools and/or to stakeholders
-    - After adding the SQL to create such a dimension table, and before runnning this model, create a *second* new model called `fact_trips.sql`
-        - In this model, we'll take both the staging yellow and staging green data and `UNION` them
-    - Once `fact_trips.sql` is complete, we can run `dbt run` which will run all of our models, *but not the seed*
-        - In order to run the seed as well, run `dbt build` to build everything that we have, *along with running some tests*
-        - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips.sql`
-            - *But to run everything that `fact_trips.sql` depends on first*, we can run `dbt build --select +fact_trips.sql`
+- After adding the SQL to create such a dimension table, and before runnning this model, create a *second* new model called `fact_trips.sql`
+    - In this model, we'll take both the staging yellow and staging green data and `UNION` them into a *table*
+        - This will allow our queries to be more efficient and performant, since this will have a lot more data than our previous tables
+        - The closer to the BI layer that we get, the more we want performant queries so that things run faster for the stakeholders
+- Once `fact_trips.sql` is complete, we can see the lineage graph in the dbt Cloud IDE and we should see our staging sources creatin two staging models, our seed creating a dimension model, and those three models creating a fact model
+    - dbt automatically identifies all of these dependencies
+    - We can tell dbt to run all model but *also* specify to run all of its parent models
+- Now, we can run `dbt run` which will run all of our models, *but not the seed*
+    - In order to run the seed as well, run `dbt build` to build everything that we have, *along with running some tests*
+    - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips`
+        - *But to run everything that `fact_trips.sql` depends on first*, we can run `dbt build --select +fact_trips`
+        - Command:
+            - `dbt build --select +fact_trips+ --vars '{'is_test_run': 'false'}'`
