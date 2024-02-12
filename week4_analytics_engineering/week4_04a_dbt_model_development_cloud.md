@@ -282,7 +282,7 @@
 - Now, we can create a dimension model based on this seed
     - Under `models/core/`, create a file `dim_zones.sql`
     - Here, we will first define the configiguration as a materialized *table* rather than a view, like we have been doing thus far in our staging models
-        - Ideally we want everything in `models/core` to be a *table*, since this is what's exposed to BI tools and/or to stakeholders
+        - Ideally we want everything in `models/core/` to be a *table*, since this is what's exposed to BI tools and/or to stakeholders
 - After adding the SQL to create such a dimension table, and before runnning this model, create a *second* new model called `fact_trips.sql`
     - In this model, we'll take both the staging yellow and staging green data and `UNION` them into a *table*
         - This will allow our queries to be more efficient and performant, since this will have a lot more data than our previous tables
