@@ -82,19 +82,19 @@
     - Run the `upload_all_data_parquet.py` to get all the data into a GCS Bucket
     - Then, in BigQuery, create the external tables via:
         ```SQL
-            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_trips.external_yellow_trip_data`
+            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_yellow_trip_data`
             OPTIONS (
             format = 'PARQUET',
             uris = ['gs://<bucket-name>/data/yellow/yellow_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/yellow/yellow_tripdata_2020-*.parquet']
             );
 
-            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_trips.external_green_trip_data`
+            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_green_trip_data`
             OPTIONS (
             format = 'PARQUET',
             uris = ['gs://<bucket-name>/data/green/green_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/green/green_tripdata_20209-*.parquet']
             );
 
-            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_trips.external_fhv_trip_data`
+            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_fhv_trip_data`
             OPTIONS (
             format = 'PARQUET',
             uris = ['gs://<bucket-name>/data/fhv/fhv_tripdata_2019-*.parquet']
@@ -102,28 +102,28 @@
         ```
     - Then, in BigQuery, create *non*-external, materialized tables via
         ```SQL
-            CREATE OR REPLACE TABLE `<project-id>.ny_trips.yellow_trip_data`
+            CREATE OR REPLACE TABLE `<project-id>.ny_taxi.yellow_trip_data`
             AS
-            SELECT * FROM `<project-id>.ny_trips.external_yellow_trip_data`;
+            SELECT * FROM `<project-id>.ny_taxi.external_yellow_trip_data`;
 
-            CREATE OR REPLACE TABLE `<project-id>.ny_trips.green_trip_data`
+            CREATE OR REPLACE TABLE `<project-id>.ny_taxi.green_trip_data`
             AS
-            SELECT * FROM `<project-id>.ny_trips.external_green_trip_data`;
+            SELECT * FROM `<project-id>.ny_taxi.external_green_trip_data`;
 
-            CREATE OR REPLACE TABLE `<project-id>.ny_trips.fhv_trip_data`
+            CREATE OR REPLACE TABLE `<project-id>.ny_taxi.fhv_trip_data`
             AS
-            SELECT * FROM `<project-id>.ny_trips.external_fhv_trip_data`;
+            SELECT * FROM `<project-id>.ny_taxi.external_fhv_trip_data`;
         ```
     - Then, check the row counts via
         ```SQL
-            SELECT COUNT(*) FROM `<project-id>.ny_trips.fhv_trip_data`;
+            SELECT COUNT(*) FROM `<project-id>.ny_taxi.fhv_trip_data`;
             --- 43,244,696
 
-            SELECT COUNT(*) FROM `<project-id>.ny_trips.yellow_trip_data`;
+            SELECT COUNT(*) FROM `<project-id>.ny_taxi.yellow_trip_data`;
             --- 109,047,518
 
-            SELECT COUNT(*) FROM `<project-id>.ny_trips.green_trip_data`;
-            --- 7,778,101
+            SELECT COUNT(*) FROM `<project-id>.ny_taxi.green_trip_data`;
+            --- 6,300,985
         ```        
 - Now, back in the dbt Cloud IDE, in the `models/` directory, create a new directory called `staging/`
     - This is where we take in the raw data and apply some transforms if needed
@@ -146,7 +146,7 @@
             sources:
             - name: staging
                 database: <project-id>  # i.e., the dataset (Project ID) in BigQuery
-                schema: ny_trips  # the dataset itself
+                schema: ny_taxi  # the dataset itself
 
                 tables:
                 - name: green_trip_data
@@ -161,7 +161,7 @@
         - `dbt run` will executes compiled sql model files against the current `target` database defined in the `profiles.yml` file
 - Then, change the `SELECT` statement to run with the new column definitions to make all column names consistent
     - You can also run `dbt run --select stg_green_trip_data`, which is equivalent to `dbt run -m stg_green_trip_data`
-- You should then see the new view under `ny_trips_dev` in BigQuery (since *that's what we named the dataset to be when we defined the project*)
+- You should then see the new view under `ny_taxi_dev` in BigQuery (since *that's what we named the dataset to be when we defined the project*)
 - You can also see compiled SQL code in the `target/compiled/` directory
 
  
@@ -205,7 +205,7 @@
             {{ get_payment_type_description('payment_type') }} as payment_type_description,  {# macro #}
         ```
         - We can also click "Compile" at the bottom of the page in the dbt Cloud IDE to see the compiled result without running it
-    - We will then see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's `ny_trips_dev` schema
+    - We will then see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's `ny_taxi_dev` schema
 
 
 ## Packages
@@ -221,12 +221,12 @@
         ```YML
             packages:
             - package: dbt-labs/dbt_utils
-                version: 1.1.1
+            version: 1.1.1
         ```
     - Then we run `dbt deps` in the terminal at the bottom of the dbt Cloud IDE to install the packages
     - We can then view installed packages in the `dbt_packages/` subdirectory of the project, and see its *own* `macros/` subdirectory to see all of its macros
     - We will then create a **surrogate key** via `{{ dbt_utils.surrogate_key(['vendor_id', 'lpep_pickup_datetime']) }} as trip_id,` in our staging table model
-    - Run the model again via `dbt run --select stg_green_trip_data`, and again see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's `ny_trips_dev` schema
+    - Run the model again via `dbt run --select stg_green_trip_data`, and again see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's `ny_taxi_dev` schema
 
 
 ## Variables
