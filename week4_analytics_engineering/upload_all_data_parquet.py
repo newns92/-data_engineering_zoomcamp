@@ -225,8 +225,8 @@ def web_to_gcs(year, service, gcs_bucket):
 if __name__ == '__main__':
     web_to_gcs('2019', 'green', gcs_bucket)
     web_to_gcs('2020', 'green', gcs_bucket)
-    web_to_gcs('2019', 'yellow', gcs_bucket)
-    web_to_gcs('2020', 'yellow', gcs_bucket)
-    web_to_gcs('2019', 'fhv', gcs_bucket)
+    # web_to_gcs('2019', 'yellow', gcs_bucket)
+    # web_to_gcs('2020', 'yellow', gcs_bucket)
+    # web_to_gcs('2019', 'fhv', gcs_bucket)
     remove_files()
 
