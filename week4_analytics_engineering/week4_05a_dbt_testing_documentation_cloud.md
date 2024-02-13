@@ -81,3 +81,30 @@
 - **dbt_expectations** is another good package for utilizing a lot of dbt tests
     - https://hub.getdbt.com/calogica/dbt_expectations/latest/
     - https://github.com/calogica/dbt-expectations/
+
+
+## Documentation
+- dbt provides a way to *generate* documentation for a dbt project and render it as a website
+- The documentation for a project includes:
+    - *Information about the project*: 
+        - Model code (both from the `.SQL` model files and *compiled* SQL files)
+        - Model dependencies
+        - Sources
+        - Auto generated DAG from the ref and source macros
+        - Descriptions (from .yml file) and tests 
+    - *Information about the data warehouse* (`information_schema`):
+        - Column names and data types
+        - Table stats (like size and number of rows)
+- dbt documentation can be hosted in dbt Cloud, as well generated as locally
+    - For a local documentation generation, just run `dbt docs generate`
+        - This generates all the necessary files
+    - Then, we can run `dbt docs serve` with various arguments in order to start a web server to serve the documentation locally
+        ```bash
+            dbt docs serve [--profiles-dir PROFILES_DIR]
+                        [--profile PROFILE] [--target TARGET]
+                        [--port PORT]
+                        [--no-browser]        
+        ```
+    - See more at https://docs.getdbt.com/reference/commands/cmd-docs
+- It pulls data from our YML files (like `schema.yml`) as well as the lineage of our current workflow(s)
+- 
