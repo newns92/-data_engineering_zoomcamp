@@ -36,13 +36,20 @@
         ```
     - A foreign key to another table ("relationships")
         ```YML
-            - name: dropoff_location_id 
+            - name: pickup_location_id 
             description: location_id where the meter was engaged.
             # check if this field is located in the zone lookup table            
             tests:
               - relationships:
                   to: ref('taxi_zone_lookup')
                   field: location_id        
+            - name: dropoff_location_id 
+            description: location_id where the meter was disengaged.
+            # check if this field is located in the zone lookup table            
+            tests:
+              - relationships:
+                  to: ref('taxi_zone_lookup')
+                  field: location_id
         ```
 - You can also create your custom tests as queries
 - To start, check out the `dm_monthly_zone_revenue.sql` file in `models/core`
@@ -70,3 +77,7 @@
             ```
             - This generates a YML file with every field in the model, as well as its data type and a placeholder for its description
         - After adding the package to its respective YML file, run `dbt deps` to install it
+- After generating the YML (if needed) and adding the 4 tests noted above (if needed), run the entire pipeline/workflow via `dbt build`
+- **dbt_expectations** is another good package for utilizing a lot of dbt tests
+    - https://hub.getdbt.com/calogica/dbt_expectations/latest/
+    - https://github.com/calogica/dbt-expectations/
