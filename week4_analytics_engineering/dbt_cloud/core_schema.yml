@@ -70,7 +70,7 @@ models:
         description: Monthly sum of the the total_amount of the fare charged for the trip per pickup zone, month and service.
         tests:
           - not_null:
-            severity: error        
+              severity: error        
 
       - name: total_monthly_trips
         data_type: int64
@@ -95,9 +95,9 @@ models:
         description: The primary key for this table, generated with a concatenation of vendor_id and pickup_datetime fields
         tests:
           - unique:
-            severity: warn
+              severity: warn
           - not_null:
-            severity: warn
+              severity: warn
 
       - name: vendor_id
         data_type: int64
