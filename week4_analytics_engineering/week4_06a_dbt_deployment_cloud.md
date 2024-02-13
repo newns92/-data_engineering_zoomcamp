@@ -60,6 +60,9 @@
     - *No PR will be able to be merged unless the run has been completed successfully*
 - To create a CI job in dbt Cloud, go "Deploy" and then "Jobs"
     - Then, under "Create job", select "Continuous integration job"
+        - *If you see the "This feature is only available for dbt repositories connected through dbt Cloud's native integration with Github, Gitlab, or Azure DevOps" message*:
+            - Follow instructions at https://docs.getdbt.com/docs/cloud/git/connect-github
+            - Make sure your project's Clone strategy for your repo is `github_app`
     - Name the new job "CI Checks", add a description like "Avoid breaking production", make sure the environenment is "Production", and make sure "Triggered by pull requests" is switched *on*
         - Note that the pull request trigger will create a new schema, `dtb_cloud_pr`
         - This will be dropped after the PR is closed/merged
