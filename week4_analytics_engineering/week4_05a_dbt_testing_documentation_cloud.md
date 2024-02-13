@@ -96,7 +96,8 @@
         - Column names and data types
         - Table stats (like size and number of rows)
 - dbt documentation can be hosted in dbt Cloud, as well generated as locally
-    - For a local documentation generation, just run `dbt docs generate`
+    - For a dbt Cloud documentation generation, just run `dbt docs generate` in the dbt Cloud IDE terminal
+    - For a local documentation generation, just run `dbt docs generate` in your local CLI
         - This generates all the necessary files
     - Then, we can run `dbt docs serve` with various arguments in order to start a web server to serve the documentation locally
         ```bash
@@ -107,4 +108,6 @@
         ```
     - See more at https://docs.getdbt.com/reference/commands/cmd-docs
 - It pulls data from our YML files (like `schema.yml`) as well as the lineage of our current workflow(s)
-- 
+- For the dbt Cloud environment, once `dbt docs generate` completes successfully, we can open the documentation via the "View Docs" icon (an open book) next to the branch name on the right-hand side of the dbt Cloud IDE
+    - This will show all the descriptions and metadata that we defined ourselves (or with the help from packages), along with the code (source *and* compiled) and dependencies for any models
+- NOTE: dbt documentation will look different once you deploy it
