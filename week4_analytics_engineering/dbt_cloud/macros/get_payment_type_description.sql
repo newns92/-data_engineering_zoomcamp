@@ -11,6 +11,7 @@
         when 4 then 'Dispute'
         when 5 then 'Unknown'
         when 6 then 'Voided trip'
+        else 'EMPTY'
     end
 
 {%- endmacro %}
