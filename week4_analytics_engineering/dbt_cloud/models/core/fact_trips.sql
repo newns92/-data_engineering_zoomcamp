@@ -30,7 +30,7 @@ with green_data as (
         payment_type_description,
         congestion_surcharge,
         -- New field
-        'green' as service_type
+        'Green' as service_type
     from {{ ref('stg_green_trip_data') }}
 ), 
 
@@ -60,7 +60,7 @@ yellow_data as (
         payment_type_description,
         congestion_surcharge,
         -- New field
-        'yellow' as service_type
+        'Yellow' as service_type
     from {{ ref('stg_yellow_trip_data') }}
 ), 
 
