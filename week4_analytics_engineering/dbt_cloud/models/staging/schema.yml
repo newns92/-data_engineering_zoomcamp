@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: staging
     database: "{{ env_var('DBT_GCP_PROJECT_ID') }}"  # i.e., the "dataset" (Project ID) in BigQuery
-    schema: ny_taxi  # the dataset itself
+    schema: 'ny_taxi'  # the dataset itself
 
     tables:
       - name: green_trip_data
