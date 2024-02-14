@@ -131,6 +131,9 @@ def clean_data(df, service):
         df.pu_location_id = pd.array(df.pu_location_id, dtype=pd.Int64Dtype())
         df.do_location_id = pd.array(df.do_location_id, dtype=pd.Int64Dtype())
 
+        # Fix a DOUBLE trying to be forced into an INT in BigQuery
+        df.sr_flag = pd.array(df.sr_flag, dtype=pd.Int64Dtype())
+
     return df
 
 
