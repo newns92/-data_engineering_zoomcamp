@@ -3,5 +3,5 @@
 target/
 dbt_packages/
 logs/
-schema.yml
+# schema.yml
 package-lock.yml
