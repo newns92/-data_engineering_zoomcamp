@@ -6,7 +6,9 @@ from google.cloud import storage
 from config import gcloud_creds, bucket_name
 from pathlib import Path
 import shutil
-
+import pyarrow as pa
+import pyarrow.parquet as pq
+import pyarrow.compute as pc
 
 """
 Pre-reqs: 
@@ -112,8 +114,10 @@ def clean_data(df, service):
     else:
         # Rename columns
         df.rename({'dropOff_datetime':'dropoff_datetime',
-                        'PULocationID':'pu_location_id',
-                        'DOLocationID':'do_location_id'}, 
+                        'PUlocationID':'pu_location_id',
+                        'DOlocationID':'do_location_id',
+                        'SR_Flag':'sr_flag',
+                        'Affiliated_base_number':'affiliated_base_number'},
                     axis='columns', inplace=True
                   )
 
@@ -207,8 +211,16 @@ def web_to_gcs(year, service, gcs_bucket):
         # Read it back into a parquet file
         print(f'Saving {file_name} to {path}...')
         # df = pd.read_csv(file_name, compression='gzip', dtype=taxi_dtypes, parse_dates=parse_dates)
-        df = pd.read_parquet(file_name)
+        # NOTE: one FHV file has an out-of-bounds timestamp
+        # https://stackoverflow.com/questions/74467923/pandas-read-parquet-error-pyarrow-lib-arrowinvalid-casting-from-timestampus
+        # df = pd.read_parquet(file_name)
+        table = pq.read_table(file_name)
+        df = table.filter(
+            pc.less_equal(table["dropOff_datetime"], pa.scalar(pd.Timestamp.max))
+        ).to_pandas()
+
         # print(df.dtypes)
+        # print(df.columns)
 
         # Clean the data and fix the data types
         df = clean_data(df, service)
@@ -223,10 +235,10 @@ def web_to_gcs(year, service, gcs_bucket):
 
 
 if __name__ == '__main__':
-    web_to_gcs('2019', 'green', gcs_bucket)
-    web_to_gcs('2020', 'green', gcs_bucket)
-    web_to_gcs('2019', 'yellow', gcs_bucket)
-    web_to_gcs('2020', 'yellow', gcs_bucket)
-    # web_to_gcs('2019', 'fhv', gcs_bucket)
+    # web_to_gcs('2019', 'green', gcs_bucket)
+    # web_to_gcs('2020', 'green', gcs_bucket)
+    # web_to_gcs('2019', 'yellow', gcs_bucket)
+    # web_to_gcs('2020', 'yellow', gcs_bucket)
+    web_to_gcs('2019', 'fhv', gcs_bucket)
     remove_files()
 
