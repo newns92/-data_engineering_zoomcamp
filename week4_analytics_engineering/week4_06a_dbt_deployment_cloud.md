@@ -26,7 +26,8 @@
 - To create our job:
     - At the top of the Cloud IDE, go to "Deploy" and then "Environments"
         - You should see a DEV environment that was created from the initial dbt Cloud setup
-        - Create a new PROD environment named "Production", with a type of "Deployment", then with the latest dbt version and your BigQuery dataset (i.e., the project ID)
+        - Create a new PROD environment named "Production", with a type of "Deployment", then with the latest dbt version
+        - Then add your *target* BigQuery dataset (i.e., the dataset *within* the project ID to create/deploy to), and name it something like "prod"
     - Then go to "Deploy" and then "Jobs"
         - Create a *new* job named "dbt build Nightly", with a description of "This is where the data hits production."
         - Make sure this job is in the "Production" environment
