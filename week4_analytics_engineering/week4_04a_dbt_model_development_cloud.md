@@ -158,7 +158,7 @@
         - This will grab *all* models *and* tests, seeds, and snapshots in a project and run them all
     2. `dbt run -m stg_green_trip_data`
         - https://docs.getdbt.com/reference/commands/run
-        - `dbt run` will executes compiled sql model files against the current `target` database defined in the `profiles.yml` file
+        - `dbt run` will execute compiled SQL model files against the current `target` database defined in the `profiles.yml` file
 - Then, change the `SELECT` statement to run with the new column definitions to make all column names consistent
     - You can also run `dbt run --select stg_green_trip_data`, which is equivalent to `dbt run -m stg_green_trip_data`
 - You should then see the new view under `ny_taxi_dev` in BigQuery (since *that's what we named the dataset to be when we defined the project*)

@@ -85,53 +85,19 @@
             - You also need to specify the host address in the "Connection" tab, which should be `pgdatabase`, then the port is `5432`, and the username and password are both `root`
             - You will then see the `ny_taxi` database that was specified via the `docker-compose.yml` file
             - Create three new schemas: `dev`, `prod`, and `staging`
-    - Then, in a `zoom` Conda environment, run the `upload_all_data_postgres.py` in the `week4/` directory to get all the data into a this Postgres database within the Docker container
-    - Then, in BigQuery, create the external tables via:
-        ```SQL
-            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_yellow_trip_data`
-            OPTIONS (
-            format = 'PARQUET',
-            uris = ['gs://<bucket-name>/data/yellow/yellow_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/yellow/yellow_tripdata_2020-*.parquet']
-            );
-
-            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_green_trip_data`
-            OPTIONS (
-            format = 'PARQUET',
-            uris = ['gs://<bucket-name>/data/green/green_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/green/green_tripdata_20209-*.parquet']
-            );
-
-            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_fhv_trip_data`
-            OPTIONS (
-            format = 'PARQUET',
-            uris = ['gs://<bucket-name>/data/fhv/fhv_tripdata_2019-*.parquet']
-            );        
-        ```
-    - Then, in BigQuery, create *non*-external, materialized tables via
-        ```SQL
-            CREATE OR REPLACE TABLE `<project-id>.ny_taxi.yellow_trip_data`
-            AS
-            SELECT * FROM `<project-id>.ny_taxi.external_yellow_trip_data`;
-
-            CREATE OR REPLACE TABLE `<project-id>.ny_taxi.green_trip_data`
-            AS
-            SELECT * FROM `<project-id>.ny_taxi.external_green_trip_data`;
-
-            CREATE OR REPLACE TABLE `<project-id>.ny_taxi.fhv_trip_data`
-            AS
-            SELECT * FROM `<project-id>.ny_taxi.external_fhv_trip_data`;
-        ```
+    - Then, in a `zoom` Conda environment, run the `upload_all_data_postgres.py` in the `week4/` directory to get all the data into the Postgres database within the Docker container
     - Then, check the row counts via
         ```SQL
-            SELECT COUNT(*) FROM `<project-id>.ny_taxi.fhv_trip_data`;
-            --- 43,244,696
+            SELECT COUNT(*) FROM dev.fhv_trip_data;
+            --- 
 
-            SELECT COUNT(*) FROM `<project-id>.ny_taxi.yellow_trip_data`;
-            --- 84,598,444
+            SELECT COUNT(*) FROM dev.yellow_trip_data;
+            --- 
 
-            SELECT COUNT(*) FROM `<project-id>.ny_taxi.green_trip_data`;
-            --- 6,300,985
+            SELECT COUNT(*) FROM dev.green_trip_data;
+            --- 8,035,161
         ```        
-- Now, back in the dbt Cloud IDE, in the `models/` directory, create a new directory called `staging/`
+- Now, back in the local `week4/dbt_local/models/` directory, create a new directory called `staging/`
     - This is where we take in the raw data and apply some transforms if needed
 - Then, create a `core/` subdirectory under the `models/` directory
     - This is where we'll create models to expose to a BI tool, to stakeholders, etc.
@@ -151,23 +117,23 @@
 
             sources:
             - name: staging
-                database: <project-id>  # i.e., the dataset (Project ID) in BigQuery
-                schema: ny_taxi  # the dataset itself
+                database: ny_taxi  # i.e., the Postgres database in BigQuery
+                schema: public  # the Postgres schema
 
                 tables:
                 - name: green_trip_data
                 - name: yellow_trip_data            
         ```
-- In the dbt Cloud IDE terminal (at the bottom of the page), run:
+- In a terminal within this `dbt_local/` directory, run:
     1. `dbt build`
         - https://docs.getdbt.com/reference/commands/build
         - This will grab *all* models *and* tests, seeds, and snapshots in a project and run them all
     2. `dbt run -m stg_green_trip_data`
         - https://docs.getdbt.com/reference/commands/run
-        - `dbt run` will executes compiled sql model files against the current `target` database defined in the `profiles.yml` file
+        - `dbt run` will execute compiled SQL model files against the current `target` database defined in the `profiles.yml` file
 - Then, change the `SELECT` statement to run with the new column definitions to make all column names consistent
     - You can also run `dbt run --select stg_green_trip_data`, which is equivalent to `dbt run -m stg_green_trip_data`
-- You should then see the new view under `ny_taxi_dev` in BigQuery (since *that's what we named the dataset to be when we defined the project*)
+- You should then see the new view under `ny_taxi.dev` in Postgres (since *that's what we named the dataset to be when we defined the project*)
 - You can also see compiled SQL code in the `target/compiled/` directory
 
 
