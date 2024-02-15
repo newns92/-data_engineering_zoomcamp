@@ -78,8 +78,14 @@
 
 
 ## Defining a Source and Developing a First Model
-- First, load in all the data that we'll need into BigQuery:
-    - Run the `upload_all_data_parquet_gcs.py` to get all the data into a GCS Bucket
+- First, load in all the data that we'll need into Postgres:
+    - Start by spinning up the Postgres database in detached mode via its `docker-compose.yml` file in the `week4/dbt_local` directory with the `docker-compose up -d` command
+        - Once pgAdmin is ready, if needed:
+            - Create a new server, `ny_taxi_data`, by right-clicking on "Servers" and hit "Register" then "Server"
+            - You also need to specify the host address in the "Connection" tab, which should be `pgdatabase`, then the port is `5432`, and the username and password are both `root`
+            - You will then see the `ny_taxi` database that was specified via the `docker-compose.yml` file
+            - Create three new schemas: `dev`, `prod`, and `staging`
+    - Then, in a `zoom` Conda environment, run the `upload_all_data_postgres.py` in the `week4/` directory to get all the data into a this Postgres database within the Docker container
     - Then, in BigQuery, create the external tables via:
         ```SQL
             CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_yellow_trip_data`
