@@ -2,56 +2,50 @@ import io
 import os
 import requests
 import pandas as pd
-from google.cloud import storage
-from config import gcloud_creds, bucket_name
+from sqlalchemy import create_engine
 from pathlib import Path
 import shutil
+import time
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pyarrow.compute as pc
 
 """
 Pre-reqs: 
-1. `pip install pandas pyarrow google-cloud-storage`
-2. Set GOOGLE_APPLICATION_CREDENTIALS to your project/service-account key
-3. Set GCP_GCS_BUCKET as your bucket or change default value of BUCKET
+1. Spin up the Postgres database via `docker-compose up -d` in this directory
+2. If necessary, create the ny_taxi_data server again
 """
 
 # services = ['fhv','green','yellow']
+# init_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/'
 init_url = 'https://d37ci6vzurychx.cloudfront.net/trip-data'
-# switch out the bucketname
-storage_client = storage.Client.from_service_account_json(gcloud_creds)
-# BUCKET = os.environ.get("GCP_GCS_BUCKET", "dtc-data-lake-bucketname")
-gcs_bucket = storage_client.get_bucket(bucket_name)
 
 
-def upload_to_gcs(bucket, object_name, local_file):
-    """
-    Ref: https://cloud.google.com/storage/docs/uploading-objects#storage-upload-object-python
-    """
-    # # WORKAROUND to prevent timeout for files > 6 MB on 800 kbps upload speed.
-    # # (Ref: https://github.com/googleapis/python-storage/issues/74)
-    # storage.blob._MAX_MULTIPART_SIZE = 5 * 1024 * 1024  # 5 MB
-    # storage.blob._DEFAULT_CHUNKSIZE = 5 * 1024 * 1024  # 5 MB
+def create_pg_engine(user, password, host, port, database):
+    # Upload CSV to Postgres
+    print("Creating the engine...")
+    # need to convert a DDL statement into something Postgres will understand
+    #   - via create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+    # https://stackoverflow.com/questions/9298296/sqlalchemy-support-of-postgres-schemas/49930672#49930672
+    dbschema = 'dev'
+    engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}',
+                            connect_args={'options': '-csearch_path={}'.format(dbschema)}
+                        )
 
-    # client = storage.Client()
-    # bucket = client.bucket(bucket)
-    blob = bucket.blob(object_name)
-    blob.upload_from_filename(local_file)
+    return engine
 
 
 def remove_files():
-    print('Removing local files...')
     # https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
     dir_name = "./"
     local_data = os.listdir(dir_name)
 
-    # Eemove the local CSV's
+    # remove the local CSV's
     for item in local_data:
         if item.endswith(".csv.gz"):
             os.remove(os.path.join(dir_name, item))
         elif item.endswith(".parquet"):
-            os.remove(os.path.join(dir_name, item))            
+            os.remove(os.path.join(dir_name, item))
 
     # Remove the local parquet files
     # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
@@ -61,7 +55,7 @@ def remove_files():
 def clean_data(df, service):
     '''Fix datatype issues'''
 
-    if service == 'yellow':           
+    if service == 'yellow':
         # Rename columns
         df.rename({'VendorID':'vendor_id',
                         'PULocationID':'pu_location_id',
@@ -69,13 +63,13 @@ def clean_data(df, service):
                         'RatecodeID':'rate_code_id'}, 
                     axis='columns', inplace=True
                   )
-        
+                
         # Fix datetimes
         df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
         df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
 
-        # This fixes fields for files that have NAN values and thus aren't INTs
-        #   when they should be INTs
+        # this fixes fields for files that have NAN values and thus aren't INTs
+        # when they should be INTs
         # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
         df.vendor_id = pd.array(df.vendor_id, dtype=pd.Int64Dtype())
         df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
@@ -90,25 +84,19 @@ def clean_data(df, service):
                         'RatecodeID':'rate_code_id'}, 
                     axis='columns', inplace=True
                   )
-
-        # Fix datetimes
+                
+        # fix datetimes
         df.lpep_pickup_datetime = pd.to_datetime(df.lpep_pickup_datetime)
         df.lpep_dropoff_datetime = pd.to_datetime(df.lpep_dropoff_datetime)
 
-        # This fixes fields for files that have NAN values and thus aren't INTs
-        #   when they should be INTs
+        # this fixes fields for files that have NAN values and thus aren't INTs
+        # when they should be INTs
         # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
         df.vendor_id = pd.array(df.vendor_id, dtype=pd.Int64Dtype())
         df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
         df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
         df.trip_type = pd.array(df.trip_type, dtype=pd.Int64Dtype())
         df.rate_code_id = pd.array(df.rate_code_id, dtype=pd.Int64Dtype())
-
-        # String fields just in case (shows up as 'object' dtype)
-        df.ehail_fee = pd.array(df.ehail_fee, dtype=str)
-        df.store_and_fwd_flag = pd.array(df.store_and_fwd_flag, dtype=str)
-
-        # print(df.dtypes)
 
     # elif service == 'fhv':
     else:
@@ -121,38 +109,37 @@ def clean_data(df, service):
                     axis='columns', inplace=True
                   )
 
-        # Fix datetimes
+        # fix datetimes
         df.pickup_datetime = pd.to_datetime(df.pickup_datetime)
         df.dropoff_datetime = pd.to_datetime(df.dropoff_datetime)
 
-        # This fixes fields for files that have NAN values and thus aren't INTs
-        #   when they should be INTs
+        # this fixes fields for files that have NAN values and thus aren't INTs
+        # when they should be INTs
         # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
         df.pu_location_id = pd.array(df.pu_location_id, dtype=pd.Int64Dtype())
         df.do_location_id = pd.array(df.do_location_id, dtype=pd.Int64Dtype())
 
-        # Fix a DOUBLE trying to be forced into an INT in BigQuery
+        # Fix a DOUBLE that may be trying to be forced into an INT
         df.sr_flag = pd.array(df.sr_flag, dtype=pd.Int64Dtype())
 
     return df
 
 
-def web_to_gcs(year, service, gcs_bucket):
+def web_to_pg(year, service):
 
     # Loop through the months
     for i in range(12):
-    #   for i in range(3):
         
         # Set the month part of the file_name string
         month = '0'+str(i + 1)
         month = month[-2:]
 
-        # Create Parquet file_name and path to write parquet file to
+        # create CSV file_name and path to write parquet file to
         file_name = f'{service}_tripdata_{year}-{month}.parquet'
         path = Path(f'data/{service}_tripdata_{year}-{month}.parquet').as_posix()
 
         # Make the directory to hold the parquet file if it doesn't exist
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        os.makedirs(os.path.dirname(path), exist_ok=True)        
 
         # Download CSV using requests via a Pandas DataFrame
         print(f'\nDownloading {file_name}...')
@@ -211,37 +198,81 @@ def web_to_gcs(year, service, gcs_bucket):
         #     # Parse the datetime columns
         #     parse_dates = ['lpep_pickup_datetime', 'lpep_dropoff_datetime']
 
-        # Read it back into a parquet file
-        print(f'Saving {file_name} to {path}...')
-        # df = pd.read_csv(file_name, compression='gzip', dtype=taxi_dtypes, parse_dates=parse_dates)
-        # NOTE: one FHV file has an out-of-bounds timestamp
-        # https://stackoverflow.com/questions/74467923/pandas-read-parquet-error-pyarrow-lib-arrowinvalid-casting-from-timestampus
-        # df = pd.read_parquet(file_name)
-        table = pq.read_table(file_name)
-        df = table.filter(
-            pc.less_equal(table["dropOff_datetime"], pa.scalar(pd.Timestamp.max))
-        ).to_pandas()
+        # df_iter = pd.read_csv(file_name, compression='gzip', iterator=True, chunksize=100000)
+        # df = next(df_iter)
 
-        # print(df.dtypes)
-        # print(df.columns)
+        df = pd.read_parquet(file_name)
 
-        # Clean the data and fix the data types
+        # clean the data and fix the data types
         df = clean_data(df, service)
 
-        # Move to data directory
-        # file_name = file_name.replace('.csv.gz', '.parquet')
-        df.to_parquet(path, engine='pyarrow')
+        # get the header/column names
+        header = df.head(n=0)
+        # print(header)
 
-        # Upload parquet to GCS Bucket
-        print(f'Uploading {path} to GCS...')
-        upload_to_gcs(gcs_bucket, f'data/{service}/{file_name}', f'data/{file_name}')
+        # start = time.time()
+        # start_datetime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start))
 
+        # print(f'Uploading {file_name} to Postgres starting at {start_datetime}...')
+        # # add first chunk of data
+        # df.to_sql(f'{service}_trip_data',  con=engine, if_exists='append')
+        # end = time.time()
+        # print('Time to insert first chunk: in %.3f seconds.' % (end - start))        
+
+        # add the column headers to the table in the database connection, and replace the table if it exists
+        header.to_sql(name=f'{service}_trip_data', con=engine, if_exists='replace')
+
+        # def load_chunks(df):
+        #     try:
+        #         print("Loading next chunk...")
+        #         start = time.time()
+
+        #         # get next chunk
+        #         df = next(df_iter)
+
+        #         # clean the data and fix the data types
+        #         df = clean_data(df, service)
+                    
+        #         # add chunk
+        #         df.to_sql(name=f'{service}_trip_data', con=engine, if_exists='append')
+
+        #         end = time.time()
+
+        #         print('Inserted another of ' + file_name +  ' chunk in %.3f seconds.' % (end - start))
+
+        #     except:
+        #         # will come to this clause when we throw an error after running out of data chunks
+        #         print('All data chunks loaded.')
+        #         return('All data chunks loaded.')
+
+        # # insert the rest of the chunks until loop breaks when all data is added
+        # while True:
+        #     if load_chunks(df):
+        #         break
+        #     else:        
+        #         continue
+
+        # add data
+        print(f'Uploading {file_name} to Postgres...')
+        start = time.time()
+        df.to_sql(name=f'{service}_trip_data', con=engine, if_exists='append')
+        end = time.time()
+        print(f'Time to insert {file_name}: %.3f seconds.' % (end - start))    
 
 if __name__ == '__main__':
-    # web_to_gcs('2019', 'green', gcs_bucket)
-    # web_to_gcs('2020', 'green', gcs_bucket)
-    # web_to_gcs('2019', 'yellow', gcs_bucket)
-    # web_to_gcs('2020', 'yellow', gcs_bucket)
-    web_to_gcs('2019', 'fhv', gcs_bucket)
+    user = "root"  # admin@admin.com
+    password = "root"
+    host = "localhost"
+    port = "5432"
+    database = "ny_taxi"
+
+    engine = create_pg_engine(user, password, host, port, database)
+
+    web_to_pg('2019', 'green')
+    web_to_pg('2020', 'green')
+    web_to_pg('2019', 'yellow')
+    web_to_pg('2020', 'yellow')
+    # web_to_pg('2019', 'fhv')
+
     remove_files()
 

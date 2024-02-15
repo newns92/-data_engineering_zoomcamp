@@ -51,7 +51,7 @@ def remove_files():
         if item.endswith(".csv.gz"):
             os.remove(os.path.join(dir_name, item))
         elif item.endswith(".parquet"):
-            os.remove(os.path.join(dir_name, item))            
+            os.remove(os.path.join(dir_name, item))
 
     # Remove the local parquet files
     # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
