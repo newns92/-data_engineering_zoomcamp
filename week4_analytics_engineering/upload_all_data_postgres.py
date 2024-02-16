@@ -269,10 +269,10 @@ if __name__ == '__main__':
 
     engine = create_pg_engine(user, password, host, port, database)
 
-    web_to_pg('2019', 'green')
-    web_to_pg('2020', 'green')
-    # web_to_pg('2019', 'yellow')
-    # web_to_pg('2020', 'yellow')
+    # web_to_pg('2019', 'green')
+    # web_to_pg('2020', 'green')
+    web_to_pg('2019', 'yellow')
+    web_to_pg('2020', 'yellow')
     # web_to_pg('2019', 'fhv')
 
     remove_files()
