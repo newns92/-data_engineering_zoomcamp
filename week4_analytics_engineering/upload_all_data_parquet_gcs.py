@@ -81,6 +81,7 @@ def clean_data(df, service):
         df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
         df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
         df.rate_code_id = pd.array(df.rate_code_id, dtype=pd.Int64Dtype())
+        df.airport_fee = pd.array(df.airport_fee, dtype=pd.Float64Dtype())
 
     elif service == 'green':
         # Rename columns
@@ -248,10 +249,10 @@ def web_to_gcs(year, service, gcs_bucket):
     print(f'Total rows for {service} in {year}: {total_rows}')
 
 if __name__ == '__main__':
-    web_to_gcs('2019', 'green', gcs_bucket)
-    web_to_gcs('2020', 'green', gcs_bucket)
-    # web_to_gcs('2019', 'yellow', gcs_bucket)
-    # web_to_gcs('2020', 'yellow', gcs_bucket)
+    # web_to_gcs('2019', 'green', gcs_bucket)
+    # web_to_gcs('2020', 'green', gcs_bucket)
+    web_to_gcs('2019', 'yellow', gcs_bucket)
+    web_to_gcs('2020', 'yellow', gcs_bucket)
     # web_to_gcs('2019', 'fhv', gcs_bucket)
     remove_files()
 

@@ -120,7 +120,7 @@
             --- 43,244,696
 
             SELECT COUNT(*) FROM `<project-id>.ny_taxi.yellow_trip_data`;
-            --- 84,598,444
+            --- 109,247,536
 
             SELECT COUNT(*) FROM `<project-id>.ny_taxi.green_trip_data`;
             --- 8,035,161
