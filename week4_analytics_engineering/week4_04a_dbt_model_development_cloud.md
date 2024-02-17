@@ -91,7 +91,7 @@
             CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_green_trip_data`
             OPTIONS (
             format = 'PARQUET',
-            uris = ['gs://<bucket-name>/data/green/green_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/green/green_tripdata_20209-*.parquet']
+            uris = ['gs://<bucket-name>/data/green/green_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/green/green_tripdata_2020-*.parquet']
             );
 
             CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_fhv_trip_data`
@@ -123,7 +123,7 @@
             --- 84,598,444
 
             SELECT COUNT(*) FROM `<project-id>.ny_taxi.green_trip_data`;
-            --- 6,300,985
+            --- 8,035,161
         ```        
 - Now, back in the dbt Cloud IDE, in the `models/` directory, create a new directory called `staging/`
     - This is where we take in the raw data and apply some transforms if needed
