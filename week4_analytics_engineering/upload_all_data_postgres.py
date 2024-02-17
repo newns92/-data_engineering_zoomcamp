@@ -126,6 +126,8 @@ def clean_data(df, service):
 
 
 def web_to_pg(year, service):
+    # Keep track of total rows to compare with GCS
+    total_rows = 0
 
     # Loop through the months
     for i in range(12):
@@ -203,12 +205,14 @@ def web_to_pg(year, service):
 
         df = pd.read_parquet(file_name)
 
+        print(f'Number of rows: {len(df.index)}')
+
         # clean the data and fix the data types
         df = clean_data(df, service)
 
-        # # get the header/column names
-        # header = df.head(n=0)
-        # # print(header)
+        # get the header/column names
+        header = df.head(n=0)
+        # print(header)
 
         # start = time.time()
         # start_datetime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start))
@@ -219,8 +223,8 @@ def web_to_pg(year, service):
         # end = time.time()
         # print('Time to insert first chunk: in %.3f seconds.' % (end - start))        
 
-        # # add the column headers to the table in the database connection, and replace the table if it exists
-        # header.to_sql(name=f'{service}_trip_data', con=engine, if_exists='replace')
+        # add the column headers to the table in the database connection, and replace the table if it exists
+        header.to_sql(name=f'{service}_trip_data', con=engine, if_exists='replace')
 
         # def load_chunks(df):
         #     try:
@@ -254,11 +258,13 @@ def web_to_pg(year, service):
 
         # add data
         print(f'Uploading {file_name} to Postgres...')
-        print(f'Number of rows: {len(df.index)}')
+        
         start = time.time()
         df.to_sql(name=f'{service}_trip_data', con=engine, if_exists='append')
         end = time.time()
-        print(f'Time to insert {file_name}: %.3f seconds.' % (end - start))    
+        print(f'Time to insert {file_name}: %.3f seconds.' % (end - start))
+
+    print(f'Total rows for {service} in {year}: {total_rows}')        
 
 if __name__ == '__main__':
     user = "root"  # admin@admin.com
@@ -269,10 +275,10 @@ if __name__ == '__main__':
 
     engine = create_pg_engine(user, password, host, port, database)
 
-    # web_to_pg('2019', 'green')
-    # web_to_pg('2020', 'green')
-    web_to_pg('2019', 'yellow')
-    web_to_pg('2020', 'yellow')
+    web_to_pg('2019', 'green')
+    web_to_pg('2020', 'green')
+    # web_to_pg('2019', 'yellow')
+    # web_to_pg('2020', 'yellow')
     # web_to_pg('2019', 'fhv')
 
     remove_files()

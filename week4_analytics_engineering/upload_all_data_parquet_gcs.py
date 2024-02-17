@@ -138,6 +138,8 @@ def clean_data(df, service):
 
 
 def web_to_gcs(year, service, gcs_bucket):
+    # Keep track of total rows to compare with Postgres
+    total_rows = 0
 
     # Loop through the months
     for i in range(12):
@@ -218,9 +220,16 @@ def web_to_gcs(year, service, gcs_bucket):
         # https://stackoverflow.com/questions/74467923/pandas-read-parquet-error-pyarrow-lib-arrowinvalid-casting-from-timestampus
         # df = pd.read_parquet(file_name)
         table = pq.read_table(file_name)
-        df = table.filter(
-            pc.less_equal(table["dropOff_datetime"], pa.scalar(pd.Timestamp.max))
-        ).to_pandas()
+
+        if service == 'fhv':
+            df = table.filter(
+                pc.less_equal(table["dropOff_datetime"], pa.scalar(pd.Timestamp.max))
+            ).to_pandas()
+        else:
+            df = table.to_pandas()
+
+        print(f'Number of rows: {len(df.index)}')
+        total_rows += len(df.index)
 
         # print(df.dtypes)
         # print(df.columns)
@@ -236,12 +245,13 @@ def web_to_gcs(year, service, gcs_bucket):
         print(f'Uploading {path} to GCS...')
         upload_to_gcs(gcs_bucket, f'data/{service}/{file_name}', f'data/{file_name}')
 
+    print(f'Total rows for {service} in {year}: {total_rows}')
 
 if __name__ == '__main__':
-    # web_to_gcs('2019', 'green', gcs_bucket)
-    # web_to_gcs('2020', 'green', gcs_bucket)
+    web_to_gcs('2019', 'green', gcs_bucket)
+    web_to_gcs('2020', 'green', gcs_bucket)
     # web_to_gcs('2019', 'yellow', gcs_bucket)
     # web_to_gcs('2020', 'yellow', gcs_bucket)
-    web_to_gcs('2019', 'fhv', gcs_bucket)
+    # web_to_gcs('2019', 'fhv', gcs_bucket)
     remove_files()
 
