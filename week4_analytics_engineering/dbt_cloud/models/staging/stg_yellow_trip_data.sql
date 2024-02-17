@@ -15,7 +15,7 @@ with trip_data as
 select
     -- identifiers
     -- 1.0.0 version of dbt utils, `dbt_utils.surrogate_key` has been replaced by `dbt_utils.generate_surrogate_key`
-    {{ dbt_utils.generate_surrogate_key(['vendor_id', 'tpep_pickup_datetime']) }} as trip_id,
+    {{ dbt_utils.generate_surrogate_key(['vendor_id', 'tpep_pickup_datetime', '1']) }} as trip_id,
     cast(vendor_id as integer) as vendor_id,
     cast(rate_code_id as integer) as rate_code_id,
     cast(pu_location_id as integer) as pickup_location_id,
