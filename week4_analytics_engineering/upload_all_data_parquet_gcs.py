@@ -83,6 +83,11 @@ def clean_data(df, service):
         df.rate_code_id = pd.array(df.rate_code_id, dtype=pd.Int64Dtype())
         df.airport_fee = pd.array(df.airport_fee, dtype=pd.Float64Dtype())
 
+        # Replace payment_type of 0 with correct voided value of 6, according to data dictionary
+        # https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf
+        # https://stackoverflow.com/questions/31511997/pandas-dataframe-replace-all-values-in-a-column-based-on-condition
+        df.loc[df['payment_type'] == 0, 'payment_type'] = 6
+
     elif service == 'green':
         # Rename columns
         df.rename({'VendorID':'vendor_id',
@@ -108,6 +113,11 @@ def clean_data(df, service):
         # String fields just in case (shows up as 'object' dtype)
         df.ehail_fee = pd.array(df.ehail_fee, dtype=str)
         df.store_and_fwd_flag = pd.array(df.store_and_fwd_flag, dtype=str)
+
+        # Replace payment_type of 0 with correct voided value of 6, according to data dictionary
+        # https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_green.pdf
+        # https://stackoverflow.com/questions/31511997/pandas-dataframe-replace-all-values-in-a-column-based-on-condition
+        df.loc[df['payment_type'] == 0, 'payment_type'] = 6
 
         # print(df.dtypes)
 
@@ -249,8 +259,8 @@ def web_to_gcs(year, service, gcs_bucket):
     print(f'Total rows for {service} in {year}: {total_rows}')
 
 if __name__ == '__main__':
-    # web_to_gcs('2019', 'green', gcs_bucket)
-    # web_to_gcs('2020', 'green', gcs_bucket)
+    web_to_gcs('2019', 'green', gcs_bucket)
+    web_to_gcs('2020', 'green', gcs_bucket)
     web_to_gcs('2019', 'yellow', gcs_bucket)
     web_to_gcs('2020', 'yellow', gcs_bucket)
     # web_to_gcs('2019', 'fhv', gcs_bucket)
