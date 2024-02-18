@@ -76,6 +76,11 @@ def clean_data(df, service):
         df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
         df.rate_code_id = pd.array(df.rate_code_id, dtype=pd.Int64Dtype())
 
+        # Replace payment_type of 0 with correct voided value of 6, according to data dictionary
+        # https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf
+        # https://stackoverflow.com/questions/31511997/pandas-dataframe-replace-all-values-in-a-column-based-on-condition
+        df.loc[df['payment_type'] == 0, 'payment_type'] = 6        
+
     elif service == 'green':
         # Rename columns
         df.rename({'VendorID':'vendor_id',
@@ -97,6 +102,13 @@ def clean_data(df, service):
         df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
         df.trip_type = pd.array(df.trip_type, dtype=pd.Int64Dtype())
         df.rate_code_id = pd.array(df.rate_code_id, dtype=pd.Int64Dtype())
+
+        # Replace payment_type of 0 with correct voided value of 6, according to data dictionary
+        # https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_green.pdf
+        # https://stackoverflow.com/questions/31511997/pandas-dataframe-replace-all-values-in-a-column-based-on-condition
+        # df.loc[df['payment_type'] == 0, 'payment_type'] = 6
+        df.loc[df['payment_type'].isnull() == True, 'payment_type'] = 6
+        # print(df.payment_type.unique())
 
     # elif service == 'fhv':
     else:
@@ -206,6 +218,7 @@ def web_to_pg(year, service):
         df = pd.read_parquet(file_name)
 
         print(f'Number of rows: {len(df.index)}')
+        total_rows += len(df.index)
 
         # clean the data and fix the data types
         df = clean_data(df, service)

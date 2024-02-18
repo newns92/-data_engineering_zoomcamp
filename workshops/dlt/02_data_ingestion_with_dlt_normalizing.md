@@ -2,29 +2,29 @@
 
 ## Normalizing Data
 - You often hear that data people spend most of their time "cleaning" data, but what does this mean? 
-- Let's look granularly into what people consider data cleaning
+- Let's look granularly into what people consider "data cleaning"
     - Usually we have 2 parts: 
-        - Normalizing data *without changing its meaning*
-        - Filtering data for a use case, *which changes its meaning*
+        - **Normalizing** data *without changing its meaning*
+        - **Filtering** data for a use case, *which changes its meaning*
 - Part of what we often call "data cleaning" is just **metadata** work:
-    - Add **types** (`string` to `number`, `string` to `timestamp`, etc.
+    - Add **types** (`string` to `number`, `string` to `timestamp`, etc.)
     - **Rename** columns
         - In this activity, we ensure column names follow a supported standard downstream (such as no strange characters in the names)
     - **Flatten** nested dictionaries
         - This brings nested dictionary values into the top dictionary row
     - **Unnest** lists or arrays into child tables
-        - Arrays or lists *cannot* be flattened into their parent record, so if we want flat data we need to break them out into separate tables
+        - Arrays or lists *cannot* be flattened into their parent record, so if we want flat data we need to break them out into *separate* tables
 - We will look at a practical example next, as these concepts can be difficult to visualise from text
 
 ### **Why Prep Data?**
-- If working with JSON, we do not easily know what is inside of a JSON document due to lack of a schema
+- If working with JSON, we do not easily know what is inside of a JSON document due to *lack of a **schema***
 - Types are *NOT* enforced between rows of JSON
     - We could have one record where age is `25`, and another where age is `twenty five`, and still *another* where it's `25.00`
-- Or in some systems, you might have a *dictionary* for a single record, but a *list of dicttionaries* for *multiple* records
+- Or in some systems, you might have a *dictionary* for a single record, but a *list of dictionaries* for *multiple* records
     - This could easily lead to applications downstream breaking
-- We cannot just use JSON data in a simple manner
+- We cannot just use JSON data in a "simple" manner
     - For example, we would need to convert strings to time types if we want to do a daily aggregation
-- Reading JSON loads more data into memory, as the whole document is scanned
+- Reading JSON loads more data into memory, as the *whole* document is scanned
     - While in Parquet or in databases, we can scan a single column of a document
     - This whole-document scanning causes high costs and increased slowness
 - JSON is not fast to aggregate, but *columnar formats* are
@@ -35,7 +35,7 @@
 - In the case of the NY taxi rides data, the dataset is quite clean, so let's instead use a small example of more complex data
 - Let's assume we know some information about passengers and stops
 - For this example we modified the dataset as follows:
-    - We added nested dictionaries
+    - We added nested **dictionaries**
         ```JSON
             "coordinates": {
                         "start": {
@@ -43,14 +43,14 @@
                             "lat": 40.641525
                             },
         ```
-    - We added nested lists
+    - We added nested **lists**
         ```JSON
             "passengers": [
                         {"name": "John", "rating": 4.9},
                         {"name": "Jack", "rating": 3.9}
                         ],
         ```
-    - We added a record hash that gives us an unique ID for the record, for easy identification
+    - We added a **record hash** that gives us an unique ID for the record for easy identification
         ```JSON
             "record_hash": "b00361a396177a9cb410ff61f20015ad",
         ```        
@@ -149,14 +149,14 @@
         ```
     
 ## Incremental loading
-- **Incremental loading** means that as we update (i.e., load into) our datasets with *new* data, as opposed to making a full copy of a source's data all over again and replacing the old version
+- **Incremental loading** means we update (i.e., load into) our datasets with *new* data, as opposed to making a full copy of a source's data all over again and replacing the old version
 - *By loading incrementally, our pipelines run faster and cheaper*
 - Incremental loading goes hand in hand with *incremental extraction* and **state** (2 concepts which we will not delve into during this workshop)
     - **State** is information that keeps track of *what* was loaded and to know *what else remains to be loaded*
         - dlt stores the state at the destination in a separate table
     - **Incremental extraction** refers to only requesting the increment of data that we need, and nothing more
         - This is tightly connected to the state to determine the exact chunk that needs to be extracted and loaded
-- You can learn more about incremental extraction and state by reading the dlt docs on how to do it
+- You can learn more about incremental extraction and state by reading the dlt docs on how to do it:
     - https://dlthub.com/docs/general-usage/state
     - https://dlthub.com/docs/api_reference/extract/incremental/__init__
 - dlt currently supports 2 ways of loading incrementally:
@@ -169,7 +169,7 @@
     2. **Merge**: 
         - We can use this to update data that changes
             - For example, a taxi ride could have a payment status, which is originally "booked", but could later be changed into "paid", "rejected" or "cancelled"
-Here is how you can think about which method to use:
+- Here is how you can think about which method to use:
     - Is it stateful data?
         - NO
             - Use a write disposition of "append"
@@ -183,9 +183,9 @@ Here is how you can think about which method to use:
 - **Merge Example**:
     - In our previously-mentioned example, payment status can change from "booked" to "cancelled"
     - The **merge** operation *replaces an old record with a new one based on a **key***
-    - The key could consist of multiple fields, or a single unique ID
-        - We will use record hash that we created for simplicity
-        - If you do *NOT* have a unique key, you could *create* one deterministically out of several fields, say by concatenating the data and hashing it
+        - The key could consist of multiple fields, or a single unique ID
+            - We will use record hash that we created for simplicity
+            - If you do *NOT* have a unique key, you could *create* one deterministically out of several fields, say by concatenating the data and hashing it
     - A merge operation *replaces* rows, it does *NOT* update them
         - *If you want to update only parts of a row, you would have to load the new data by appending it and doing a custom transformation to combine the old and new data*
     - In this example, the score of the 2 drivers got lowered and we need to update the values
@@ -248,13 +248,13 @@ Here is how you can think about which method to use:
             ```
 
 ## What's Next?
-- You could change the destination to Parquet and local file system, or a storage bucket
+- You could change the destination to Parquet and a local file system, or to a storage bucket
 - You could also change the destination to BigQuery
-    For destination & credential setup documentation, seee: 
+    - For destination & credential setup documentation, see: 
         - https://dlthub.com/docs/dlt-ecosystem/destinations/
         - https://dlthub.com/docs/walkthroughs/add_credentials
-- You could also use a **decorator** to convert the generator into a customised dlt resource
-    - See https://dlthub.com/docs/general-usage/resource
+- You could also use a **decorator** to convert the generator into a customised dlt resource:
+    - https://dlthub.com/docs/general-usage/resource
 - You can deep dive into building more complex dlt pipelines by following the guides:
     - https://dlthub.com/docs/walkthroughs
     - https://dlthub.com/docs/build-a-pipeline-tutorial
