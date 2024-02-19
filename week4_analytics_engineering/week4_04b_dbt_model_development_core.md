@@ -41,7 +41,7 @@
             sources:
             - name: staging
                 database: ny_taxi  # i.e., the Postgres or BigQuery database
-                schema: staging  # the schema
+                schema: dev  # the schema
 
                 tables:
                     - name: green_trip_data
@@ -117,22 +117,24 @@
 
             sources:
             - name: staging
-                database: ny_taxi  # i.e., the Postgres database in BigQuery
-                schema: public  # the Postgres schema
+                database: ny_taxi  # i.e., the Postgres database
+                schema: dev  # the Postgres schema
 
                 tables:
                 - name: green_trip_data
                 - name: yellow_trip_data            
         ```
-- In a terminal within this `dbt_local/` directory, run:
-    1. `dbt build`
+- In an Anaconda terminal in the `zoom` environment within this `dbt_local/ny_taxi_data` directory, run:
+    1. Run `dbt debug --profiles-dir ../`
+        - This will find the `profiles.yml` file in the parent directory of the dbt project and check the database connection and display any errors or warnings that it finds
+    2. `dbt build --profiles-dir ../`
         - https://docs.getdbt.com/reference/commands/build
         - This will grab *all* models *and* tests, seeds, and snapshots in a project and run them all
-    2. `dbt run -m stg_green_trip_data`
+    3. `dbt run -m stg_green_trip_data --profiles-dir ../`
         - https://docs.getdbt.com/reference/commands/run
         - `dbt run` will execute compiled SQL model files against the current `target` database defined in the `profiles.yml` file
 - Then, change the `SELECT` statement to run with the new column definitions to make all column names consistent
-    - You can also run `dbt run --select stg_green_trip_data`, which is equivalent to `dbt run -m stg_green_trip_data`
+    - You can also run `dbt run --select stg_green_trip_data --profiles-dir ../`, which is equivalent to `dbt run -m stg_green_trip_data --profiles-dir ../`
 - You should then see the new view under `ny_taxi.dev` in Postgres (since *that's what we named the dataset to be when we defined the project*)
 - You can also see compiled SQL code in the `target/compiled/` directory
 
@@ -172,7 +174,7 @@
 
             {%- endmacro %}
         ```
-    - We then use it in our `stg_green_trip_data.sql` model file, which we can then run again via `dbt run --select stg_green_trip_data`
+    - We then use it in our `stg_green_trip_data.sql` model file, which we can then run again via `dbt run --select stg_green_trip_data --profiles-dir ../`
         ```Jinja
             {{ get_payment_type_description('payment_type') }} as payment_type_description,  {# macro #}
         ```
@@ -195,10 +197,10 @@
             - package: dbt-labs/dbt_utils
             version: 1.1.1
         ```
-    - Then we run `dbt deps` in the terminal at the bottom of the dbt Cloud IDE to install the packages
+    - Then we run `dbt deps --profiles-dir ../` in the terminal at the bottom of the dbt Cloud IDE to install the packages
     - We can then view installed packages in the `dbt_packages/` subdirectory of the project, and see its *own* `macros/` subdirectory to see all of its macros
     - We will then create a **surrogate key** via `{{ dbt_utils.surrogate_key(['vendor_id', 'lpep_pickup_datetime']) }} as trip_id,` in our staging table model
-    - Run the model again via `dbt run --select stg_green_trip_data`, and again see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's `ny_taxi_dev` schema
+    - Run the model again via `dbt run --select stg_green_trip_data --profiles-dir ../`, and again see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's `ny_taxi_dev` schema
 
 
 ## Variables
@@ -221,12 +223,12 @@
             payment_type_values = [1, 2, 3, 4, 5, 6]
     ```
 - Add the above to the end of the `stg_green_trip_data.sql` model
-- We can run our model and change the value of `is_test_run` using the command `dbt run --select stg_green_trip_data.sql --var 'is_test_run: false'` and you should NOT see `limit 100` in the compiled code
-- Just running `dbt run --select stg_green_trip_data` should give the default value of `true` and you should see `limit 100` in the compiled code
+- We can run our model and change the value of `is_test_run` using the command `dbt run --select stg_green_trip_data.sql --var 'is_test_run: false' --profiles-dir ../` and you should NOT see `limit 100` in the compiled code
+- Just running `dbt run --select stg_green_trip_data --profiles-dir ../` should give the default value of `true` and you should see `limit 100` in the compiled code
 - ***We can then repeat everything above, with some small code changes, for a `stg_yellow_trip_data` model***
     - Commands:
-        - `dbt run --select stg_green_trip_data --vars '{'is_test_run': 'false'}'`
-        - `dbt run --select stg_yellow_trip_data --vars '{'is_test_run': 'false'}'`
+        - `dbt run --select stg_green_trip_data --vars '{'is_test_run': 'false'}' --profiles-dir ../`
+        - `dbt run --select stg_yellow_trip_data --vars '{'is_test_run': 'false'}' --profiles-dir ../`
 
 
 ## Seeds
@@ -250,7 +252,7 @@
     - Run `dbt seed` again, you should see the updated table in BigQuery
 - Now let's say we want to change some value in our data, like changing "EWR" to "NEWR"
     - `dbt seed` will by default then *append* to things we've already created
-    - So, instead run `dbt seed --full-refresh` to *drop* and *recreate* the table
+    - So, instead run `dbt seed --full-refresh --profiles-dir ../` to *drop* and *recreate* the table
 - Now, we can create a dimension model based on this seed
     - Under `models/core/`, create a file `dim_zones.sql`
     - Here, we will first define the configiguration as a materialized *table* rather than a view, like we have been doing thus far in our staging models
@@ -264,7 +266,7 @@
     - We can tell dbt to run all model but *also* specify to run all of its parent models
 - Now, we can run `dbt run` which will run all of our models, *but not the seed*
     - In order to run the seed as well, run `dbt build` to build everything that we have, *along with running some tests*
-    - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips`
+    - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips --profiles-dir ../`
         - *But to run everything that `fact_trips.sql` depends on first*, we can run `dbt build --select +fact_trips`
         - Command:
-            - `dbt build --select +fact_trips+ --vars '{'is_test_run': 'false'}'`
+            - `dbt build --select +fact_trips+ --vars '{'is_test_run': 'false'}' --profiles-dir ../`
