@@ -215,7 +215,20 @@ def web_to_pg(year, service):
         # df_iter = pd.read_csv(file_name, compression='gzip', iterator=True, chunksize=100000)
         # df = next(df_iter)
 
-        df = pd.read_parquet(file_name)
+        # df = pd.read_parquet(file_name)
+        print(f'Saving {file_name} to {path}...')
+        # df = pd.read_csv(file_name, compression='gzip', dtype=taxi_dtypes, parse_dates=parse_dates)
+        # NOTE: one FHV file has an out-of-bounds timestamp
+        # https://stackoverflow.com/questions/74467923/pandas-read-parquet-error-pyarrow-lib-arrowinvalid-casting-from-timestampus
+        # df = pd.read_parquet(file_name)
+        table = pq.read_table(file_name)
+
+        if service == 'fhv':
+            df = table.filter(
+                pc.less_equal(table["dropOff_datetime"], pa.scalar(pd.Timestamp.max))
+            ).to_pandas()
+        else:
+            df = table.to_pandas()        
 
         print(f'Number of rows: {len(df.index)}')
         total_rows += len(df.index)
@@ -290,9 +303,9 @@ if __name__ == '__main__':
 
     # web_to_pg('2019', 'green')
     # web_to_pg('2020', 'green')
-    web_to_pg('2019', 'yellow')
-    web_to_pg('2020', 'yellow')
-    # web_to_pg('2019', 'fhv')
+    # web_to_pg('2019', 'yellow')
+    # web_to_pg('2020', 'yellow')
+    web_to_pg('2019', 'fhv')
 
     remove_files()
 
