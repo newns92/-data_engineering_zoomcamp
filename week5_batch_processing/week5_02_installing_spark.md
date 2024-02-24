@@ -47,9 +47,9 @@
         - Or **do this manually on Windows**
         - **Make sure that the version under `$%SPARK_HOME%\python\lib\` matches the filename of `py4j` or you will encounter `ModuleNotFoundError: No module named 'py4j'` while executing `import pyspark`**
     - Now you can run Jupyter or IPython to test if things work
-    - Go back to `week5/` via `cd`, and download the zone lookup data via `wget https://s3.amazonaws.com/nyc-tlc/misc/taxi+_zone_lookup.csv` and also get the January 2019 FHV data from https://github.com/DataTalksClub/nyc-tlc-data/releases/tag/fhvhv
+    - Go back to the `week5/` directory via `cd`, and download the zone lookup data via `wget https://s3.amazonaws.com/nyc-tlc/misc/taxi+_zone_lookup.csv` and also get the January 2019 FHV data from https://github.com/DataTalksClub/nyc-tlc-data/releases/tag/fhv via `wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv/fhv_tripdata_2019-01.csv.gz`, and then unzip that file
     - In a `zoom` conda environment, create a new notebook after running `jupyter notebook` in this `week5/` directory
-    - Run:
+    - Name this notebook `00_pyspark_testing`, and inside of it, run:
         ```Python
             import pyspark
             from pyspark.sql import SparkSession
@@ -78,12 +78,16 @@
             - `appName()` defines the name of our application/session, which will show in the Spark UI at http://localhost:4040/
             - `getOrCreate()` will create the session or recover the object if it was previously created
                 - i.e., It returns an existing `SparkSession`, if available, or creates a new one
+        - Note that similarly to pandas, Spark can read CSV files into **DataFrames**, a tabular data structure
+            - But *unlike* pandas, Spark can handle *much bigger* datasets
+                - However, **it's unable to infer the datatypes of each column**
         - We can also test that writing works via `df.write.parquet('zones')`
-- NOTE: *To see the various conda environments on your local machine within a Juptyter notebook*:
+    - While this SparkSession is active, you can go to http://localhost:4040/ to see the Spark UI for this Session with various **jobs** that have been run
+- **NOTE: *To see the various conda environments on your local machine within a Juptyter notebook***:
     - Run `conda install nb_conda_kernels` in your base environment
     - In the `zoom` environment, run `conda install ipykernel`
     - Restart Jupyter Notebooks
-    - Should see the conda environments as options under the "Kernel" tab
+    - You should now see the conda environments as options under the "Kernel" tab
 
 
 ### Spark UI:
