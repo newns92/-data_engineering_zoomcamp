@@ -266,4 +266,4 @@
     - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips --profiles-dir ../`
         - *But to run everything that `fact_trips.sql` depends on first*, we can run `dbt build --select +fact_trips`
         - Command:
-            - `dbt build --select +fact_trips+ --vars '{'is_test_run': 'false'}' --profiles-dir ../`
+            - `dbt build --select +fact_trips+ --vars "{'is_test_run': false}" --profiles-dir ../`

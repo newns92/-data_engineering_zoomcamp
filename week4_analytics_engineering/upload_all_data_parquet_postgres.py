@@ -303,9 +303,9 @@ if __name__ == '__main__':
 
     # web_to_pg('2019', 'green')
     # web_to_pg('2020', 'green')
-    # web_to_pg('2019', 'yellow')
-    # web_to_pg('2020', 'yellow')
-    web_to_pg('2019', 'fhv')
+    web_to_pg('2019', 'yellow')
+    web_to_pg('2020', 'yellow')
+    # web_to_pg('2019', 'fhv')
 
     remove_files()
 
