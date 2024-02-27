@@ -16,7 +16,7 @@ select
     cast(dropoff_datetime as timestamp) as dropoff_datetime,
     
     -- trip info
-    cast(sr_flag as integer) as sr_flag,
+    cast(sr_flag as integer) as sr_flag
     
 from {{ source('staging', 'fhv_trip_data') }}
 where extract(year from pickup_datetime) = 2019
