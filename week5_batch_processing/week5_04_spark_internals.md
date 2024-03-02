@@ -85,7 +85,7 @@
         - Tune the `spark.sql.shuffle.partitions`
             - A formula recommendation for `spark.sql.shuffle.partitions`:
                 - For large datasets, aim for anywhere from 100MB to < 200MB task target size for a partition (use target size of 100MB, for example)
-                - `spark.sql.shuffle.partitions` = quotient (shuffle stage input size/target size)/total cores) * total cores
+                - A `spark.sql.shuffle.partitions` quotient could be: `((shuffle stage input size/target size)/total cores) * total cores`
         - Partition the input dataset appropriately so each task size is not too big
         - Use the Spark UI to study the plan to look for opportunities to reduce the shuffle as much as possible
 - See "Explore best practices" for Spark performance optimization for more information:
@@ -95,7 +95,7 @@
 ## JOINs in Spark
 - Spark can join 2 tables quite easily, and syntax is easy to understand via `.join()`
 - For the JOINs, suppose we have 2 partitions per dataset (i.e., 2 partitions for yellow and 2 partitions for green), where `Y1`, `Y2`, `Y3` and `G1`, `G2`, `G3` are the records of each dataset 
-    - Each record is composed by multiple columns: `hour`, `zone`, `amount` and `number_of_trips`
+    - Each record is composed of multiple columns: `hour`, `zone`, `amount` and `number_of_trips`
     - Records will be joined by a **composite key** [`hour`, `zone`]
     - In the next step, Spark once again does re-shuffling with External Merge Sort
     - Suppose we have 3 output partitions: every record with composite key 1 will go to the 1st partition, every record with composite key 2 will go to the 2nd, every record with composite key 3 to the 3rd, and every record with composite key 4 would go to the *1st* partition
@@ -104,17 +104,4 @@
 - Spark **broadcast joins** are perfect for joining a *large* DataFrame with a *small* DataFrame.
     - Spark can "broadcast" a small DataFrame by sending *all* the data in that small DataFrame to *all* nodes in the cluster
     - After the small DataFrame is broadcasted, Spark can perform a join *without shuffling any of the data in the large DataFrame*
-    - Example: Joining our joined green and yellow results DataFrame with a small zones lookup CSV/table
-
-
-## Operations on Resilient Distributed Datasets (RDDs)
-- **Resilient Distributed Datasets (RDDs)** = the main abstraction provided by Spark
-- In the very first versions of Spark, these were the basis of its distributed computing
-- Consists of **collections** of elements *partitioned accross the nodes of the cluster*
-    - i.e., a distributed dataset that is partitioned
-- Spark DataFrames are implemented *on top of* RDDs (which itself is made up of **rows**, which are special objects used to build DataFrames)
-    - Gives us another layer of abstraction and a nice API and functions so that we don't have to use RDD's anymore
-    - Difference: DataFrames *have a schema* while (plain) RDDs are *only a distributed collection of objects*
-- NOTE: Most of our data processing can be done using Spark DataFrames
-- Imagine we have a distributed dataset (it's made up of partitions)
-    - Then, we have a bunch of executors, and each one takes a partition and executes it (same as DataFrames)
+        - Example: Joining our joined green and yellow results DataFrame with a small zones lookup CSV/table
