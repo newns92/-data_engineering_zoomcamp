@@ -114,6 +114,12 @@ def main(args):
 
     ## CAN NOW SEE THE EMPTY TABLE IN pgcli and inspect it via `\d yellow_taxi_data`
 
+    # Add (append) first chunk of data to the table and time how long it takes to load
+    start = time.time()
+    df.to_sql(name=yellow_taxi_table_name, con=engine, if_exists="append")
+    end = time.time()
+    print("Time to insert first chunk: in %.3f seconds." % (end - start))
+
 
 if __name__ == "__main__":
     # Create a new ArgumentParser object to have text to display before the argument help (description)
