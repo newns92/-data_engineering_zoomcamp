@@ -54,31 +54,44 @@ def main(args):
     # zones_csv_name = "./data/taxi+_zone_lookup.csv"
     # os.system(f"wget {zones_url} -O {zones_csv_name}")  # -O = output to the given file name  
 
-    # Read in 1st 100 rows of dataset
-    df = pd.read_csv("./data/yellow_tripdata_2021-01.csv", compression="gzip", nrows=100)
-    # print(df.head())
-    # print(df.dtypes)
+    # # TEST: Read in 1st 100 rows of the dataset
+    # df = pd.read_csv(taxi_csv_name, compression="gzip", nrows=100)
+    # # print(df.head())
+    # # print(df.dtypes)
 
-    # Convert meter engaged and meter disengaged columns from text to dates
-    df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-    df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
-    # print(df.head())
-    # print(df.dtypes)
+    # # TEST: Convert meter engaged and meter disengaged columns from text to dates
+    # df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+    # df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+    # # print(df.head())
+    # # print(df.dtypes)
 
-    print("Creating the engine...")
+    print("Creating the Postgres engine...")
     # Need to convert this DDL statement into something Postgres will understand using
     #   the sqlalchemy library's "create_engine" function
     # create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
     engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{database}")
     print(engine.connect())
 
-    # Convert the dataframe into a Data Definition Language (DDL) statement in order 
-    #   to CREATE a SQL table schema on the fly, whilst adding in the connection to the 
-    #   Postgres database via the "con" argument to the "get_schema" function
-    ddl = pd.io.sql.get_schema(df, name="yellow_taxi_data", con=engine)
-    print(ddl)
+    # # Convert the dataframe into a Data Definition Language (DDL) statement in order 
+    # #   to CREATE a SQL table schema on the fly, whilst adding in the connection to the 
+    # #   Postgres database via the "con" argument to the "get_schema" function
+    # ddl = pd.io.sql.get_schema(df, name="yellow_taxi_data", con=engine)
+    # print(ddl)
 
- 
+    # # Add in the timezones first before the long loop for the taxi data
+    # print("Loading in zone data...")
+    # df_zones = pd.read_csv(zones_csv_name)
+    # df_zones.to_sql(name=zones_table_name, con=engine, if_exists="replace")
+    # print("Loaded in time zone data")
+
+    print("Loading in taxi data in chunks...")
+    # Chunk dataset into smaller sizes to load into the database via the "chunksize" arg
+    df_iter = pd.read_csv(taxi_csv_name, compression="gzip", iterator=True, chunksize=100000)
+    # Return the next item in an iterator object with the "next()" function
+    df = next(df_iter) 
+    print(len(df))
+
+
 if __name__ == "__main__":
     # Create a new ArgumentParser object to have text to display before the argument help (description)
     parser = argparse.ArgumentParser(description="Ingest CSV Data to Postgres")
