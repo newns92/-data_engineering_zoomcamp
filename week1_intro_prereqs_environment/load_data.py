@@ -65,11 +65,6 @@ def main(args):
     # print(df.head())
     # print(df.dtypes)
 
-    # Convert the dataframe into a Data Definition Language (DDL) statement in order 
-    #   to CREATE a SQL table schema on the fly
-    ddl = pd.io.sql.get_schema(df, name="yellow_taxi_data")
-    print(ddl)
-
     print("Creating the engine...")
     # Need to convert this DDL statement into something Postgres will understand using
     #   the sqlalchemy library's "create_engine" function
@@ -77,7 +72,13 @@ def main(args):
     engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{database}")
     print(engine.connect())
 
+    # Convert the dataframe into a Data Definition Language (DDL) statement in order 
+    #   to CREATE a SQL table schema on the fly, whilst adding in the connection to the 
+    #   Postgres database via the "con" argument to the "get_schema" function
+    ddl = pd.io.sql.get_schema(df, name="yellow_taxi_data", con=engine)
+    print(ddl)
 
+ 
 if __name__ == "__main__":
     # Create a new ArgumentParser object to have text to display before the argument help (description)
     parser = argparse.ArgumentParser(description="Ingest CSV Data to Postgres")
