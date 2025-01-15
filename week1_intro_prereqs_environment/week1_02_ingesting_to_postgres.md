@@ -54,3 +54,4 @@
     ```
 - You can then check the schema in a Postgres-connected prompt (Anaconda or Git bash) via `\d yellow_taxi_data`
 - You can test the row counts with `SELECT COUNT(*) FROM yellow_taxi_data`, which should be 1,369,765 rows
+- Once done, you can exit the database via `CTRL + D` and then shut down the database in the other command prompt via 
