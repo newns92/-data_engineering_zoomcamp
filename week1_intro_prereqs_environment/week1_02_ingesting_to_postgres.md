@@ -52,3 +52,5 @@
     --yellow_taxi_table_name=yellow_taxi_data \
     --yellow_taxi_url=${URL1}    
     ```
+- You can then check the schema in a Postgres-connected prompt (Anaconda or Git bash) via `\d yellow_taxi_data`
+- You can test the row counts with `SELECT COUNT(*) FROM yellow_taxi_data`, which should be 1,369,765 rows

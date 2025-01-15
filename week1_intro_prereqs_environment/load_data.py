@@ -1,7 +1,8 @@
+import sys
 import pandas as pd
 import os
-# For removing files from a directory
-import shutil
+# # For removing files from a directory
+# import shutil
 from sqlalchemy import create_engine
 import time
 # For named arguments like user, password, host, port, database, table, file locations, etc.
@@ -23,9 +24,9 @@ def remove_files():
         elif item.endswith(".csv"):
             os.remove(os.path.join(dir_name, item))
 
-    # Remove all other the local files in the "data" directory
-    # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
-    shutil.rmtree("./data/")
+    # # Remove all other the local files in the "data" directory
+    # # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
+    # shutil.rmtree("./data/")
 
 
 def main(args):
@@ -114,16 +115,63 @@ def main(args):
 
     ## CAN NOW SEE THE EMPTY TABLE IN pgcli and inspect it via `\d yellow_taxi_data`
 
-    # Add (append) first chunk of data to the table and time how long it takes to load
+    # Add (append) first chunk of data to the table and time how long it takes
     start = time.time()
     df.to_sql(name=yellow_taxi_table_name, con=engine, if_exists="append")
     end = time.time()
     print("Time to insert first chunk: in %.3f seconds." % (end - start))
 
+    # Create function to use when looping through chunks to load
+    def load_chunks(df):
+        try:
+            print("Loading next chunk...")
+            start = time.time()
+
+            # Get next 100,000 row chunk
+            df = next(df_iter)
+
+            # Fix datetimes again
+            df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+            df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+
+            # This fixes fields that have NAN values and thus aren't INTs when
+            #   they *should* be INTs
+            # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
+            df.VendorID = pd.array(df.VendorID, dtype=pd.Int64Dtype())
+            df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
+            df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
+            df.RatecodeID = pd.array(df.RatecodeID, dtype=pd.Int64Dtype())  
+            
+            # Append current chunk to Postgres table
+            df.to_sql(name=yellow_taxi_table_name, con=engine, if_exists="append")
+
+            end = time.time()
+
+            print("Inserted next chunk in %.3f seconds." % (end - start))
+
+        except:
+            # Program will come to this clause when it throws an error after
+            #   running out of data chunks
+            print("All data chunks loaded.")
+
+            # Remove all downloaded data files to free up space on machine
+            remove_files()
+
+            # Exit with code of 1 (an error occured)
+            # NOTE: quit() is only intended to work in the interactive Python shell
+            sys.exit(1)
+
+    # Insert the rest of the chunks until loop breaks when all data is added
+    while True:
+        if load_chunks(df):
+            break
+        else:        
+            continue
+
 
 if __name__ == "__main__":
     # Create a new ArgumentParser object to have text to display before the argument help (description)
-    parser = argparse.ArgumentParser(description="Ingest CSV Data to Postgres")
+    parser = argparse.ArgumentParser(description="Ingest CSV Data to Postgres database")
     
     # Add all of our arguments
     parser.add_argument("--user", help="Username for Postgres")
