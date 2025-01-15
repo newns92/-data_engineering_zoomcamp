@@ -46,27 +46,34 @@ def main(args):
     # Make the directory to hold the file if it doesn't exist
     os.makedirs(os.path.dirname(f"./data/"), exist_ok=True)
 
-    # Download the data via Unix-based GNU command "wget"
-    print("Downloading the taxi data...")
+    # Download the data via Unix-based GNU command "wget"    
     taxi_csv_name = "./data/yellow_tripdata_2021-01.csv"
     taxi_file = Path(taxi_csv_name)
     
     # If the file is not already downloaded/does not exist, download it
     if not taxi_file.is_file():
+        print("Downloading the taxi data...")
         os.system(f"wget {yellow_taxi_url} -O {taxi_csv_name}")  # -O = output to the given file name
 
-    print("Downloading the taxi zone data...")
     zones_csv_name = "./data/taxi_zone_lookup.csv"
     zones_file = Path(zones_csv_name)
 
     # If the file is not already downloaded/does not exist, download it
     if not zones_file.is_file():
+        print("\nDownloading the taxi zone data...")
         os.system(f"wget {zones_url} -O {zones_csv_name}")  # -O = output to the given file name
 
-    # # TEST: Read in 1st 100 rows of the dataset
-    # df = pd.read_csv(taxi_csv_name, compression="gzip", nrows=100)
-    # # print(df.head())
-    # # print(df.dtypes)
+    # # TEST: Check for mixed data type columns
+    # # https://stackoverflow.com/questions/29376026/find-mixed-types-in-pandas-columns
+    # df = pd.read_csv(taxi_csv_name, compression="gzip")
+    # for col in df.columns:
+    #     # weird = (df[[col]].applymap(type) != df[[col]].iloc[0].apply(type)).any(axis=1)
+    #     # if len(df[weird]) > 0:
+    #     #     print(col)  # store_and_fwd_flag
+    #     unique_types = df[col].apply(type).unique()
+    #     if len(unique_types) > 1:
+    #         mixed = True
+    #         print(col, unique_types, df[col].unique())
 
     # # TEST: Convert meter engaged and meter disengaged columns from text to dates
     # df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
@@ -131,18 +138,32 @@ def main(args):
             # Get next 100,000 row chunk
             df = next(df_iter)
 
+            # Check for mixed data type columns
+            # https://stackoverflow.com/questions/29376026/find-mixed-types-in-pandas-columns
+            mixed = False
+            for col in df.columns:
+                # weird = (df[[col]].applymap(type) != df[[col]].iloc[0].apply(type)).any(axis=1)
+                # if len(df[weird]) > 0:
+                #     print(col)  # store_and_fwd_flag
+                unique_types = df[col].apply(type).unique()
+                if len(unique_types) > 1:
+                    mixed = True
+                    # print(col, unique_types, df[col].unique())
+
             # Fix datetimes again
             df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
             df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
 
-            # This fixes fields that have NAN values and thus aren't INTs when
-            #   they *should* be INTs
+            # Fix fields that have NAN values
             # https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html#integer-na
-            df.VendorID = pd.array(df.VendorID, dtype=pd.Int64Dtype())
-            df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
-            df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
-            df.RatecodeID = pd.array(df.RatecodeID, dtype=pd.Int64Dtype())  
-            
+            if mixed:
+                print("Fixing column data types...")
+                # df.VendorID = pd.array(df.VendorID, dtype=pd.Int64Dtype())
+                # df.passenger_count = pd.array(df.passenger_count, dtype=pd.Int64Dtype())
+                # df.payment_type = pd.array(df.payment_type, dtype=pd.Int64Dtype())
+                # df.RatecodeID = pd.array(df.RatecodeID, dtype=pd.Int64Dtype())
+                df.store_and_fwd_flag = pd.array(df.store_and_fwd_flag, dtype=pd.StringDtype())
+
             # Append current chunk to Postgres table
             df.to_sql(name=yellow_taxi_table_name, con=engine, if_exists="append")
 
