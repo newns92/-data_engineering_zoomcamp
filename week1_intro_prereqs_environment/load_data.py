@@ -1,10 +1,13 @@
 import pandas as pd
 import os
+# For removing files from a directory
 import shutil
 from sqlalchemy import create_engine
 import time
 # For named arguments like user, password, host, port, database, table, file locations, etc.
 import argparse
+# For checking if file exists
+from pathlib import Path
 
 
 def remove_files():
@@ -48,7 +51,11 @@ def main(args):
     # Download the data via Unix-based GNU command "wget"
     print("Downloading the taxi data...")
     taxi_csv_name = "./data/yellow_tripdata_2021-01.csv"
-    os.system(f"wget {yellow_taxi_url} -O {taxi_csv_name}")  # -O = output to the given file name
+    taxi_file = Path(taxi_csv_name)
+    
+    # If the file is not already downloaded/does not exist, download it
+    if not taxi_file.is_file():
+        os.system(f"wget {yellow_taxi_url} -O {taxi_csv_name}")  # -O = output to the given file name
 
     # print("Downloading the taxi zone data...")
     # zones_csv_name = "./data/taxi+_zone_lookup.csv"
@@ -72,8 +79,8 @@ def main(args):
     engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{database}")
     print(engine.connect())
 
-    # # Convert the dataframe into a Data Definition Language (DDL) statement in order 
-    # #   to CREATE a SQL table schema on the fly, whilst adding in the connection to the 
+    # # Convert the dataframe into a Data Definition Language (DDL) statement in order
+    # #   to CREATE a SQL table schema on the fly, whilst adding in the connection to the
     # #   Postgres database via the "con" argument to the "get_schema" function
     # ddl = pd.io.sql.get_schema(df, name="yellow_taxi_data", con=engine)
     # print(ddl)
@@ -87,9 +94,25 @@ def main(args):
     print("Loading in taxi data in chunks...")
     # Chunk dataset into smaller sizes to load into the database via the "chunksize" arg
     df_iter = pd.read_csv(taxi_csv_name, compression="gzip", iterator=True, chunksize=100000)
+    
     # Return the next item in an iterator object with the "next()" function
-    df = next(df_iter) 
-    print(len(df))
+    df = next(df_iter)
+    # print(len(df))
+
+    # Convert meter engaged and meter disengaged columns from text to dates
+    df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+    df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+
+    # Get the header/column names from the dataset via the 0-indexed row
+    header = df.head(n=0)
+    # print("Column names:\n", header)
+
+    # Add the column headers to the yellow_taxi_data table in the Postgres 
+    #   database connection in order to create the table, and replace the
+    #   table if it exists
+    header.to_sql(name=yellow_taxi_table_name, con=engine, if_exists="replace")
+
+    ## CAN NOW SEE THE EMPTY TABLE IN pgcli and inspect it via `\d yellow_taxi_data`
 
 
 if __name__ == "__main__":
