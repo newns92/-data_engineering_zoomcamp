@@ -56,14 +56,26 @@ def main(args):
 
     # Read in 1st 100 rows of dataset
     df = pd.read_csv("./data/yellow_tripdata_2021-01.csv", compression="gzip", nrows=100)
-    print(df.head())
-    print(df.dtypes)
+    # print(df.head())
+    # print(df.dtypes)
 
     # Convert meter engaged and meter disengaged columns from text to dates
     df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
     df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
-    print(df.head())
-    print(df.dtypes)
+    # print(df.head())
+    # print(df.dtypes)
+
+    # Convert the dataframe into a Data Definition Language (DDL) statement in order 
+    #   to CREATE a SQL table schema on the fly
+    ddl = pd.io.sql.get_schema(df, name="yellow_taxi_data")
+    print(ddl)
+
+    print("Creating the engine...")
+    # Need to convert this DDL statement into something Postgres will understand using
+    #   the sqlalchemy library's "create_engine" function
+    # create_engine([database_type]://[user]:[password]@[hostname]:[port]/[database], con=[engine])
+    engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{database}")
+    print(engine.connect())
 
 
 if __name__ == "__main__":
