@@ -53,9 +53,9 @@
         ```
 - The `docker build -t <image-name> .` CLI command uses the Dockerfile to *build* a new image using the Dockerfile in the *current* directory (via the `.` at the end of the command), while also **tagging** the image with a human-readable image name
     - For example, `winpty docker build -t test:pandas .`
-    - Can then run `winpty docker run -it test:pandas` without that `--entrypoint=bash` parameter in the CLI command
     - *Must **rebuild** images after any changes are made*
 - You can then run a container using the `docker run` CLI command while specifying the name of an image
+    - Can run `winpty docker run -it test:pandas` without that `--entrypoint=bash` parameter in the CLI command
     - Can use the `-d` flag (short for `--detach`) to run a container in the background (Docker starts your container and returns you to the terminal prompt)
 - `docker ps` will show all running containers
 - To remove a container, you first need to *stop* it
@@ -101,16 +101,17 @@
     - It also comes with some free perks, like the creation of a common network for all of the containers specified in the `.yml` file, and in that way they can communicate with one another
 - `Dockerfile`'s and `docker-compose.yml` are different things and are meant to co-exist, but it's important to note that `docker-compose.yml` file instructions take precedence over what's in a Dockerfile, so be careful to not override a `Dockerfile`'s instructions if using overlapping functionality in a `docker-compose.yml` file
 
+## Example Work
 
-## Writing the Dockerfile
+### Writing the Dockerfile
 - First, make sure Docker Desktop (the underlying tech that runs containers) is running so that the Docker engine is started, and log in if need be
-- Then, create a `Dockerfile` and, when in the directory containing the `Dockerfile`, build the image with a name tag while looking for the `Dockerfile` in our current directory `.` via `docker build -t test:pandas .`
-- Can then run a container based off of this image via `docker run -it test:pandas` to run in in interactive mode (via the `-it` flag)
+- Then, create a `Dockerfile` and, when in the directory containing the `Dockerfile`, build the image with a name tag while looking for the `Dockerfile` in our current directory `.` via `winpty docker build -t test:pandas .`
+- Can then run a container based off of this image via `winpty docker run -it test:pandas` to run in in interactive mode (via the `-it` flag)
 
 
-## Writing the pipeline
-- Next, exit the container via `exit` and stop the container if need be via `docker stop <container-id>`
-- Then create a simple test `pipeline.py` and add `COPY pipeline.py pipeline.py` to the `Dockerfile` as well as the current working directory in the image as `WORKDIR /app` to add the file from the source current working directory to the Docker image (with the same file name)
+### Writing the pipeline
+- Next, exit the container via `exit` and stop the container if need be via `winpty docker stop <container-id>`
+- Then, create a simple test `pipeline.py` and add `COPY pipeline.py pipeline.py` to the `Dockerfile` as well as the current working directory in the image as `WORKDIR /app` to add the file from the source current working directory to the Docker image (with the same file name)
 - Then **rebuild** the image via `docker build -t test:pandas .`
 - Then start a new container via `docker run -it test:pandas` and notice that you are in the `/app` directory from the `Dockerfile`'s `WORKDIR` argument
 - After adding in a new entrypoint of `ENTRYPOINT [ "python", "pipeline.py" ]` and adding `day = sys.argv[1]` to `pipeline.py`, run `docker run -it test:pandas 2021-01-15`, where the final date is an arg passed to Python
