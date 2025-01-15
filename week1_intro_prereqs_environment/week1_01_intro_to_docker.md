@@ -114,7 +114,7 @@
 - Then, create a simple test `pipeline.py` and add `COPY pipeline.py pipeline.py` to the `Dockerfile` as well as the current working directory in the image as `WORKDIR /app` to add the file from the source current working directory to the Docker image (with the same file name)
 - Then **rebuild** the image via `docker build -t test:pandas .`
 - Then start a new container via `docker run -it test:pandas` and notice that you are in the `/app` directory from the `Dockerfile`'s `WORKDIR` argument
-- After adding in a new entrypoint of `ENTRYPOINT [ "python", "pipeline.py" ]` and adding `day = sys.argv[1]` to `pipeline.py`, run `docker run -it test:pandas 2021-01-15`, where the final date is an arg passed to Python
+- After adding in a new entrypoint of `ENTRYPOINT ["python", "pipeline.py"]` and adding `day = sys.argv[1]` to `pipeline.py`, run `docker run -it test:pandas 2021-01-15`, where the final date is an arg passed to Python
 
 ## Reference links
 - https://docs.docker.com/desktop/install/windows-install/
