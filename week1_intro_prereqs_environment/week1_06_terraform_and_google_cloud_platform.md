@@ -224,3 +224,31 @@
 - To get rid of this bucket, run `terraform destroy` and then enter `yes`
     - This takes down/destroys resources, and will remove our current Terraform stack from the cloud
 - You should no longer see that bucket in the GCP Cloud Storage Buckets UI
+
+
+## Create a BigQuery Dataset
+- Navigate to the Terraform docs for GCP BigQuery datasets: https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_dataset
+- The documentation gives quite a complicated "basic" example
+- The only *real* "required" fields are `dataset_id`, `project`, and `location`
+- Input the following code to your `main.tf` file:
+    ```YML
+    ## Create a RESOURCE: a BigQuery Data Warehouse
+    ## Ref: https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_dataset
+    resource "google_bigquery_dataset" "dataset" {
+        dataset_id = var.BQ_DATASET
+        project    = var.project
+        location   = var.region
+    }
+    ```
+- Save `main.tf`, and next, in Git Bash, run `terraform plan`
+- Again, you should see a successful Terraform plan in the output
+- Next, to deploy the plan, in Git Bash, run `terraform apply` and then enter `yes`
+- Navigate to BigQuery Studio in GCP and you should see the dataset under the project ID
+- To get rid of the bucket and the dataset, run `terraform destroy` and then enter `yes`
+
+
+## GCP Extra Info
+- Above, we set up 2 resources in the Google environment (a GCP Cloud Storage **data lake** and GCP BigQuery **data warehouse**)
+    - Cloud storage is a bucket in our GCP environment where we can store data in flat files
+        - This data lake is where we will store data in a more organized fashion
+    - In our BigQuery data warehouse, our data will be in a more structured format (Fact and Dimension tables)
