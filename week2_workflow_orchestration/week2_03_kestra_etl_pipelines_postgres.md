@@ -39,6 +39,8 @@
 
 ## First flow
 - Blog post for this flow example: https://kestra.io/blogs/2024-04-05-getting-started-with-kestra
+    - ***NOTE***: This example is in an older version of Kestra, so some lines of code may need to be updated
+        - Example: `io.kestra.core.models.triggers.type.Schedule` is now `io.kestra.plugin.core.trigger.Schedule`
 - We will go through an example flow to execute a Python script (here, an API request to GitHub to see how many stars the Kestra GitHub repo has) once every hour and send the output to a user in Discord
     ```Python
     import requests
@@ -199,3 +201,19 @@
       username: Kestra
     ```
 - Now, when we execute the flow, we will see *three* sections in the "Logs" tab, one for each task
+
+
+## Triggers
+- Instead of manually executing this flow, we can create a Kestra **trigger** to do so, say once every hour
+- We can do this right in the YAML for the flow (at the bottom of the code), or in the Topology view
+- Our `type` will be a "Schedule", but more custom types can be used
+- For the `cron` argument, we use a simple CRON expression to set up an hourly schedule
+    - Can use [crontab.guru](https://crontab.guru/) to get the exact expression
+    ```YML
+    triggers:
+    - id: hour_trigger
+        type: io.kestra.plugin.core.trigger.Schedule
+        cron: 0 * * * *
+    ```
+- As soon as you save, the trigger will be live and will start executing a flow once conditions are met
+- If you decide to turn the trigger off, instead of completely deleting it, you can add a `disabled: True` line to the flow's YAML under the `triggers:` section
