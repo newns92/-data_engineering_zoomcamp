@@ -1,3 +1,4 @@
+## General
 data/
 ny_taxi_postgres_data/
 data_pgadmin/
@@ -21,12 +22,15 @@ variables.tf
 *homework.md
 *bigquery_sql.sql
 
-# dbt
+## dbt
 *.log
 .user.yml
 target/
 dbt_packages/
 logs/
-
 # has BigQuery project ID in it
 dbt_cloud/models/staging/schema.yml
+
+## Kestra
+# Has Discord webhook in it
+my_first_flow.yml
