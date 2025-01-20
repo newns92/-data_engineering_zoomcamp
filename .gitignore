@@ -34,3 +34,4 @@ dbt_cloud/models/staging/schema.yml
 ## Kestra
 # Has Discord webhook in it
 my_first_flow.yml
+postgres_taxi.yml
