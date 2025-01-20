@@ -35,3 +35,5 @@ dbt_cloud/models/staging/schema.yml
 # Has Discord webhook in it
 my_first_flow.yml
 postgres_taxi.yml
+postgres_taxi_scheduled.yml
+postgres_taxi_dbt.yml
