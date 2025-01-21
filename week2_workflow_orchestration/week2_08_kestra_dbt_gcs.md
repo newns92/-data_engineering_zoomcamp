@@ -60,9 +60,9 @@
           outputs:
            dev:
               type: bigquery
-              dataset: '{{ kv(''GCP_DATASET'') }}'
-              project: '{{ kv(''GCP_PROJECT_ID'') }}'
-              location: '{{ kv(''GCP_LOCATION'') }}'
+              dataset: '{{ kv('GCP_DATASET') }}'
+              project: '{{ kv('GCP_PROJECT_ID') }}'
+              location: '{{ kv('GCP_LOCATION') }}'
               keyfile: sa.json
               method: service-account
               priority: interactive
