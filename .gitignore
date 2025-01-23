@@ -21,6 +21,7 @@ variables.tf
 .git
 *homework.md
 *bigquery_sql.sql
+__pycache__
 
 ## dbt
 *.log
