@@ -20,7 +20,8 @@ variables.tf
 *.tfstate.backup
 .git
 *homework.md
-*bigquery_sql.sql
+bigquery_ml_models_sql.sql
+bigquery_partition_cluster_sql.sql
 __pycache__
 
 ## dbt
