@@ -68,7 +68,8 @@
         - To start off, make sure there is some data in your GCS bucket that you will be using
             - Do this via drag-and-drop of Parquet files or via an orchestration tool utilizing CSV's
                 - ***May run into an issue of various fields being FLOATs and INTs, due to a `nan` value and have to fix***
-        - Once the data is there, make sure you have a `ny_taxi` dataset under your project ID in BigQuery, and *NO* `external_nyc_yellow_taxi_data` table (***If it's there, drop it***)
+                - ***See `upload_all_data_gcs_parquet.py` for details***
+        - Once the data is there (`python upload_all_data_gcs_parquet.py`), make sure you have a `ny_taxi` dataset under your project ID in BigQuery, and *NO* `external_nyc_yellow_taxi_data` table (***If it's there, drop it***)
         - Then, using the **gsutil URI's** of the data files, run
             ```SQL
                 -- Creating external table referring to GCS path (gutil URI)
