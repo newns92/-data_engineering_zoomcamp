@@ -173,16 +173,16 @@ def web_to_gcs(year, service, gcs_bucket):
         file_name = file_name.replace('.csv.gz', '.parquet')
         df.to_parquet(f'./data/{file_name}', engine='pyarrow')
         
-        ## Upload Parquet to GCS Bucket
+        ## Upload Parquet to GCS Bucket, creating a data/ directory in GCS
         print(f'Uploading {path} to GCS...')
         upload_to_gcs(gcs_bucket, f'data/{service}/{file_name}', f'data/{file_name}')
 
 
 if __name__ == '__main__':
-    web_to_gcs('2019', 'green', gcs_bucket)
+    # web_to_gcs('2019', 'green', gcs_bucket)
     # web_to_gcs('2020', 'green', gcs_bucket)
-    # web_to_gcs('2019', 'yellow', gcs_bucket)
-    # web_to_gcs('2020', 'yellow', gcs_bucket)
+    web_to_gcs('2019', 'yellow', gcs_bucket)
+    web_to_gcs('2020', 'yellow', gcs_bucket)
     # web_to_gcs('2019', 'fhv', gcs_bucket)
     remove_files()
 
