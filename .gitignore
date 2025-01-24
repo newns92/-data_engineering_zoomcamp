@@ -36,3 +36,6 @@ dbt_cloud/models/staging/schema.yml
 ## Kestra
 # Has Discord webhook and GCP secrets in them
 flows/
+
+## BigQuery models
+serving_dir/
