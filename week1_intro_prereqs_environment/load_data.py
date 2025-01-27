@@ -1,7 +1,7 @@
 import sys
 import pandas as pd
+# For removing files from a directory
 import os
-# # For removing files from a directory
 # import shutil
 from sqlalchemy import create_engine
 import time
@@ -13,19 +13,19 @@ from pathlib import Path
 
 def remove_files():
     print("Removing files...")
-    # https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
+    ## https://stackoverflow.com/questions/32834731/how-to-delete-a-file-by-extension-in-python
     dir_name = "./data"
     local_data = os.listdir(dir_name)
 
-    # Remove the local compressed and uncompressed CSV's
+    ## Remove the local compressed and uncompressed CSV's
     for item in local_data:
         if item.endswith(".csv.gz"):
             os.remove(os.path.join(dir_name, item))
         elif item.endswith(".csv"):
             os.remove(os.path.join(dir_name, item))
 
-    # # Remove all other the local files in the "data" directory
-    # # https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
+    # ## Remove all other the local files in the "data" directory
+    # ## https://stackoverflow.com/questions/48892772/how-to-remove-a-directory-is-os-removedirs-and-os-rmdir-only-used-to-delete-emp
     # shutil.rmtree("./data/")
 
 
