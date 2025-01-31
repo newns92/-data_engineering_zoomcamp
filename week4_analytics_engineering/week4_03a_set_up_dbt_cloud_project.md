@@ -70,12 +70,17 @@
         - They highly recommend that API keys be replaced with the more secure account-scoped **Personal Access Tokens (PATs)** for improved account security
         - See documentation for help and please contact support if any issues arise: https://docs.getdbt.com/docs/dbt-cloud-apis/user-tokens
     - Once the project is opened in the IDE, initialize the project
-    - Then, "commit and sync" the changes to the `master` branch
+        - ***If needed due to an error, create the `dbt_cloud` subdirectory in the folder structure in the IDE before initializing***
+    - Then, click "Commit and sync" to make the changes to a new branch (name it whatever you'd like), and add a commit message
+        - Then, click "Create a pull request" to open up GitHub and see the pull request
+        - Review it, and then create it
+        - Then, so long as there are no conflicts, **merge** the pull request
     - Then, create a new branch `dbt` in git or in the dbt Cloud IDE for dbt development, and dbt Cloud will automatically switch to this new branch
+        - Click "Pull from master" if needed
     - In the dbt Cloud IDE, open up `dbt_project.yml`
         - Rename the project to something like `ny_taxi_data`
         - Keep the profile as `default` and leave the defaults for where our different files are located (under the `# These configurations specify where dbt...` section/comment)
-        - Also update the `models` part of the code like so:
+        - Also update the `models` part of the code like so (i.e., change `my_new_project` to your dbt projet name):
             ```YML
                 models:
                     ny_taxi_data:
@@ -83,7 +88,7 @@
                         # example:
                         #   +materialized: table
             ```
-            - Since we're not using this code *just yet*, we can comment it out
+            - Since we're not using this code underneath the model (named after the project) *just yet*, we can comment it out
         - We can also note that in the `models/` directory, we can see some sample models with basic DAGs already set up
             - But don't worry about this, as we will create our own models later
         - Finally, save the file and commit to GitHub via the dbt Cloud IDE
