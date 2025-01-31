@@ -10,10 +10,10 @@
     - **Models**
         - Includes staging, core, and a datas marts models
         - Every model will be a view or a table, *unless indicated otherwise*
-    - **Snapshots**:  are a way to capture the state of your mutable tables so you can refer to it later.
-    - **Macros** that contain blocks of code that you can reuse multiple times
+    - **Snapshots**: a way to capture the state of your *mutable* tables so you can refer to it later
+    - **Macros** that contain blocks of code that you can reuse multiple times (modular)
     - **Seeds**: CSV files with static data that you can load into your data platform with dbt
-    - **Test**: SQL queries that you can write to test the models and resources in a dbt project
+    - **Tests**: SQL queries that you can write to test the models and resources in a dbt project
     - CSV files in the `data/` folder, which will be our **Sources**
     - For more information, see: https://docs.getdbt.com/docs/build/projects
 
