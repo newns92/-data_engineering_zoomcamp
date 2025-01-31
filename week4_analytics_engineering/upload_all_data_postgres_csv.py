@@ -363,4 +363,3 @@ if __name__ == '__main__':
     # web_to_pg('2019', 'fhv')
 
     remove_files()
-
