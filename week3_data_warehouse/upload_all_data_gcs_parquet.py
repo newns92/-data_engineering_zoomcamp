@@ -71,7 +71,7 @@ def clean_data(df, service):
                    'PULocationID':'pu_location_id',
                    'DOLocationID':'do_location_id',
                    'RatecodeID':'rate_code_id'
-                   },
+                },
             axis='columns', inplace=True
         )
         
@@ -92,7 +92,8 @@ def clean_data(df, service):
         df.rename({'VendorID':'vendor_id',
                     'PULocationID':'pu_location_id',
                     'DOLocationID':'do_location_id',
-                    'RatecodeID':'rate_code_id'}, 
+                    'RatecodeID':'rate_code_id'
+                }, 
             axis='columns', inplace=True
         )
 
@@ -114,7 +115,8 @@ def clean_data(df, service):
         ## Rename columns to be better suited for a database/data warehouse table
         df.rename({'dropOff_datetime':'dropoff_datetime',
                     'PULocationID':'pu_location_id',
-                    'DOLocationID':'do_location_id'}, 
+                    'DOLocationID':'do_location_id'
+                }, 
             axis='columns', inplace=True
         )
 
