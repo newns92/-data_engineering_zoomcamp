@@ -55,7 +55,7 @@
             - Then click "Save" in the top right of the page
         - Afterwards, back in the project creation tab/screen, see your *development credentials* as the next section
             - *The "Dataset" you'll see under the development credentials is the one you'll use to run and build your models during development*
-            - Give it a name if you prefer, such as `dbt_ny_taxi_zoomcamp2025`
+            - Give it a name if you prefer, ***but make sure it matches your BigQuery dataset name**
                 - *\***NOTE**: Since BigQuery's default location may not match the one you used for your source data, it's recommended to create this schema manually to avoid multiregion errors*
             - Then click "Test connection", and if passed, click "Save"
         - Then, in the "Setup a repository" section, select "git clone" as the option, and paste in the SSH key from your GitHub repo for the course
