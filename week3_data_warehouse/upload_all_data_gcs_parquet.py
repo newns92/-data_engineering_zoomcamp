@@ -114,8 +114,10 @@ def clean_data(df, service):
     else:
         ## Rename columns to be better suited for a database/data warehouse table
         df.rename({'dropOff_datetime':'dropoff_datetime',
-                    'PULocationID':'pu_location_id',
-                    'DOLocationID':'do_location_id'
+                    'PUlocationID':'pu_location_id',
+                    'DOlocationID':'do_location_id',
+                    'SR_flag':'sr_flag',
+                    'Affiliated_base_number':'affiliated_base_number'
                 }, 
             axis='columns', inplace=True
         )
@@ -189,4 +191,3 @@ if __name__ == '__main__':
     # web_to_gcs('2020', 'yellow', gcs_bucket)
     # web_to_gcs('2019', 'fhv', gcs_bucket)
     remove_files()
-
