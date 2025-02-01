@@ -90,19 +90,19 @@
     - Manually upload all the parquet files to your GCS bucket, or run a script (like the `upload_all_data_parquet_gcs.py` script in this repo) to get all the data into the cloud, available to BigQuery
     - Then, in BigQuery, create the external tables via:
         ```SQL
-            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_yellow_trip_data`
+            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.<dataset-name>.external_yellow_trip_data`
             OPTIONS (
             format = 'PARQUET',
             uris = ['gs://<bucket-name>/data/yellow/yellow_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/yellow/yellow_tripdata_2020-*.parquet']
             );
 
-            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_green_trip_data`
+            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.<dataset-name>.external_green_trip_data`
             OPTIONS (
             format = 'PARQUET',
             uris = ['gs://<bucket-name>/data/green/green_tripdata_2019-*.parquet', 'gs://<bucket-name>/data/green/green_tripdata_2020-*.parquet']
             );
 
-            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.ny_taxi.external_fhv_trip_data`
+            CREATE OR REPLACE EXTERNAL TABLE `<project-id>.<dataset-name>.external_fhv_trip_data`
             OPTIONS (
             format = 'PARQUET',
             uris = ['gs://<bucket-name>/data/fhv/fhv_tripdata_2019-*.parquet']
@@ -110,28 +110,28 @@
         ```
     - Then, in BigQuery, create *non*-external, *materialized* tables via
         ```SQL
-            CREATE OR REPLACE TABLE `<project-id>.ny_taxi.yellow_trip_data`
+            CREATE OR REPLACE TABLE `<project-id>.<dataset-name>.yellow_trip_data`
             AS
-            SELECT * FROM `<project-id>.ny_taxi.external_yellow_trip_data`;
+            SELECT * FROM `<project-id>.<dataset-name>.external_yellow_trip_data`;
 
-            CREATE OR REPLACE TABLE `<project-id>.ny_taxi.green_trip_data`
+            CREATE OR REPLACE TABLE `<project-id>.<dataset-name>.green_trip_data`
             AS
-            SELECT * FROM `<project-id>.ny_taxi.external_green_trip_data`;
+            SELECT * FROM `<project-id>.<dataset-name>.external_green_trip_data`;
 
-            CREATE OR REPLACE TABLE `<project-id>.ny_taxi.fhv_trip_data`
+            CREATE OR REPLACE TABLE `<project-id>.<dataset-name>.fhv_trip_data`
             AS
-            SELECT * FROM `<project-id>.ny_taxi.external_fhv_trip_data`;
+            SELECT * FROM `<project-id>.<dataset-name>.external_fhv_trip_data`;
         ```
-    - Then, check the row counts via
+    - Then, check the row counts in the details portion of the UI or via SQL:
         ```SQL
-            SELECT COUNT(*) FROM `<project-id>.ny_taxi.fhv_trip_data`;
+            SELECT COUNT(*) FROM `<project-id>.<dataset-name>.fhv_trip_data`;
             --- 43,244,696
 
-            SELECT COUNT(*) FROM `<project-id>.ny_taxi.yellow_trip_data`;
-            --- 109,247,536
+            SELECT COUNT(*) FROM `<project-id>.<dataset-name>.yellow_trip_data`;
+            --- 109,047,518
 
-            SELECT COUNT(*) FROM `<project-id>.ny_taxi.green_trip_data`;
-            --- 8,035,161
+            SELECT COUNT(*) FROM `<project-id>.<dataset-name>.green_trip_data`;
+            --- 7,778,101
         ```        
 - Now, back in the dbt Cloud IDE, in the `models/` directory, create a new directory called `staging/`
     - This is where we take in the raw data and apply some transforms if needed
@@ -148,7 +148,7 @@
             limit 100        
         ```
     2. A `schema.yml` file
-        - **First, create an environment variable in your system in a command prompt via `export DBT_GCP_PROJECT_ID='<your-gcp-project-id>'`**
+        - **First, make sure create an environment variable in your system in a command prompt via `export DBT_GCP_PROJECT_ID='<your-gcp-project-id>'` if you have not done so already**
             - Can check this via `echo $DBT_GCP_PROJECT_ID`
         - Then, use the `env_var()` dbt macro/function to incorporate your Google Cloud Platform project ID in this YML file instead of hard-coding it
             - See more at: https://docs.getdbt.com/reference/dbt-jinja-functions/env_var

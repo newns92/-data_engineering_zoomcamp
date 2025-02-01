@@ -248,6 +248,17 @@ def web_to_pg(year, service):
             ## Parse the datetime columns
             parse_dates = ['lpep_pickup_datetime', 'lpep_dropoff_datetime']
 
+        ## See how many rows are in data file and add it to a total row count
+        df = pd.read_csv(f'./data/{file_name}',
+                         compression='gzip',
+                         # iterator=True,
+                         # chunksize=100000,
+                         dtype=taxi_dtypes,
+                         parse_dates=parse_dates)
+        
+        print(f'Adding {df.shape[0]} rows from {file_name} to {total_rows} total rows so far')
+        total_rows += df.shape[0]
+                
         print('\nLoading in taxi data in chunks...')
         ## Chunk dataset into smaller sizes to load into the database via the 'chunksize' arg
         df_iter = pd.read_csv(f'./data/{file_name}',
@@ -307,8 +318,8 @@ def web_to_pg(year, service):
                 ## Get next chunk
                 df = next(df_iter)
 
-                print(f'Adding {df.shape[0]} rows...')
-                total_rows += df.shape[0]
+                # print(f'Adding {df.shape[0]} rows...')
+                # total_rows += df.shape[0]
 
                 ## Clean the data and fix the data types
                 df = clean_data(df, service)
@@ -324,6 +335,8 @@ def web_to_pg(year, service):
                 ## Will come to this clause when we throw an error after running out of data chunks
                 print('All data chunks loaded.')
                 
+                ## Don't know why I have to return something here or else code enters
+                ##      infinite loop
                 return total_rows
 
             # except:
@@ -342,7 +355,7 @@ def web_to_pg(year, service):
         while True:
             if load_chunks(df, total_rows):
                 break
-            else:        
+            else:
                 continue
 
     print(f'Total rows for {service} in {year}: {total_rows}')
@@ -356,10 +369,15 @@ if __name__ == '__main__':
 
     engine = create_pg_engine(user, password, host, port, database)
 
-    # web_to_pg('2019', 'green')
-    # web_to_pg('2020', 'green')
-    # web_to_pg('2019', 'yellow')
-    web_to_pg('2020', 'yellow')
+    ## Green should end up with 7778101 rows total
+    # web_to_pg('2019', 'green')  ## 6044050 rows
+    # web_to_pg('2020', 'green')  ##  1734051 rows
+
+    ## Yellow should end up with 109047518 rows total
+    # web_to_pg('2019', 'yellow')  ## 6044050 rows
+    # web_to_pg('2020', 'yellow')  ## 6044050 rows
+
+    ## FHV should end up with 43244696 rows total
     # web_to_pg('2019', 'fhv')
 
     remove_files()
