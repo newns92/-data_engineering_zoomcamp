@@ -190,7 +190,8 @@
     - See the differences between `build` and `run` here: https://www.castordoc.com/blog/dbt-build-vs-dbt-run
 - Then, change the `SELECT` statement to run with the new column definitions to make all column names consistent
     - ***NOTE***: You can also run `dbt run --select stg_green_trip_data`, which is equivalent to `dbt run -m stg_green_trip_data`
-- You should then see the new view under `ny_taxi_dev` in BigQuery (since *that's what we named the dataset to be when we defined the project*)
+- *\***NOTE**: If trying to run "Preview" in the dbt Cloud IDE, remove any `LIMIT` statement at the end of the query, as dbt Cloud will add a `LIMIT 500` automatically, which will break the code*
+- You should then see the new view under your dataset name (*that you specified in your project's development credentials*) in BigQuery (since *that's what we named the dataset to be when we defined the project*)
 - You can also see compiled SQL code in the `target/compiled/` directory in the dbt Cloud IDE
 
 
