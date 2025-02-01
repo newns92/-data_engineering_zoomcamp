@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: staging
+    database: "{{ env_var('DBT_GCP_PROJECT_ID') }}"  # i.e., the "dataset" (Project ID) in BigQuery
+    schema: "{{ env_var('DBT_BIGQUERY_SCHEMA', 'de_zoomcamp') }}"  # the dataset itself
+
+    tables:
+      - name: green_trip_data
+      - name: yellow_trip_data
