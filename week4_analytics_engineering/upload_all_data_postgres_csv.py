@@ -14,6 +14,8 @@ import time
 # import pyarrow as pa
 # import pyarrow.parquet as pq
 # import pyarrow.compute as pc
+## For checking if Postgres table exists already
+import psycopg2
 
 '''
 Pre-reqs: 
@@ -147,23 +149,40 @@ def clean_data(df, service):
     return df
 
 
-def web_to_pg(year, service):
+def web_to_pg(year, service, user, password, host, port, database):
 
-    ## Download zones data
-    zones_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv'
-    zones_csv_name = './data/taxi_zone_lookup.csv'
-    zones_file = Path(zones_csv_name)
+    ## Check if Postgres tables exist already and note if so via a Boolean variable to use later
+    ## NOTE: Need *double* quotes around psycopg2 SQL queries
+    ## https://stackoverflow.com/questions/1874113/checking-if-a-postgresql-table-exists-under-python-and-probably-psycopg2
+    ## https://stackoverflow.com/questions/57604339/psycopg2-error-column-doesnt-exist-error-when-trying-to-write-injection-safe
+    conn = psycopg2.connect(f'dbname={database} user={user} host={host} password={password}')
+    
+    zones_cur = conn.cursor()
+    zones_cur.execute(f"select * from information_schema.tables where table_name = 'zones'")
+    zones_table_exists = bool(zones_cur.rowcount)
 
-    ## If the file is not already downloaded/does not exist, download it
-    if not zones_file.is_file():
-        print(f'\nDownloading the taxi zone data...')
-        os.system(f'wget {zones_url} -O {zones_csv_name}')  # -O = output to the given file name        
+    taxi_cur = conn.cursor()
+    taxi_cur.execute(f"select * from information_schema.tables where table_name = '{service}_trip_data'")
+    taxi_table_exists = bool(taxi_cur.rowcount)
 
-        ## Add in the smaller taxi zones table first before the long loop for the taxi data
-        print('\nLoading in zone data...')
-        df_zones = pd.read_csv(zones_csv_name)
-        df_zones.to_sql(name='zones', con=engine, if_exists='replace')
-        print('Loaded in zone data')
+
+    ## Download the zones CSV and create the SQL table if it doesn't already exist
+    if zones_table_exists == False:
+        ## Download zones data
+        zones_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv'
+        zones_csv_name = './data/taxi_zone_lookup.csv'
+        zones_file = Path(zones_csv_name)
+
+        ## If the file is not already downloaded/does not exist, download it
+        if not zones_file.is_file():
+            print(f'\nDownloading the taxi zone data...')
+            os.system(f'wget {zones_url} -O {zones_csv_name}')  # -O = output to the given file name        
+
+            ## Add in the smaller taxi zones table first before the long loop for the taxi data
+            print('\nLoading in zone data...')
+            df_zones = pd.read_csv(zones_csv_name)
+            df_zones.to_sql(name='zones', con=engine, if_exists='replace')
+            print('Loaded in zone data')
 
     ## Keep track of total rows to compare with GCS
     total_rows = 0
@@ -273,7 +292,6 @@ def web_to_pg(year, service):
         print(f'Adding {df.shape[0]} rows from {file_name} to {total_rows} total rows so far')
         total_rows += df.shape[0]
                 
-        print('\nLoading in taxi data in chunks...')
         ## Chunk dataset into smaller sizes to load into the database via the 'chunksize' arg
         df_iter = pd.read_csv(f'./data/{file_name}',
                               compression='gzip',
@@ -300,7 +318,10 @@ def web_to_pg(year, service):
         ## Clean the data and fix the data types
         df = clean_data(df, service)
 
-        if i == 1:
+        ## If table doesn't already exist, create it via the headers of the dataframe
+        if taxi_table_exists == False:
+            print(f'Creating table for {service} data')
+
             ## Get the header (column) names
             header = df.head(n=0)
             # print(header)
@@ -314,6 +335,7 @@ def web_to_pg(year, service):
         start_datetime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start))
 
         ## Add (append) first chunk of data to the table and time how long it takes
+        print('\nLoading in taxi data in chunks...')
         print(f'Uploading {file_name} to Postgres starting at {start_datetime}...')
         # print(f'Number of rows: {len(df.index)}')
         print(f'Adding {df.shape[0]} rows...')
@@ -384,14 +406,19 @@ if __name__ == '__main__':
     engine = create_pg_engine(user, password, host, port, database)
 
     ## Green should end up with 7778101 rows total
-    # web_to_pg('2019', 'green')  ## 6044050 rows
-    # web_to_pg('2020', 'green')  ##  1734051 rows
+    # web_to_pg('2019', 'green', user, password,
+    #           host, port, database)  ## 6044050 rows
+    # web_to_pg('2020', 'green', user, password,
+    #           host, port, database)  ## 1734051 rows
 
     ## Yellow should end up with 109047518 rows total
-    # web_to_pg('2019', 'yellow')  ## 84399019 rows
-    # web_to_pg('2020', 'yellow')  ## 24648499 rows
+    # web_to_pg('2019', 'yellow', user, password,
+    #           host, port, database)  ## 84399019 rows
+    # web_to_pg('2020', 'yellow', user, password,
+    #           host, port, database)  ## 24648499 rows
 
     ## FHV should end up with 43244696 rows total
-    # web_to_pg('2019', 'fhv')
+    # web_to_pg('2019', 'fhv', user, password,
+    #           host, port, database)
 
     remove_files()
