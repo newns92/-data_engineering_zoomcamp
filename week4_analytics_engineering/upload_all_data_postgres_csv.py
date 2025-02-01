@@ -1,16 +1,16 @@
-import sys
+# import sys
 import requests
 import pandas as pd
-# For removing files from a directory
+## For removing files from a directory
 import os
 # import shutil
 from sqlalchemy import create_engine
 import time
-# For checking if file exists
+## For checking if file exists
 from pathlib import Path
 # import shutil
 import time
-# # For Parquet manipulation
+## For Parquet manipulation
 # import pyarrow as pa
 # import pyarrow.parquet as pq
 # import pyarrow.compute as pc
@@ -219,6 +219,7 @@ def web_to_pg(year, service):
                             'total_amount': float,
                             'congestion_surcharge': float
                         }
+            
             ## Parse the datetime columns
             parse_dates = ['tpep_pickup_datetime', 'tpep_dropoff_datetime']
         
@@ -248,7 +249,20 @@ def web_to_pg(year, service):
             ## Parse the datetime columns
             parse_dates = ['lpep_pickup_datetime', 'lpep_dropoff_datetime']
 
-        ## See how many rows are in data file and add it to a total row count
+        # elif service == 'fhv':
+        else:
+            taxi_dtypes = {
+                            'dispatching_base_num': str,
+                            'pu_location_id': pd.Int64Dtype(),
+                            'do_location_id': pd.Int64Dtype(),
+                            'SR_Flag': float,
+                            'affiliated_base_number': str
+                        }
+            
+            ## Parse the datetime columns
+            parse_dates = ['pickup_datetime', 'dropOff_datetime']             
+
+        ## See how many rows are in green or yellow data file and add it to a total row count
         df = pd.read_csv(f'./data/{file_name}',
                          compression='gzip',
                          # iterator=True,
@@ -374,8 +388,8 @@ if __name__ == '__main__':
     # web_to_pg('2020', 'green')  ##  1734051 rows
 
     ## Yellow should end up with 109047518 rows total
-    # web_to_pg('2019', 'yellow')  ## 6044050 rows
-    # web_to_pg('2020', 'yellow')  ## 6044050 rows
+    # web_to_pg('2019', 'yellow')  ## 84399019 rows
+    # web_to_pg('2020', 'yellow')  ## 24648499 rows
 
     ## FHV should end up with 43244696 rows total
     # web_to_pg('2019', 'fhv')

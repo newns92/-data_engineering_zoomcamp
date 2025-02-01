@@ -134,36 +134,45 @@
             --- 7,778,101
         ```        
 - Now, back in the dbt Cloud IDE, in the `models/` directory, create a new directory called `staging/`
-    - This is where we take in the raw data and apply some transforms if needed
-- Then, create a `core/` subdirectory under the `models/` directory
+    - This is where we will take in raw data (and apply some transforms if needed)
+- Then, create a `core/` subdirectory under the same `models/` directory
     - This is where we'll create models to expose to a BI tool, to an ML model, to stakeholders, etc.
-- In the `staging/` directory, create 2 files:
-    1. A staging model, `stg_green_trip_data.sql`
-        ```SQL
-            -- Create views so we don't have the need to refresh constantly but still have the latest data loaded
-            {{ config(materialized = 'view') }}
-
-            /* {# SELECT * FROM {{ source(<'source-name-from-schema.yml>', '<table-name-from-schema.yml>') }} #} */
-            select * from {{ source('staging', 'green_trip_data') }}
-            limit 100        
-        ```
-    2. A `schema.yml` file
-        - **First, make sure create an environment variable in your system in a command prompt via `export DBT_GCP_PROJECT_ID='<your-gcp-project-id>'` if you have not done so already**
-            - Can check this via `echo $DBT_GCP_PROJECT_ID`
-        - Then, use the `env_var()` dbt macro/function to incorporate your Google Cloud Platform project ID in this YML file instead of hard-coding it
+- In the `staging/` subdirectory, create 2 files:
+    1. A `schema.yml` file (You can also get a step ahead and create another (but blank for now) `schema.yml` in the `core/` subdirectory)        
+        - **First, make sure to create an environment variable in dbt Cloud if you have not done so already**
+            - When using dbt Cloud, you *must* adhere to the naming conventions for environment variables: they *must* be prefixed with `DBT_` 
+            - Environment variables keys are *uppercased* and *case-sensitive*
+            - When referencing something like `{{env_var('DBT_KEY')}}` in a dbt project's code, the key must match *exactly* the variable defined in dbt Cloud's UI        
+                - ***NOTE***: `env_var()` also accepts a second, optional argument a default value                
+            - To create the environment variables, on the left-hand side of the dbt Cloud UI, click "Deploy", and then "Environments"
+            - Click the "Environment variables" tab
+            - Then, enter your key and value (both "Project default" and "Development" values) pairs for `DBT_GCP_PROJECT_ID` and `DBT_BIGQUERY_SCHEMA` environment variables
             - See more at: https://docs.getdbt.com/reference/dbt-jinja-functions/env_var
-        ```YML
-            version: 2
+            - Then, head back to the dbt Cloud IDE and restart it to set the new (or updated) environment variables
+            - You can click the `</> Compile` button at the bottom of the dbt Cloud IDE when you have `stg_green_trip_data.sql` open to see if the environment variables are working
+        - Example code:
+            ```YML
+                version: 2
 
-            sources:
-            - name: staging
-                database: "{{ env_var('DBT_GCP_PROJECT_ID') }}"  # i.e., the dataset (Project ID) in BigQuery
-                schema: ny_taxi  # the dataset itself
+                sources:
+                    - name: staging
+                      database: "{{ env_var('DBT_GCP_PROJECT_ID') }}"  # i.e., the "dataset" (Project ID) in BigQuery
+                      schema: "{{ env_var('DBT_BIGQUERY_SCHEMA', 'de_zoomcamp') }}"  # the dataset itself
 
-                tables:
-                - name: green_trip_data
-                - name: yellow_trip_data            
-        ```
+                      tables:
+                        - name: green_trip_data
+                        - name: yellow_trip_data            
+            ```    
+    2. A staging model, `stg_green_trip_data.sql`
+        - Basic starter code for testing:
+            ```SQL
+                -- Create a view so we don't have the need to refresh constantly but still have the latest data loaded
+                {{ config(materialized = 'view') }}
+
+                /* {# SELECT * FROM {{ source(<'source-name-from-schema.yml>', '<table-name-from-schema.yml>') }} #} */
+                SELECT * FROM {{ source('staging', 'green_trip_data') }}
+                LIMIT 100
+            ```
 - In the dbt Cloud IDE terminal (at the bottom of the page), run either:
     - A. `dbt build`
         - See: https://docs.getdbt.com/reference/commands/build
