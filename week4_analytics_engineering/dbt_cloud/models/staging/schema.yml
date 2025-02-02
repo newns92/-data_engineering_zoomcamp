@@ -52,7 +52,7 @@ models:
         tests:
           - relationships:
               to: ref('taxi_zone_lookup')
-              field: location_id
+              field: locationid
 
       - name: do_location_id
         data_type: int64
@@ -61,7 +61,7 @@ models:
         tests:
           - relationships:
               to: ref('taxi_zone_lookup')
-              field: location_id
+              field: locationid
 
       - name: pickup_datetime
         data_type: timestamp
@@ -192,7 +192,7 @@ models:
         tests:
           - relationships:
               to: ref('taxi_zone_lookup')
-              field: location_id
+              field: locationid
 
       - name: do_location_id
         data_type: int64
@@ -201,7 +201,7 @@ models:
         tests:
           - relationships:
               to: ref('taxi_zone_lookup')
-              field: location_id
+              field: locationid
 
       - name: pickup_datetime
         data_type: timestamp

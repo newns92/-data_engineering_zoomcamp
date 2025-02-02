@@ -132,7 +132,7 @@ models:
         tests:
           - relationships:
               to: ref('taxi_zone_lookup')
-              field: location_id
+              field: locationid
 
       - name: pickup_borough
         data_type: string
@@ -149,7 +149,7 @@ models:
         tests:
           - relationships:
               to: ref('taxi_zone_lookup')
-              field: location_id
+              field: locationid
 
       - name: dropoff_borough
         data_type: string

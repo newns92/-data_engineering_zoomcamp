@@ -49,6 +49,6 @@ seeds:
     taxi_zone_lookup:
       +column_types:
         location_id: numeric
-        borough: varchar(55)
-        zone: varchar(55)
-        service_zone: varchar(55)
+        borough: string
+        zone: string
+        service_zone: string
