@@ -73,3 +73,11 @@ SELECT
 FROM trip_data
 -- Retrieve only one of any duplicate records
 WHERE row_num = 1
+
+-- Use dbt Variable to LIMIT dataset when testing
+-- `dbt build --select <model_name> --vars '{'is_test_run': 'false'}'`
+{% if var('is_test_run', default=true) %}
+
+    LIMIT 100
+
+{% endif %}
