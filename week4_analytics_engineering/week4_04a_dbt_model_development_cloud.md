@@ -227,15 +227,55 @@
                     when 4 then 'Dispute'
                     when 5 then 'Unknown'
                     when 6 then 'Voided trip'
+                    else 'EMPTY'
                 end
 
             {%- endmacro %}
         ```
     - We then use it in our `stg_green_trip_data.sql` model file, which we can then run again via `dbt run --select stg_green_trip_data`
+
         ```Jinja
-            {{ get_payment_type_description('payment_type') }} as payment_type_description,  {# macro #}
+            -- Create a view so we don't have the need to refresh constantly but still have the latest data loaded
+            {{ config(materialized = 'view') }}
+
+            WITH source AS (
+                /* {# SELECT * FROM {{ source(<'source-name-from-schema.yml>', '<table-name-from-schema.yml>') }} #} */
+                SELECT * FROM {{ source('staging', 'green_trip_data') }}
+                LIMIT 100
+            )
+            ,
+
+            renamed AS (
+                SELECT
+                    vendor_id,
+                    lpep_pickup_datetime,
+                    lpep_dropoff_datetime,
+                    store_and_fwd_flag,
+                    rate_code_id,
+                    pu_location_id,
+                    do_location_id,
+                    passenger_count,
+                    trip_distance,
+                    fare_amount,
+                    extra,
+                    mta_tax,
+                    tip_amount,
+                    tolls_amount,
+                    ehail_fee,
+                    improvement_surcharge,
+                    total_amount,
+                    payment_type,
+                    {{ get_payment_type_description('payment_type') }} as payment_type_description,  {# macro #}
+                    trip_type,
+                    congestion_surcharge
+                FROM source
+            )
+
+            SELECT
+                *
+            FROM renamed
         ```
-        - We can also click "Compile" at the bottom of the page in the dbt Cloud IDE to see the compiled result without running it
+        - We can click "Compile" at the bottom of the page in the dbt Cloud IDE to see the compiled result without running it
     - We will then see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's dataset that you specified (as a schema)
 
 
