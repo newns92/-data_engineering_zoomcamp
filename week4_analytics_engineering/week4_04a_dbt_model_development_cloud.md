@@ -335,12 +335,11 @@
 ## Seeds
 - These are CSV files that we can have in our repo and then run to use as tables via a `ref` macro
 - These are meant to be used for *smaller* files that contain **data that won't change often**
-- NOTE: They cannot be *directly* loaded in the Cloud UI
-    - If done locally, can just copy the CSV to the `seeds/` subdirectory of the project
-    - In dbt Cloud, you can add the file to the GitHub repo and then pull it into the dbt Cloud UI
-        - *Or just create the CSV in the Cloud UI and paste in the exact contents*
-- Once the CSV is loaded into the repo, run `dbt seed`, which will create the table in the data warehouse and will define, for each of the fields, the data type that it corresponds to
-    - Once you run `dbt seed`, you should see the table in BigQuery
+- ***NOTE***: They cannot be *directly* loaded in the Cloud UI
+    - If done locally, you can just copy the CSV to the `seeds/` subdirectory of the project
+    - In *dbt Cloud*, you can add the file to the GitHub repo and then pull it into the dbt Cloud UI
+        - *Or you can just create the CSV in the Cloud UI and paste in the exact contents*
+- Once the CSV is loaded into the repo (or the Cloud UI), run `dbt seed`, which will create the specified table in the data warehouse (BigQuery) and will define, for each of the fields, the data type that it corresponds to
 - *However, we can also define the data types ourselves in the `dbt_project.yml` file*
     - Here's an example of explicilty defining one column's data type, leaving the rest as defaults:
         ```YML
@@ -352,9 +351,9 @@
         ```
     - Run `dbt seed` again, you should see the updated table in BigQuery
 - Now let's say we want to change some value in our data, like changing "EWR" to "NEWR"
-    - `dbt seed` will by default then *append* to things we've already created
-    - So, instead run `dbt seed --full-refresh` to *drop* and *recreate* the table
-- Now, we can create a dimension model based on this seed
+    - `dbt seed` will by default *append* to things we've already created
+    - So, to avoid this, you instead add a CLI argument and run `dbt seed --full-refresh` to *drop* and *recreate* the table
+- Now, we can create a **dimension model** based on this seed
     - Under `models/core/`, create a file `dim_zones.sql`
     - Here, we will first define the configiguration as a materialized *table* rather than a view, like we have been doing thus far in our staging models
         - Ideally we want everything in `models/core/` to be a *table*, since this is what's exposed to BI tools and/or to stakeholders
