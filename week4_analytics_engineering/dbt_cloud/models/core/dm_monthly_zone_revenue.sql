@@ -1,5 +1,8 @@
 {{
-    config(materialized='table') }}
+    config(
+        materialized='table'
+    )
+}}
 
 WITH trips_data AS (
     SELECT
