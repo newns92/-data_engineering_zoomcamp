@@ -10,6 +10,7 @@ WITH source AS (
 
 renamed AS (
     SELECT
+        {{ dbt_utils.generate_surrogate_key(['vendor_id', 'lpep_pickup_datetime']) }} AS trip_id,
         vendor_id,
         lpep_pickup_datetime,
         lpep_dropoff_datetime,
@@ -28,7 +29,7 @@ renamed AS (
         improvement_surcharge,
         total_amount,
         payment_type,
-        {{ get_payment_type_description('payment_type') }} as payment_type_description,  {# macro #}
+        {{ get_payment_type_description('payment_type') }} AS payment_type_description,  {# custom macro #}
         trip_type,
         congestion_surcharge
     FROM source
