@@ -65,7 +65,9 @@ SELECT
     CAST(improvement_surcharge AS NUMERIC) AS improvement_surcharge,
     CAST(congestion_surcharge AS NUMERIC) AS congestion_surcharge,
     CAST(total_amount AS NUMERIC) AS total_amount,
-    {{ dbt.safe_cast('payment_type', api.Column.translate_type('integer')) }} AS payment_type,
+    COALESCE( -- Deal with NULL values
+        {{ dbt.safe_cast('payment_type', api.Column.translate_type('integer')) }}
+    , 0) AS payment_type,
     {{ get_payment_type_description('payment_type') }} AS payment_type_description  {# custom macro #}    
 
 FROM trip_data
