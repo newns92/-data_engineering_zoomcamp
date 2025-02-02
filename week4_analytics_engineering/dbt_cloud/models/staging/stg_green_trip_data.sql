@@ -14,37 +14,38 @@ WITH trip_data AS (
     -- Remove null data
     WHERE vendor_id IS NOT NULL
 )
-,
-
-renamed AS (
-    SELECT
-        {{ dbt_utils.generate_surrogate_key(['vendor_id', 'lpep_pickup_datetime']) }} AS trip_id,
-        vendor_id,
-        lpep_pickup_datetime,
-        lpep_dropoff_datetime,
-        store_and_fwd_flag,
-        rate_code_id,
-        pu_location_id,
-        do_location_id,
-        passenger_count,
-        trip_distance,
-        fare_amount,
-        extra,
-        mta_tax,
-        tip_amount,
-        tolls_amount,
-        ehail_fee,
-        improvement_surcharge,
-        total_amount,
-        payment_type,
-        {{ get_payment_type_description('payment_type') }} AS payment_type_description,  {# custom macro #}
-        trip_type,
-        congestion_surcharge
-    FROM trip_data
-    -- Retrieve only one of any duplicate records
-    WHERE row_num = 1
-)
 
 SELECT
-    *
-FROM renamed
+    -- Identifiers
+    {{ dbt_utils.generate_surrogate_key(['vendor_id', 'lpep_pickup_datetime']) }} AS trip_id,
+    vendor_id,
+    rate_code_id,
+    pu_location_id,
+    do_location_id,
+
+    -- Datetimes    
+    lpep_pickup_datetime,
+    lpep_dropoff_datetime,
+
+    -- Trip information
+    store_and_fwd_flag,
+    passenger_count,
+    trip_distance,
+    trip_type,
+
+    -- Payment information
+    fare_amount,
+    extra,
+    mta_tax,
+    tip_amount,
+    tolls_amount,
+    ehail_fee,
+    improvement_surcharge,
+    total_amount,
+    congestion_surcharge,
+    payment_type,
+    {{ get_payment_type_description('payment_type') }} AS payment_type_description  {# custom macro #}    
+
+FROM trip_data
+-- Retrieve only one of any duplicate records
+WHERE row_num = 1
