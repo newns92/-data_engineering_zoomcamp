@@ -335,7 +335,7 @@
 ## Seeds
 - These are CSV files that we can have in our repo and then run to use as tables via a `ref` macro
 - These are meant to be used for *smaller* files that contain **data that won't change often**
-- ***NOTE***: They cannot be *directly* loaded in the Cloud UI
+- ***NOTE***: They *cannot* be *directly* loaded in the Cloud UI
     - If done locally, you can just copy the CSV to the `seeds/` subdirectory of the project
     - In *dbt Cloud*, you can add the file to the GitHub repo and then pull it into the dbt Cloud UI
         - *Or you can just create the CSV in the Cloud UI and paste in the exact contents*
@@ -353,20 +353,37 @@
 - Now let's say we want to change some value in our data, like changing "EWR" to "NEWR"
     - `dbt seed` will by default *append* to things we've already created
     - So, to avoid this, you instead add a CLI argument and run `dbt seed --full-refresh` to *drop* and *recreate* the table
+
+
+## Dimension and Fact Models
 - Now, we can create a **dimension model** based on this seed
-    - Under `models/core/`, create a file `dim_zones.sql`
-    - Here, we will first define the configiguration as a materialized *table* rather than a view, like we have been doing thus far in our staging models
+    - Under the `models/core/` subdirectory in your dbt project, create a file `dim_zones.sql`
+    - Here, we will first define the configuration as a materialized *table* rather than a view, which  we have been doing thus far in our staging models
         - Ideally we want everything in `models/core/` to be a *table*, since this is what's exposed to BI tools and/or to stakeholders
+        ```SQL
+            {{
+                config(
+                    materialized='table'
+                )
+            }}
+
+            SELECT
+                locationid AS location_id
+                borough,
+                zone,
+                REPLACE(service_zone, 'Boro', 'Green') as service_zone
+            FROM {{ ref('taxi_zone_lookup') }}
+        ```
 - After adding the SQL to create such a dimension table, and before runnning this model, create a *second* new model called `fact_trips.sql`
-    - In this model, we'll take both the staging yellow and staging green data and `UNION` them into a *table*
+    - In this model, we'll take both the staging yellow and staging green data, `UNION ALL` them, and then JOIN to the zones dimension table to create final fact *table*
         - This will allow our queries to be more efficient and performant, since this will have a lot more data than our previous tables
-        - The closer to the BI layer that we get, the more we want performant queries so that things run faster for the stakeholders
-- Once `fact_trips.sql` is complete, we can see the lineage graph in the dbt Cloud IDE and we should see our staging sources creatin two staging models, our seed creating a dimension model, and those three models creating a fact model
+            - The closer to the BI layer that we get, the more we want performant queries so that things run faster for the stakeholders
+- Once `fact_trips.sql` is complete, we can look at the lineage graph in the dbt Cloud IDE and we should see our staging sources creating two staging models, our seed creating a dimension model, and those three respective models creating a fact model
     - dbt automatically identifies all of these dependencies
-    - We can tell dbt to run all model but *also* specify to run all of its parent models
+    - We can tell dbt to run all models but *also* specify to run all of its parent models
 - Now, we can run `dbt run` which will run all of our models, *but not the seed*
     - In order to run the seed as well, run `dbt build` to build everything that we have, *along with running some tests*
     - Say we just want to run `fact_trips.sql`, we'd run `dbt build --select fact_trips`
         - *But to run everything that `fact_trips.sql` depends on first*, we can run `dbt build --select +fact_trips`
-        - Command:
+        - Command to fully build the fact table will *all* data:
             - `dbt build --select +fact_trips+ --vars '{'is_test_run': 'false'}'`
