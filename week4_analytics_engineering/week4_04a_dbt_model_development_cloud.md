@@ -301,26 +301,30 @@
 
 
 ## Variables
-- These are the same as any other programming language: useful for defining values that should be used across a project
+- dbt **variables** are the same as any other programming language: useful for defining values that should be used *across* a project
 - With a macro, dbt allows us to provide data *via* variables to models for translation during compilation
 - To use a variables, use the `{{ var('...')}}` function/macro
     ```Jinja
+        -- Use dbt Variable to LIMIT dataset when testing
+        -- `dbt build --select <model_name> --vars '{'is_test_run': 'false'}'`
         {% if var('is_test_run', default=true) %}
 
-            limit 100
-            
-        {% endif %}    
+            LIMIT 100
+
+        {% endif %}
     ```
-- We can do this in the CLI (where we can change the value on-the-fly) via:
+    - *Add the above to the end of the `stg_green_trip_data.sql` model*
+- We can do this in the dbt Cloud CLI (where we can change the value on-the-fly) via:
     ```bash
         dbt build -select <model-name> --vars '{'is_test_run': 'false'}'
+    ```
+
 - We can also define variables in the `dbt_project.yml` file:
     ```YML
         vars:
             payment_type_values = [1, 2, 3, 4, 5, 6]
     ```
-- Add the above to the end of the `stg_green_trip_data.sql` model
-- We can run our model and change the value of `is_test_run` using the command `dbt run --select stg_green_trip_data.sql --var 'is_test_run: false'` and you should NOT see `limit 100` in the compiled code
+- We can run our model and change the value of `is_test_run` using the command `dbt run --select stg_green_trip_data.sql --var 'is_test_run: false'` and you should *NOT* see `LIMIT 100` in the compiled code
 - Just running `dbt run --select stg_green_trip_data` should give the default value of `true` and you should see `limit 100` in the compiled code
 - ***We can then repeat everything above, with some small code changes, for a `stg_yellow_trip_data` model***
     - Commands:
