@@ -284,20 +284,20 @@
     - You can call them similar to library functions: `{{ <dbt-package>.<macro-name>(<parameter(s)>) }}`
 - Packages are "downloaded" via the `packages.yml` file, *which you create*, in the main directory of the project, and then imported via the `dbt deps` command
 - They are basically standalone dbt projects, with models and macros that tackle specific problems
-- By adding a package to your own project, such a package's models and macros become a part of *your* project
+- By adding a package to your own project, said package's models and macros become a part of *your* dbt project
 - You can see a list of useful packages at https://hub.getdbt.com/
 - A good thing to note is that dbt will update and change the compiled code depending on your connection adapter (code might be different for BigQuery than for Postgres), as it abstracts away that complexity for the end user
-- We are importing the package `dbt_utils` from dbt labs
+- We will be importing the package `dbt_utils` from dbt Labs
     - First, we create the `packages.yml` file in the same directory level as `dbt_project.yml`:
         ```YML
             packages:
             - package: dbt-labs/dbt_utils
-            version: 1.1.1
+            version: 1.3.0
         ```
     - Then we run `dbt deps` in the terminal at the bottom of the dbt Cloud IDE to install the packages
-    - We can then view installed packages in the `dbt_packages/` subdirectory of the project, and see its *own* `macros/` subdirectory to see all of its macros
-    - We will then create a **surrogate key** via `{{ dbt_utils.surrogate_key(['vendor_id', 'lpep_pickup_datetime']) }} as trip_id,` in our staging table model
-    - Run the model again via `dbt run --select stg_green_trip_data`, and again see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's `ny_taxi_dev` schema
+    - We can then view installed packages in the `dbt_packages/` subdirectory of the project, and look inside its *own* `macros/` subdirectory to see all of its macros
+    - We will then create a **surrogate key** via `{{ dbt_utils.generate_surrogate_key(['vendor_id', 'lpep_pickup_datetime']) }} as trip_id,` in our staging table model
+    - Run the model again via `dbt run --select stg_green_trip_data`, and again see the updated compiled code in the `target/compiled/` directory and the updated staging table your BigQuery schema
 
 
 ## Variables
