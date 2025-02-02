@@ -161,11 +161,6 @@ def web_to_pg(year, service, user, password, host, port, database):
     zones_cur.execute(f"select * from information_schema.tables where table_name = 'zones'")
     zones_table_exists = bool(zones_cur.rowcount)
 
-    taxi_cur = conn.cursor()
-    taxi_cur.execute(f"select * from information_schema.tables where table_name = '{service}_trip_data'")
-    taxi_table_exists = bool(taxi_cur.rowcount)
-
-
     ## Download the zones CSV and create the SQL table if it doesn't already exist
     if zones_table_exists == False:
         ## Download zones data
@@ -319,9 +314,11 @@ def web_to_pg(year, service, user, password, host, port, database):
         df = clean_data(df, service)
 
         ## If table doesn't already exist, create it via the headers of the dataframe
-        if taxi_table_exists == False:
-            print(f'Creating table for {service} data')
+        taxi_cur = conn.cursor()
+        taxi_cur.execute(f"select * from information_schema.tables where table_name = '{service}_trip_data'")
+        taxi_table_exists = bool(taxi_cur.rowcount)
 
+        if taxi_table_exists == False:
             ## Get the header (column) names
             header = df.head(n=0)
             # print(header)
