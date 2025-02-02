@@ -96,7 +96,12 @@ models:
     columns:
       - name: trip_id
         data_type: string
-        description: "The primary key for this table, generated with a concatenation of vendor_id and pickup_datetime fields."
+        description: "The primary key for this table, generated with a MD5 hash of concatenation of vendor_id and pickup_datetime fields."
+        tests:
+          - unique:
+              severity: warn
+          - not_null:
+              severity: warn        
 
       - name: vendor_id
         data_type: int64
@@ -123,6 +128,11 @@ models:
       - name: pickup_location_id
         data_type: int64
         description: "The location_id where the meter was engaged."
+        # Check if this field is located in the zone lookup table
+        tests:
+          - relationships:
+              to: ref('taxi_zone_lookup')
+              field: location_id
 
       - name: pickup_borough
         data_type: string
@@ -135,6 +145,11 @@ models:
       - name: dropoff_location_id
         data_type: int64
         description: "The location_id where the meter was disengaged."
+        # Check if this field is located in the zone lookup table
+        tests:
+          - relationships:
+              to: ref('taxi_zone_lookup')
+              field: location_id
 
       - name: dropoff_borough
         data_type: string
@@ -222,6 +237,12 @@ models:
       - name: payment_type
         data_type: int64
         description: "A numeric code signifying how the passenger paid for the trip."
+        # Test values against variable values in dbt_project.yml
+        tests:
+          - accepted_values:
+              values: "{{ var('payment_type_values') }}"
+              severity: warn
+              quote: false
 
       - name: payment_type_description
         data_type: string
