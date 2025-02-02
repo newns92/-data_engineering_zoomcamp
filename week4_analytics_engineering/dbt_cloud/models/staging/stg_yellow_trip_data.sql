@@ -59,6 +59,8 @@ SELECT
     CAST(mta_tax AS NUMERIC) AS mta_tax,
     CAST(tip_amount AS NUMERIC) AS tip_amount,
     CAST(tolls_amount AS NUMERIC) AS tolls_amount,
+    -- Create ehail_fee field that is present in green taxi data
+    CAST(0 AS NUMERIC) AS ehail_fee,
     CAST(improvement_surcharge AS NUMERIC) AS improvement_surcharge,
     CAST(congestion_surcharge AS NUMERIC) AS congestion_surcharge,
     CAST(total_amount AS NUMERIC) AS total_amount,
