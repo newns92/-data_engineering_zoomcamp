@@ -196,22 +196,23 @@
 
 
 ## Macros
-- You can think of these as *functions* that are written in Jinja (again, a Pythonic templating language) and SQL
+- You can think of dbt **macros** as *functions* that are written in Jinja (again, a Pythonic templating language) and SQL (They are written in `.sql` files)
 - The goal is to turn abstract snippets of SQL into these *reusable* macros
-- dbt has many built-in macros (`config()`, `source()`), but we can also define our own
-- Macros return code, and are in the style 
+- dbt has many built-in macros (`config()`, `source()`, `env_var()`, etc.), but we can also *define our own*
+- Macros return code, and are in the style of: 
     ```Jinja
         {% macro <macro-name>(<parameter(s)>) -%}   
             # some code
         {%- end macro %}
     ```
-- They are helpful if we want to maintain (re-use) the same type of transformation in several different models
+- They are helpful if we want to maintain (i.e. re-use) the same type of transformation in several different models (Do Not Repeat Yourself principle)
 - They can use **control structures** (e.g., IF statements and FOR loops in SQL)
-- They can use environment variables in a dbt project for production deployments
-- They operate on the results on one query to generate another query
+- They can also use environment variables in a dbt project for production deployments
+- They operate on the results on one query to generate *another* query
+    - In other words, their "output" is generated code
 - See more at https://docs.getdbt.com/docs/build/jinja-macros
-- In our project:
-    - We create the `get_payment_type_description` macro under the `macros/` subdirectory of the project in a `get_payment_type_description.sql` file:
+- In our dbt project:
+    - Create the `get_payment_type_description` macro under the `macros/` subdirectory of the project in a `get_payment_type_description.sql` file:
         ```Jinja
             {#
                 This macro returns the description of the payment_type 
@@ -235,11 +236,11 @@
             {{ get_payment_type_description('payment_type') }} as payment_type_description,  {# macro #}
         ```
         - We can also click "Compile" at the bottom of the page in the dbt Cloud IDE to see the compiled result without running it
-    - We will then see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's `ny_taxi_dev` schema
+    - We will then see the updated compiled code in the `target/compiled/` directory and the updated staging table in BigQuery's dataset that you specified (as a schema)
 
 
 ## Packages
-- Think of these like libraries in other programming languages
+- You can think of dbt **packages** like libraries in other programming languages
     - You can call them similar to library functions: `{{ <dbt-package>.<macro-name>(<parameter(s)>) }}`
 - Packages are "downloaded" via the `packages.yml` file, *which you create*, in the main directory of the project, and then imported via the `dbt deps` command
 - They are basically standalone dbt projects, with models and macros that tackle specific problems
