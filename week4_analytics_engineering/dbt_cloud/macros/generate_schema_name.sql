@@ -5,7 +5,7 @@
   {% if target.name == 'default' %}
     {{target.schema}}{{ '_' ~ custom_schema_name if custom_schema_name else '' }}
 
-  {% elif 'prod' in target.name %}
+  {% elif target.name == 'prod' %}
     {{ custom_schema_name if custom_schema_name else target.schema }}
 
   {% endif %}
