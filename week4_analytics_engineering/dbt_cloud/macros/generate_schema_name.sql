@@ -6,7 +6,7 @@
     {{target.schema}}{{ '_' ~ custom_schema_name if custom_schema_name else '' }}
 
   {% elif target.name == 'prod' %}
-    {{ 'prod_' }}
+    {{ 'de_zoomcamp_prod' }}
 
   {% endif %}
 
