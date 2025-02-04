@@ -169,7 +169,7 @@
                 ```
     - See more at https://docs.getdbt.com/reference/commands/cmd-docs
 - It pulls data from our YML files (like `schema.yml` files), as well as the lineage of our current workflow(s)
-- For the dbt Cloud environment, once `dbt docs generate` completes successfully, we can open the documentation via the "View Docs" icon (an open book) next to the branch name on the right-hand side of the dbt Cloud IDE
-    - ***NOTE: As of February 2025, this is no longer available, but you can still see the files generated for documentation in the `target/` directory of the project, such as `catalog.json`, `manifest.json`, and `index.html`***
+- For the dbt Cloud environment, once `dbt docs generate` completes successfully, we can open the documentation via the "View Docs" icon next to the branch name on the right-hand side of the dbt Cloud IDE
+    - You can also see the files generated for documentation in the `target/` directory of the project, such as `catalog.json`, `manifest.json`, and `index.html`***
     - This will show all the descriptions and metadata that we defined ourselves (or with the help from packages), along with the code (source *and* compiled) and dependencies for any models
     - NOTE: dbt documentation will look different once you deploy it
