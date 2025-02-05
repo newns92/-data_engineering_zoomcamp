@@ -207,7 +207,7 @@ def web_to_pg(year, service):
                 pc.less_equal(table["dropOff_datetime"], pa.scalar(pd.Timestamp.max))
             ).to_pandas()
         else:
-            df = table.to_pandas()        
+            df = table.to_pandas()
 
         ## Add to total number of rows
         print(f'Number of rows: {len(df.index)}')
