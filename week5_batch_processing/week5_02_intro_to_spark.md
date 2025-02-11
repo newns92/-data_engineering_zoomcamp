@@ -1,0 +1,32 @@
+## Intro to Spark
+- **Apache Spark** is a unified, multi-language (Java, Scala (the native way), Python, R, etc.) analytics **engine** (i.e., the processing happens *in* Spark) for large-scale data processing, or for executing data engineering, data science, and machine learning (ML) on single-node machines/clusters
+- See more at https://spark.apache.org/docs/latest/index.html
+- Spark can pull data from data warehouses/lakes/databases to its **executors**, do something to that data, and then output it to a data warehouse/lake/database
+- Spark is a **distributed** data processing engine, with its components working collaboratively on potentially a cluster of machines, each cluster having 10's or 100's or 1000's of machines
+- Spark is normally used for *batch* processing (although it *can* also be used for streaming)
+- At a high level in the Spark architecture, a Spark **application** consists of a **driver program** responsible for orchestrating parallel operations on the Spark **cluster** 
+    - The driver accesses the distributed components in the cluster (the Spark **executors** and **cluster manager**) through a **SparkSession**
+- Spark provides high-level API's in Java, Scala, Python (i.e. PySpark) and R, and an optimized engine that supports general execution graphs
+    - It also supports a rich set of higher-level tools including:
+        - **Spark SQL** for SQL and structured data processing
+        - **pandas** API on Spark for Python pandas workloads
+        - **MLlib** for machine learning
+        - **GraphX** for graph processing
+        - **Structured Streaming** for incremental computation and stream processing
+- *When to use Spark*:
+    - When data is in a data lake (like in S3 or GCS with a bunch of CSV's or parquet files, etc.)
+        - Spark pulls this data, does some processing, and puts it back into the data lake (or into *another* destination)
+    - We can use it in the same places we'd typically use SQL (which isn't always easy to use with data lakes, but *could* be done with Hive, Presto, Athena, etc.)
+        - **If you *can* express your jobs as SQL queries, it's best to go with it** (i.e., go with Athena/Presto, or use external tables in BigQuery, etc.)
+        - But for other things, like ML, Spark may be the way to go
+    - The Spark engine is recommended:
+        - 1\) For **dealing *directly* with files**
+        - 2\) In situations where we need **more flexibility than SQL offers**, such as:
+            - If we want to split our code into different modules, write unit tests, or just have some functionality that may not be possible to write using SQL (e.g., ML-related routines, such as training and/or using a model)
+    - A typical workflow may *combine* both tools (Spark *and* SQL)
+        - Example of a workflow involving ML may be:
+            - Raw data is placed into a data lake
+            - We then execute transformations on the data, like aggregations and JOIN's via SQL Athena (This is most of the pre-processing)
+            - Then, we need some more *complex* logic/computation that we cannot express via SQL, so we use Spark
+            - We train an ML model in Python (or apply it in Spark)
+            - Then, data is put *back* into the data lake (or some other destination)
